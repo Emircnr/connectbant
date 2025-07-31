@@ -2,1328 +2,297 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>İletişim ve Proje Yönetimi</title>
-  <!-- Google Font: Montserrat -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <title>Klan App Prototip</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    /****************************************
-     *           Temel Değişkenler          *
-     ****************************************/
     :root {
-      --font-family: 'Montserrat', sans-serif;
-
-      /* Varsayılan (Light) tema renkleri */
-      --color-bg: #fefefe;
-      --color-bg-secondary: #ffffff;
-      --color-text: #333;
-      --color-primary: #ff7a59;
-      --color-accent: #ff6f91;
-      --color-danger: #ff4c4c;
-
-      /* Koyu (Dark) tema renkleri */
-      --dark-color-bg: #1C1C1C;
-      --dark-color-bg-secondary: #2A2A2A;
-      --dark-color-text: #FFFFFF;
-      --dark-color-primary: #ffb049;
-      --dark-color-accent: #ff9f00;
-      --dark-color-danger: #f85149;
-
-      /* Mavi (Blue) tema renkleri */
-      --blue-color-bg: #E6F7FF;
-      --blue-color-bg-secondary: #ffffff;
-      --blue-color-text: #333;
-      --blue-color-primary: #007acc;
-      --blue-color-accent: #0097c1;
-      --blue-color-danger: #dc3545;
-
-      --transition-speed: 0.4s;
-
-      /* Arkaplanda hafif bir gradient */
-      --background-gradient: linear-gradient(135deg, #74EBD5 0%, #9FACE6 100%);
-      /* Modal arka plan şeffaflığı */
-      --modal-overlay-bg: rgba(0, 0, 0, 0.6);
+      --blue: #37a1f7;
+      --red: #ff5757;
+      --yellow: #ffd237;
+      --purple: #b180ea;
+      --gray: #262830;
     }
-
-    /****************************************
-     *           Tema Sınıfları             *
-     ****************************************/
-    /* Light Tema */
-    body.light-theme {
-      --color-bg: #fefefe;
-      --color-bg-secondary: #ffffff;
-      --color-text: #333;
-      --color-primary: #ff7a59;
-      --color-accent: #ff6f91;
-      --color-danger: #ff4c4c;
+    body {margin:0; background:#1a1d23; color:#fff; font-family:'Segoe UI',Arial,sans-serif;}
+    #app{max-width:960px;margin:28px auto 0 auto;border-radius:17px;box-shadow:0 4px 24px #0007;overflow:hidden;min-height:92vh;position:relative;}
+    .klan-secim{padding:34px 14px 14px 14px; background:#242634;}
+    .klanlar{display:flex;flex-wrap:wrap;justify-content:space-around;}
+    .klan{flex:1 1 155px;margin:18px;background:#191b21;border-radius:18px;display:flex;flex-direction:column;align-items:center;padding:17px 0;cursor:pointer;transition:box-shadow .26s;}
+    .klan.selected,.klan:hover{box-shadow:0 0 0 4px #fff6,0 6px 22px #0006;}
+    .klan-blue{color:var(--blue);}
+    .klan-red{color:var(--red);}
+    .klan-yellow{color:var(--yellow);}
+    .klan-purple{color:var(--purple);}
+    .klan-symbol{font-size:44px;}
+    .klan-name{font-size:1.15rem;font-weight:700;margin-top:7px;}
+    .klan-desc{font-size:1rem;opacity:.66;}
+    .join-btn{display:block;margin:34px auto 0 auto;font-size:1.14rem;padding:13px 45px;border:none;border-radius:31px;background:linear-gradient(90deg,var(--blue),var(--purple));color:#1a1d23;font-weight:700;cursor:pointer;box-shadow:0 2px 16px #0002;}
+    .join-btn:disabled{background:#444;opacity:.7;cursor:not-allowed;}
+    #oyunui{display:none;position:relative;}
+    .logo-klan{position:absolute;left:24px;top:18px;z-index:99;display:flex;align-items:center;gap:10px;padding:7px 22px 7px 16px;background:#262830e6;border-radius:24px 27px 25px 27px;}
+    .logo-icon{font-size:32px;}
+    .logo-name{font-size:1.08rem;font-weight:700;letter-spacing:.02em;}
+    .logo-klan-bottom{position:fixed;left:22px;bottom:22px;z-index:99;display:flex;align-items:center;gap:9px;padding:6px 22px 7px 13px;background:#23242eea;border-radius:21px 24px 23px 24px;box-shadow:0 3px 24px #0003;}
+    .logo-icon-bottom{font-size:27px;}
+    .logo-name-bottom{font-size:1.04rem;font-weight:700;}
+    .jeton-bakiye{position:absolute;right:30px;top:18px;z-index:99;background:linear-gradient(90deg,#ffd237 70%,#f4ac35 95%);color:#191b21;border-radius:23px;padding:6px 20px 7px 15px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 3px 22px #0002;}
+    .jeton-icon{font-size:21px;}
+    #menu{display:flex;justify-content:space-around;align-items:center;background:#232a36;}
+    .menu-btn{flex:1 1 0;padding:13px 0 9px 0;font-size:1.03rem;color:#fff;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;border-bottom:3px solid transparent;transition:border .2s;}
+    .menu-btn.active,.menu-btn:hover{border-bottom:3px solid var(--purple);}
+    .menu-icon{font-size:22px;margin-bottom:1px;}
+    #icerik{background:#171b20;min-height:410px;padding:0;}
+    #profil{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:35px 0;}
+    .profile-klan{display:flex;align-items:center;margin-bottom:20px;}
+    .profile-symbol{font-size:38px;margin-right:10px;}
+    .profile-klan-name{font-size:1.15rem;font-weight:700;}
+    .profile-data{font-size:1.05rem;margin:7px 0;display:flex;align-items:center;gap:9px;}
+    .prof-ikon{font-size:20px;opacity:.85;}
+    #map{width:100%;height:400px;min-height:280px;border-radius:0 0 17px 17px;}
+    .tab-content{padding:48px 18px 33px 18px;text-align:center;}
+    .tab-content h3{margin-bottom:14px;}
+    .store-wrap{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;}
+    .store-product{background:#21242a;border-radius:16px;padding:18px 13px 17px 13px;margin:10px 2px;min-width:160px;flex:1 0 150px;max-width:200px;display:flex;flex-direction:column;align-items:center;transition:box-shadow .2s;}
+    .store-product:hover{box-shadow:0 2px 24px #37a1f799;}
+    .store-symbol{font-size:30px;margin-bottom:4px;}
+    .store-name{font-size:1.02rem;font-weight:700;}
+    .store-price{font-size:1.05rem;margin:6px 0 12px 0;color:#ffd237;}
+    .store-btn{background:linear-gradient(90deg,#ffd237,#b180ea 70%);border:none;border-radius:21px;font-weight:700;color:#222;padding:7px 26px;cursor:pointer;}
+    .ref-box{background:#22232a;border-radius:13px;padding:18px 10px 10px 10px;margin:16px auto 0 auto;max-width:370px;box-shadow:0 2px 14px #0002;}
+    .ref-head{font-size:1.13rem;font-weight:700;margin-bottom:7px;}
+    .ref-code{display:inline-block;background:#262830;border-radius:10px;padding:4px 18px;font-weight:700;letter-spacing:.1em;margin:0 0 6px 0;color:#ffd237;}
+    .ref-btn{margin-left:12px;font-size:0.98rem;padding:5px 13px;border:none;border-radius:10px;background:#37a1f7;color:#101219;font-weight:700;cursor:pointer;}
+    .ref-info{font-size:0.97rem;opacity:.7;margin-top:6px;}
+    /* Klan Ateşi */
+    .fire-map-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;}
+    .fire-badge{background:linear-gradient(90deg,#ff5757 80%,#ffd237);color:#fff;border-radius:13px;padding:7px 24px;font-weight:700;font-size:1.03rem;display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+    .fire-progress{background:#353535;border-radius:11px;width:220px;height:18px;overflow:hidden;margin:0 auto 7px auto;}
+    .fire-progress-bar{height:100%;border-radius:11px;background:linear-gradient(90deg,#ff5757,#ffd237);text-align:left;color:#222;font-size:0.99rem;font-weight:700;padding-left:12px;line-height:18px;transition:width .3s;}
+    /* Responsive */
+    @media (max-width:650px){
+      #app{max-width:100vw;margin:0;border-radius:0;}
+      #icerik{min-height:250px;}
+      #map{height:200px;}
+      .klanlar{flex-direction:column;}
+      .klan{margin:8px;}
+      .logo-klan-bottom{left:5px;bottom:7px;}
+      .jeton-bakiye{right:8px;}
     }
-
-    /* Dark Tema */
-    body.dark-theme {
-      --color-bg: var(--dark-color-bg);
-      --color-bg-secondary: var(--dark-color-bg-secondary);
-      --color-text: var(--dark-color-text);
-      --color-primary: var(--dark-color-primary);
-      --color-accent: var(--dark-color-accent);
-      --color-danger: var(--dark-color-danger);
-    }
-
-    /* Blue Tema */
-    body.blue-theme {
-      --color-bg: var(--blue-color-bg);
-      --color-bg-secondary: var(--blue-color-bg-secondary);
-      --color-text: var(--blue-color-text);
-      --color-primary: var(--blue-color-primary);
-      --color-accent: var(--blue-color-accent);
-      --color-danger: var(--blue-color-danger);
-    }
-
-    /****************************************
-     *         Global ve Reset CSS          *
-     ****************************************/
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: var(--font-family);
-      background: var(--background-gradient);
-      color: var(--color-text);
-      transition: background var(--transition-speed), color var(--transition-speed);
-      min-height: 100vh;
-    }
-
-    /* Ana Container */
-    .container {
-      max-width: 1000px;
-      margin: 30px auto;
-      background: var(--color-bg-secondary);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-      transition: background var(--transition-speed), color var(--transition-speed), box-shadow var(--transition-speed);
-    }
-
-    /* Başlık ve Kontroller */
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    header h1 {
-      margin-bottom: 10px;
-      font-weight: 600;
-      letter-spacing: 1px;
-    }
-
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .controls input,
-    .controls select {
-      padding: 8px 12px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      outline: none;
-      transition: border var(--transition-speed);
-    }
-    .controls input:focus,
-    .controls select:focus {
-      border-color: var(--color-accent);
-    }
-
-    .controls button {
-      background: var(--color-primary);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      padding: 8px 14px;
-      transition: background var(--transition-speed), transform var(--transition-speed);
-      letter-spacing: 0.5px;
-    }
-    .controls button:hover {
-      background: var(--color-accent);
-      transform: scale(1.05);
-    }
-
-    /* Tablo Stili */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      overflow: hidden;
-      border-radius: 8px;
-    }
-
-    table thead tr {
-      background: var(--color-primary);
-      color: #fff;
-    }
-
-    table th,
-    table td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-      vertical-align: middle;
-      transition: background var(--transition-speed), color var(--transition-speed);
-    }
-
-    table tr:last-child td {
-      border-bottom: none;
-    }
-
-    table tbody tr:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Not hücresi */
-    .note-cell {
-      cursor: pointer;
-      color: var(--color-accent);
-      font-weight: 500;
-    }
-
-    /* Genel Butonlar (Düzenle, Sil vb.) */
-    button.edit-btn,
-    button.delete-btn,
-    button.members-project,
-    button.edit-project,
-    button.delete-project,
-    button.delete-task {
-      background-color: var(--color-primary);
-      padding: 6px 12px;
-      border-radius: 4px;
-      color: #fff;
-      border: none;
-      margin: 2px;
-      font-size: 12px;
-      transition: transform var(--transition-speed), background var(--transition-speed);
-      cursor: pointer;
-    }
-    button.edit-btn:hover,
-    button.delete-btn:hover,
-    button.members-project:hover,
-    button.edit-project:hover,
-    button.delete-project:hover,
-    button.delete-task:hover {
-      background-color: var(--color-accent);
-      transform: scale(1.05);
-    }
-
-    /****************************************
-     *           Modal Stilleri             *
-     ****************************************/
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--modal-overlay-bg);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIn 0.3s;
-      z-index: 100;
-    }
-    .modal.active {
-      display: flex;
-    }
-
-    .modal-content {
-      background: var(--color-bg-secondary);
-      padding: 20px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 600px;
-      position: relative;
-      animation: slideIn var(--transition-speed);
-      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
-    }
-
-    .modal-content h2 {
-      margin-bottom: 15px;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .modal-content .close {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 26px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: color var(--transition-speed), transform var(--transition-speed);
-    }
-    .modal-content .close:hover {
-      color: var(--color-accent);
-      transform: scale(1.2);
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 8px 12px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      outline: none;
-      transition: border var(--transition-speed);
-    }
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-      border-color: var(--color-accent);
-    }
-    .form-group textarea {
-      resize: vertical;
-    }
-
-    .modal-content button {
-      width: 100%;
-      padding: 12px;
-      background: var(--color-primary);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background var(--transition-speed), transform var(--transition-speed);
-      margin-top: 8px;
-    }
-    .modal-content button:hover {
-      background: var(--color-accent);
-      transform: scale(1.03);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes slideIn {
-      from { transform: translateY(-20px); }
-      to { transform: translateY(0); }
-    }
-
-    /****************************************
-     *           Görev Uyarı Rengi         *
-     ****************************************/
-    .task-due-soon {
-      background-color: rgba(255, 0, 0, 0.1) !important;
-    }
-
-    /****************************************
-     *            Responsive CSS            *
-     ****************************************/
-    @media (max-width: 600px) {
-      .container {
-        padding: 15px;
-        margin: 15px auto;
-      }
-      .controls button,
-      .controls input,
-      .controls select {
-        font-size: 12px;
-        padding: 6px 8px;
-      }
-      table th,
-      table td {
-        font-size: 12px;
-        padding: 8px;
-      }
-      .modal-content {
-        max-width: 90%;
-        width: 90%;
-      }
-      .modal-content button {
-        font-size: 14px;
-      }
-    }
-
   </style>
 </head>
-<body class="light-theme">
-  <!-- Ana içerik (giriş yapmış kullanıcılar için) -->
-  <div id="mainContent" style="display:none;">
-    <!-- İletişim Yönetimi -->
-    <div class="container">
-      <header>
-        <h1>İletişim Yönetimi</h1>
-        <div class="controls">
-          <input type="text" id="searchInput" placeholder="Ara (isim, meslek, iletişim, konu)...">
-          <select id="themeSelect">
-            <option value="light">Light Tema</option>
-            <option value="dark">Dark Tema</option>
-            <option value="blue">Blue Tema</option>
-          </select>
-          <button id="addContactBtn">Yeni Kayıt Ekle</button>
-          <button id="logoutBtn">Çıkış Yap</button>
-        </div>
-      </header>
-      <table id="contactsTable">
-        <thead>
-          <tr>
-            <th>İsim Soyisim</th>
-            <th>Meslek</th>
-            <th>İletişim</th>
-            <th>Görüşme Konusu</th>
-            <th>Puan</th>
-            <th>Kategoriler</th>
-            <th>Not</th>
-            <th>Randevu Tarihi</th>
-            <th>İşlemler</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Kayıtlar Firestore'dan yüklenecek -->
-        </tbody>
-      </table>
+<body>
+<div id="app">
+  <!-- Klan Seçim -->
+  <div id="klansec" class="klan-secim">
+    <h2 style="text-align:center;margin:24px 0 12px 0;letter-spacing:0.03em;">Klanını Seç</h2>
+    <div class="klanlar">
+      <div class="klan klan-blue" data-klan="blue">
+        <span class="klan-symbol">🦅</span>
+        <span class="klan-name">Mavi Klan</span>
+        <span class="klan-desc">Strateji & Liderlik</span>
+      </div>
+      <div class="klan klan-red" data-klan="red">
+        <span class="klan-symbol">🔥</span>
+        <span class="klan-name">Kırmızı Klan</span>
+        <span class="klan-desc">Cesaret & Enerji</span>
+      </div>
+      <div class="klan klan-yellow" data-klan="yellow">
+        <span class="klan-symbol">🌟</span>
+        <span class="klan-name">Sarı Klan</span>
+        <span class="klan-desc">Sosyallik & Parlaklık</span>
+      </div>
+      <div class="klan klan-purple" data-klan="purple">
+        <span class="klan-symbol">🦄</span>
+        <span class="klan-name">Mor Klan</span>
+        <span class="klan-desc">Hayal Gücü & Yaratıcılık</span>
+      </div>
     </div>
-
-    <!-- Proje Yönetimi -->
-    <div class="container">
-      <header>
-        <h1>Proje Yönetimi</h1>
-        <div class="controls">
-          <button id="createProjectBtn">Proje Oluştur</button>
-        </div>
-      </header>
-      <table id="projectsTable">
-        <thead>
-          <tr>
-            <th>Proje Adı</th>
-            <th>Oluşturma Tarihi</th>
-            <th>Üyeler</th>
-            <th>İşlemler</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Projeler Firestore'dan yüklenecek -->
-        </tbody>
-      </table>
+    <button class="join-btn" id="joinBtn" disabled>KATIL</button>
+  </div>
+  <!-- Oyun UI -->
+  <div id="oyunui">
+    <!-- Sol üstte jeton bakiyesi -->
+    <div class="jeton-bakiye"><span class="jeton-icon">🪙</span><span id="jetonSayisi">780</span></div>
+    <!-- Sol üstte klan -->
+    <div class="logo-klan" id="aktifKlan">
+      <span class="logo-icon"></span>
+      <span class="logo-name"></span>
     </div>
-
-    <!-- Görev Yönetimi -->
-    <div class="container">
-      <header>
-        <h1>Görev Yönetimi</h1>
-        <div class="controls">
-          <button id="createTaskBtn">Görev Ekle</button>
+    <!-- Sol altta klan -->
+    <div class="logo-klan-bottom" id="aktifKlanBottom">
+      <span class="logo-icon-bottom"></span>
+      <span class="logo-name-bottom"></span>
+    </div>
+    <!-- Menü -->
+    <div id="menu">
+      <button class="menu-btn active" data-tab="map"><span class="menu-icon">🗺️</span>Harita</button>
+      <button class="menu-btn" data-tab="store"><span class="menu-icon">🏪</span>Mağaza</button>
+      <button class="menu-btn" data-tab="fire"><span class="menu-icon">🔥</span>Klan Ateşi</button>
+      <button class="menu-btn" data-tab="profile"><span class="menu-icon">👤</span>Profil</button>
+      <button class="menu-btn" data-tab="flag"><span class="menu-icon">🚩</span>Bayrak Dik</button>
+      <button class="menu-btn" data-tab="qr"><span class="menu-icon">🔳</span>QR</button>
+      <button class="menu-btn" data-tab="ref"><span class="menu-icon">🎁</span>Davet</button>
+    </div>
+    <div id="icerik">
+      <!-- Harita -->
+      <div id="map-tab">
+        <div id="map"></div>
+      </div>
+      <!-- Mağaza -->
+      <div id="store-tab" class="tab-content" style="display:none;">
+        <h3>Mağaza</h3>
+        <div class="store-wrap">
+          <div class="store-product"><span class="store-symbol" style="color:#e0e0e0;">⬛</span>
+            <span class="store-name">Basic Bileklik</span>
+            <span class="store-price">₺120</span>
+            <button class="store-btn">Satın Al</button>
+          </div>
+          <div class="store-product"><span class="store-symbol" style="color:#37a1f7;">🦅</span>
+            <span class="store-name">Mavi Klan Bileklik</span>
+            <span class="store-price">₺300</span>
+            <button class="store-btn">Satın Al</button>
+          </div>
+          <div class="store-product"><span class="store-symbol" style="color:#ff5757;">🔥</span>
+            <span class="store-name">Kırmızı Klan Bileklik</span>
+            <span class="store-price">₺300</span>
+            <button class="store-btn">Satın Al</button>
+          </div>
+          <div class="store-product"><span class="store-symbol" style="color:#ffd237;">🌟</span>
+            <span class="store-name">Sarı Klan Bileklik</span>
+            <span class="store-price">₺300</span>
+            <button class="store-btn">Satın Al</button>
+          </div>
+          <div class="store-product"><span class="store-symbol" style="color:#b180ea;">🦄</span>
+            <span class="store-name">Mor Klan Bileklik</span>
+            <span class="store-price">₺350</span>
+            <button class="store-btn">Satın Al</button>
+          </div>
+          <div class="store-product"><span class="store-symbol" style="color:#ffd237;">💎</span>
+            <span class="store-name">Premium Bileklik</span>
+            <span class="store-price">₺500</span>
+            <button class="store-btn">Satın Al</button>
+          </div>
         </div>
-      </header>
-      <table id="tasksTable">
-        <thead>
-          <tr>
-            <th>Görev Başlığı</th>
-            <th>Proje</th>
-            <th>Görev Verilen Kişi</th>
-            <th>Ünvan</th>
-            <th>Son Tarih</th>
-            <th>Durum</th>
-            <th>İşlemler</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Görevler Firestore'dan yüklenecek -->
-        </tbody>
-      </table>
+      </div>
+      <!-- Klan Ateşi -->
+      <div id="fire-tab" class="tab-content" style="display:none;">
+        <h3>Klan Ateşi</h3>
+        <div class="fire-map-wrap">
+          <div class="fire-badge"><span style="font-size:23px;">🔥</span>Klan Ateşi Aktif! / Kadıköy</div>
+          <div class="fire-progress"><div class="fire-progress-bar" id="fireProgBar" style="width:33%;">1 / 3 Katılımcı</div></div>
+          <button class="store-btn" onclick="katilimciArttir()">Katıldım!</button>
+        </div>
+        <p style="margin-top:13px;opacity:.85;font-size:0.97rem;">3 kişi olunca ateş yanacak ve tüm katılımcılar ekstra jeton kazanacak!</p>
+      </div>
+      <!-- Profil -->
+      <div id="profile-tab" style="display:none;">
+        <div id="profil">
+          <div class="profile-klan">
+            <span class="profile-symbol"></span>
+            <span class="profile-klan-name"></span>
+          </div>
+          <div class="profile-data"><span class="prof-ikon">⭐</span>Puan: <span id="puan">9/10</span></div>
+          <div class="profile-data"><span class="prof-ikon">👥</span>Arkadaş: <span id="arkadas">4</span></div>
+          <div class="profile-data"><span class="prof-ikon">⚡</span>Seviye: <span id="seviye">2</span></div>
+          <div class="profile-data"><span class="prof-ikon">🥇</span>Rütbe: <span id="rutbe">Ateşçi</span></div>
+        </div>
+      </div>
+      <!-- Bayrak Dik -->
+      <div id="flag-tab" class="tab-content" style="display:none;">
+        <h3>Bayrak Dik</h3>
+        <p>Haritada klanının alanını fethet!</p>
+        <button class="store-btn">Bayrak Dik!</button>
+      </div>
+      <!-- QR -->
+      <div id="qr-tab" class="tab-content" style="display:none;">
+        <h3>QR</h3>
+        <p>Arkadaş ekle ya da görev doğrula!</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data=KlanApp-23456&size=140x140" alt="QR Kod" style="width:110px;border-radius:15px;margin:22px auto;">
+      </div>
+      <!-- Referans/Davet -->
+      <div id="ref-tab" class="tab-content" style="display:none;">
+        <div class="ref-box">
+          <div class="ref-head">Davet & Referans</div>
+          <div>Referans Kodun:</div>
+          <div class="ref-code" id="refKod">EMIR23</div>
+          <button class="ref-btn" onclick="kopyala()">Kopyala</button>
+          <div class="ref-info">Her yeni üye başına <b>+50 jeton</b> kazanırsın.<br>Davet linkiyle veya kodunla paylaş!</div>
+        </div>
+      </div>
     </div>
   </div>
+</div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+const klans={
+  blue:{name:"Mavi Klan",color:"#37a1f7",symbol:"🦅",desc:"Strateji & Liderlik"},
+  red:{name:"Kırmızı Klan",color:"#ff5757",symbol:"🔥",desc:"Cesaret & Enerji"},
+  yellow:{name:"Sarı Klan",color:"#ffd237",symbol:"🌟",desc:"Sosyallik & Parlaklık"},
+  purple:{name:"Mor Klan",color:"#b180ea",symbol:"🦄",desc:"Hayal Gücü & Yaratıcılık"}
+}; let seciliKlan=null,fireCount=1,jeton=780;
 
-  <!-- Kayıt/İletişim Formu Modal -->
-  <div id="contactModal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="closeContactModal">&times;</span>
-      <h2 id="modalTitle">Yeni Kayıt</h2>
-      <form id="contactForm">
-        <div class="form-group">
-          <label for="isim">İsim Soyisim:</label>
-          <input type="text" id="isim" name="isim" required>
-        </div>
-        <div class="form-group">
-          <label for="meslek">Meslek:</label>
-          <input type="text" id="meslek" name="meslek" required>
-        </div>
-        <div class="form-group">
-          <label for="puan">Puan:</label>
-          <input type="number" id="puan" name="puan" required>
-        </div>
-        <div class="form-group">
-          <label for="iletisim">İletişim Bilgileri:</label>
-          <input type="text" id="iletisim" name="iletisim" required>
-        </div>
-        <div class="form-group">
-          <label for="konu">Görüşme Konusu:</label>
-          <input type="text" id="konu" name="konu" required>
-        </div>
-        <div class="form-group">
-          <label for="randevu">Randevu Tarihi:</label>
-          <input type="date" id="randevu" name="randevu">
-        </div>
-        <div class="form-group">
-          <label for="kategoriler">Kategoriler (Ctrl ile çoklu seçim):</label>
-          <select id="kategoriler" name="kategoriler" multiple required></select>
-        </div>
-        <div class="form-group">
-          <label for="notlar">Not:</label>
-          <textarea id="notlar" name="notlar"></textarea>
-        </div>
-        <button type="submit">Kaydet</button>
-      </form>
-    </div>
-  </div>
+// Klan seçimi
+document.querySelectorAll('.klan').forEach(k=>{
+  k.onclick=()=>{
+    document.querySelectorAll('.klan').forEach(el=>el.classList.remove('selected'));
+    k.classList.add('selected');
+    seciliKlan=k.dataset.klan;
+    document.getElementById('joinBtn').disabled=false;
+  }
+});
+document.getElementById('joinBtn').onclick=()=>{
+  document.getElementById('klansec').style.display='none';
+  document.getElementById('oyunui').style.display='block';
+  const klan=klans[seciliKlan];
+  // Tema rengi ayarla
+  document.documentElement.style.setProperty('--theme',klan.color);
+  // Sol üstte klan
+  document.querySelector('#aktifKlan .logo-icon').innerText=klan.symbol;
+  document.querySelector('#aktifKlan .logo-name').innerText=klan.name;
+  document.querySelector('#aktifKlan').style.background=klan.color+'d0';
+  // Sol altta klan
+  document.querySelector('#aktifKlanBottom .logo-icon-bottom').innerText=klan.symbol;
+  document.querySelector('#aktifKlanBottom .logo-name-bottom').innerText=klan.name;
+  document.querySelector('#aktifKlanBottom').style.background=klan.color+'c8';
+  // Profilde klan
+  document.querySelector('.profile-symbol').innerText=klan.symbol;
+  document.querySelector('.profile-klan-name').innerText=klan.name;
+  setTimeout(initMap,30);
+}
 
-  <!-- Not Görüntüleme Modal (Popup) -->
-  <div id="noteModal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="closeNoteModal">&times;</span>
-      <h2>Not Detayı</h2>
-      <p id="fullNoteContent"></p>
-    </div>
-  </div>
-
-  <!-- Kullanıcı Giriş/Kayıt Modalı -->
-  <div id="authModal" class="modal">
-    <div class="modal-content">
-      <h2 id="authTitle">Giriş Yap</h2>
-      <form id="authForm">
-        <div class="form-group">
-          <label for="authEmail">Email:</label>
-          <input type="email" id="authEmail" name="authEmail" required>
-        </div>
-        <div class="form-group">
-          <label for="authPassword">Şifre:</label>
-          <input type="password" id="authPassword" name="authPassword" required>
-        </div>
-        <button type="submit" id="authSubmitBtn">Giriş Yap</button>
-      </form>
-      <p id="toggleAuthText">
-        Hesabınız yok mu? <a href="#" id="toggleAuthLink">Kayıt Ol</a>
-      </p>
-    </div>
-  </div>
-
-  <!-- Proje Oluştur Modalı -->
-  <div id="projectModal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="closeProjectModal">&times;</span>
-      <h2 id="projectModalTitle">Proje Oluştur</h2>
-      <form id="projectForm">
-        <div class="form-group">
-          <label for="projectName">Proje Adı:</label>
-          <input type="text" id="projectName" name="projectName" required>
-        </div>
-        <button type="submit">Kaydet</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Proje Üyesi Ekleme Modalı -->
-  <div id="projectMembersModal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="closeProjectMembersModal">&times;</span>
-      <h2>Proje Üyeleri</h2>
-      <form id="projectMembersForm">
-        <div class="form-group">
-          <label for="projectMembersSelect">Kişi Seç:</label>
-          <select id="projectMembersSelect" required>
-            <!-- Mevcut contact'lardan eklenecek -->
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="memberTitle">Ünvan:</label>
-          <input type="text" id="memberTitle" placeholder="Örn: Geliştirici, Tasarımcı vs.">
-        </div>
-        <button type="submit">Ekle</button>
-      </form>
-      <h3>Mevcut Üyeler:</h3>
-      <ul id="existingMembersList">
-        <!-- Projedeki üyeler listelenecek -->
-      </ul>
-    </div>
-  </div>
-
-  <!-- Görev Ekle Modalı -->
-  <div id="taskModal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="closeTaskModal">&times;</span>
-      <h2>Görev Ekle</h2>
-      <form id="taskForm">
-        <div class="form-group">
-          <label for="taskTitle">Görev Başlığı:</label>
-          <input type="text" id="taskTitle" required>
-        </div>
-        <div class="form-group">
-          <label for="taskProjectSelect">Proje Seç:</label>
-          <select id="taskProjectSelect" required>
-            <!-- Proje Listesi eklenecek -->
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="taskAssigneeSelect">Görev Verilen Kişi:</label>
-          <select id="taskAssigneeSelect" required>
-            <!-- Seçilen projedeki üyeler dinamik olarak yüklenecek -->
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="taskDueDate">Son Tarih:</label>
-          <input type="date" id="taskDueDate" required>
-        </div>
-        <div class="form-group">
-          <label for="taskStatus">Durum:</label>
-          <select id="taskStatus">
-            <option value="Beklemede">Beklemede</option>
-            <option value="Devam Ediyor">Devam Ediyor</option>
-            <option value="Tamamlandı">Tamamlandı</option>
-          </select>
-        </div>
-        <button type="submit">Kaydet</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Firebase & Uygulama Kodları -->
-  <script type="module">
-    /********************************
-     *           Firebase          *
-     ********************************/
-    import { 
-      initializeApp 
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { 
-      getAnalytics 
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
-    import { 
-      getFirestore,
-      collection,
-      addDoc,
-      getDocs,
-      query,
-      orderBy,
-      doc,
-      updateDoc,
-      deleteDoc,
-      where,
-      arrayUnion
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
-    // Firebase yapılandırma
-    const firebaseConfig = {
-      apiKey: "AIzaSyDdIsSQKIA5zzdXJs6Au-WGR0I93e1SyWU",
-      authDomain: "network-d6c4b.firebaseapp.com",
-      projectId: "network-d6c4b",
-      storageBucket: "network-d6c4b.firebasestorage.app",
-      messagingSenderId: "834721835048",
-      appId: "1:834721835048:web:299bb4e2655c4422046d1d",
-      measurementId: "G-0E3746ZX1Z"
-    };
-
-    // Firebase başlatma
-    const appFirebase = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(appFirebase);
-    const db = getFirestore(appFirebase);
-    const auth = getAuth(appFirebase);
-
-    /********************************
-     *      Global Değişkenler      *
-     ********************************/
-    let editingContactId = null;
-    let fetchedContacts = [];  // Kişiler
-    let isLoginMode = true;
-
-    let editingProjectId = null;
-    let fetchedProjects = [];  // Projeler
-
-    let fetchedTasks = [];     // Görevler
-
-    // Görev yakınlaşma eşiği (ör. 3 gün)
-    const DUE_SOON_DAYS = 3;
-    const NOTE_TRUNCATE_LENGTH = 50;
-
-    /********************************
-     *        DOM Elemanları        *
-     ********************************/
-    // Auth Modal
-    const authModal = document.getElementById('authModal');
-    const authTitle = document.getElementById('authTitle');
-    const authForm = document.getElementById('authForm');
-    const authEmail = document.getElementById('authEmail');
-    const authPassword = document.getElementById('authPassword');
-    const authSubmitBtn = document.getElementById('authSubmitBtn');
-    const toggleAuthText = document.getElementById('toggleAuthText');
-
-    // Ana içerik
-    const mainContent = document.getElementById('mainContent');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    // Contacts
-    const contactModal = document.getElementById('contactModal');
-    const closeContactModal = document.getElementById('closeContactModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const contactForm = document.getElementById('contactForm');
-    const addContactBtn = document.getElementById('addContactBtn');
-    const contactsTableBody = document.querySelector('#contactsTable tbody');
-    const searchInput = document.getElementById('searchInput');
-    const themeSelect = document.getElementById('themeSelect');
-    const kategoriSelect = document.getElementById('kategoriler');
-
-    // Not
-    const noteModal = document.getElementById('noteModal');
-    const closeNoteModal = document.getElementById('closeNoteModal');
-    const fullNoteContent = document.getElementById('fullNoteContent');
-
-    // Proje
-    const createProjectBtn = document.getElementById('createProjectBtn');
-    const projectModalEl = document.getElementById('projectModal');
-    const closeProjectModal = document.getElementById('closeProjectModal');
-    const projectForm = document.getElementById('projectForm');
-    const projectModalTitle = document.getElementById('projectModalTitle');
-    const projectsTableBody = document.querySelector('#projectsTable tbody');
-
-    // Proje Üyeleri
-    const projectMembersModal = document.getElementById('projectMembersModal');
-    const closeProjectMembersModal = document.getElementById('closeProjectMembersModal');
-    const projectMembersForm = document.getElementById('projectMembersForm');
-    const projectMembersSelect = document.getElementById('projectMembersSelect');
-    const memberTitle = document.getElementById('memberTitle');
-    const existingMembersList = document.getElementById('existingMembersList');
-
-    // Görevler
-    const createTaskBtn = document.getElementById('createTaskBtn');
-    const taskModalEl = document.getElementById('taskModal');
-    const closeTaskModal = document.getElementById('closeTaskModal');
-    const taskForm = document.getElementById('taskForm');
-    const tasksTableBody = document.querySelector('#tasksTable tbody');
-    const taskTitle = document.getElementById('taskTitle');
-    const taskProjectSelect = document.getElementById('taskProjectSelect');
-    const taskAssigneeSelect = document.getElementById('taskAssigneeSelect');
-    const taskDueDate = document.getElementById('taskDueDate');
-    const taskStatus = document.getElementById('taskStatus');
-
-    /********************************
-     *       Kategori Listesi       *
-     ********************************/
-    const categories = [
-      "Teknoloji", "Bilim", "Spor", "Sanat", "Edebiyat", "Müzik", "Sinema", "Tiyatro", "Moda", "Yemek",
-      "Seyahat", "Fotoğrafçılık", "Eğitim", "Sağlık", "Finans", "İş Dünyası", "Girişimcilik", "Pazarlama", "Sosyal Medya", "Oyun",
-      "Kişisel Gelişim", "Motivasyon", "Psikoloji", "Felsefe", "Tarih", "Coğrafya", "Spor Dalları", "Yüzme", "Koşu", "Bisiklet",
-      "Yoga", "Meditasyon", "Aile", "Arkadaşlık", "İlişkiler", "Çevre", "Doğa", "Hayvanlar", "Bitkiler", "Bilgisayar", "Yazılım",
-      "Donanım", "İnternet", "Mobil Teknoloji", "Sosyal Sorumluluk", "Gönüllülük", "Kültür", "Gelenekler", "Dil", "Çeviri",
-      "Kitaplar", "Klasikler", "Bilim Kurgu", "Fantastik", "Gerilim", "Polisiye", "Macera", "Romantik", "Komedi", "Dram",
-      "Animasyon", "Belgesel", "Müzikal", "Reklam", "Tasarım", "Mimari", "İç Mimari", "Sanat Tarihi", "Dijital Sanat", "Heykel",
-      "Resim", "El Sanatları", "Moda Tasarımı", "Takı Tasarımı", "Aksesuar", "Otomotiv", "Havacılık", "Uzay", "Denizcilik", "Balıkçılık",
-      "Tarım", "Hayvancılık", "Gıda", "Restoran", "Kafe", "Bar", "Eğlence", "Parti", "Tatil", "Kamp", "Dağcılık",
-      "Sualtı Dalışı", "Arkeoloji", "Antika", "Koleksiyon", "Futbol", "Basketbol", "Voleybol", "Tenis", "Golf"
-    ];
-    // Kategori seçenekleri
-    categories.forEach(cat => {
-      const option = document.createElement('option');
-      option.value = cat;
-      option.textContent = cat;
-      kategoriSelect.appendChild(option);
+// Menü geçişleri
+document.querySelectorAll('.menu-btn').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['map','store','fire','profile','flag','qr','ref'].forEach(tab=>{
+      document.getElementById(tab+'-tab').style.display=(btn.dataset.tab==tab)?'block':'none';
     });
+    if(btn.dataset.tab==="map" && window.leafletMap) setTimeout(()=>{window.leafletMap.invalidateSize()},60);
+  }
+});
 
-    /********************************
-     *      Modal Aç/Kapa Fonks.    *
-     ********************************/
-    function openModal(modalElement) {
-      modalElement.classList.add('active');
-    }
-    function closeModal(modalElement) {
-      modalElement.classList.remove('active');
-    }
-    // Auth
-    function showAuthModal() {
-      openModal(authModal);
-    }
-    function hideAuthModal() {
-      closeModal(authModal);
-    }
-
-    // Contact Modal
-    addContactBtn.addEventListener('click', () => {
-      editingContactId = null;
-      modalTitle.textContent = 'Yeni Kayıt';
-      contactForm.reset();
-      openModal(contactModal);
-    });
-    closeContactModal.addEventListener('click', () => {
-      closeModal(contactModal);
-      contactForm.reset();
-      editingContactId = null;
-    });
-
-    // Note Modal
-    closeNoteModal.addEventListener('click', () => {
-      closeModal(noteModal);
-      fullNoteContent.textContent = '';
-    });
-
-    // Proje Modal
-    createProjectBtn.addEventListener('click', () => {
-      editingProjectId = null;
-      projectModalTitle.textContent = "Proje Oluştur";
-      projectForm.reset();
-      openModal(projectModalEl);
-    });
-    closeProjectModal.addEventListener('click', () => {
-      closeModal(projectModalEl);
-      projectForm.reset();
-      editingProjectId = null;
-    });
-
-    // Proje Üyeleri Modal
-    closeProjectMembersModal.addEventListener('click', () => {
-      closeModal(projectMembersModal);
-      projectMembersForm.reset();
-    });
-
-    // Görev Modal
-    createTaskBtn.addEventListener('click', () => {
-      taskForm.reset();
-      populateProjectSelect();
-      openModal(taskModalEl);
-    });
-    closeTaskModal.addEventListener('click', () => {
-      closeModal(taskModalEl);
-      taskForm.reset();
-    });
-
-    /********************************
-     *        Auth İşlemleri        *
-     ********************************/
-    toggleAuthText.addEventListener('click', function(e) {
-      if (e.target && e.target.id === "toggleAuthLink") {
-        e.preventDefault();
-        isLoginMode = !isLoginMode;
-        authTitle.textContent = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
-        authSubmitBtn.textContent = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
-        toggleAuthText.innerHTML = isLoginMode 
-          ? 'Hesabınız yok mu? <a href="#" id="toggleAuthLink">Kayıt Ol</a>'
-          : 'Zaten hesabınız var mı? <a href="#" id="toggleAuthLink">Giriş Yap</a>';
-      }
-    });
-
-    authForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const email = authEmail.value.trim();
-      const password = authPassword.value.trim();
-      try {
-        if (isLoginMode) {
-          await signInWithEmailAndPassword(auth, email, password);
-        } else {
-          await createUserWithEmailAndPassword(auth, email, password);
-        }
-        hideAuthModal();
-      } catch (error) {
-        console.error("Auth Hatası: ", error);
-        alert(error.message);
-      }
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error("Çıkış Hatası: ", error);
-      }
-    });
-
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        mainContent.style.display = 'block';
-        fetchContacts();
-        fetchProjects();
-        fetchTasks();
-      } else {
-        mainContent.style.display = 'none';
-        showAuthModal();
-      }
-    });
-
-    /********************************
-     *      Contact İşlemleri       *
-     ********************************/
-    async function fetchContacts() {
-      if (!auth.currentUser) return;
-      const contactsCol = collection(db, "contacts");
-      const qContacts = query(
-        contactsCol,
-        orderBy("puan", "desc"),
-        where("userId", "==", auth.currentUser.uid)
-      );
-      const snapshot = await getDocs(qContacts);
-      fetchedContacts = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-      updateContactsTable(fetchedContacts);
-    }
-
-    function updateContactsTable(contacts) {
-      contactsTableBody.innerHTML = '';
-      contacts.forEach(contact => {
-        let fullNote = contact.notlar || '';
-        let truncatedNote = fullNote;
-        if (fullNote.length > NOTE_TRUNCATE_LENGTH) {
-          truncatedNote = fullNote.substr(0, NOTE_TRUNCATE_LENGTH) + '...';
-        }
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${contact.isim}</td>
-          <td>${contact.meslek}</td>
-          <td>${contact.iletisim}</td>
-          <td>${contact.konu}</td>
-          <td>${contact.puan}</td>
-          <td>${(contact.kategoriler || []).join(', ')}</td>
-          <td class="note-cell" data-full="${fullNote}">${truncatedNote}</td>
-          <td>${contact.randevu ? new Date(contact.randevu.seconds * 1000).toLocaleDateString() : ''}</td>
-          <td>
-            <button class="edit-btn" data-id="${contact.id}">Düzenle</button>
-            <button class="delete-btn" data-id="${contact.id}">Sil</button>
-          </td>
-        `;
-        contactsTableBody.appendChild(tr);
-      });
-    }
-
-    contactsTableBody.addEventListener('click', function(e) {
-      if (e.target.classList.contains('note-cell')) {
-        const fullText = e.target.getAttribute('data-full');
-        fullNoteContent.textContent = fullText;
-        openModal(noteModal);
-      }
-    });
-
-    contactForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      if (!auth.currentUser) {
-        alert("Lütfen giriş yapın!");
-        return;
-      }
-      const isim = document.getElementById('isim').value.trim();
-      const meslek = document.getElementById('meslek').value.trim();
-      const puan = parseFloat(document.getElementById('puan').value);
-      const iletisim = document.getElementById('iletisim').value.trim();
-      const konu = document.getElementById('konu').value.trim();
-      const randevu = document.getElementById('randevu').value;
-      const notlar = document.getElementById('notlar').value.trim();
-      const selectedOptions = Array.from(kategoriSelect.selectedOptions).map(option => option.value);
-
-      const contactData = {
-        isim,
-        meslek,
-        puan,
-        iletisim,
-        konu,
-        notlar,
-        randevu: randevu ? new Date(randevu) : null,
-        kategoriler: selectedOptions,
-        userId: auth.currentUser.uid,
-        createdAt: new Date()
-      };
-
-      try {
-        if (editingContactId) {
-          const docRef = doc(db, "contacts", editingContactId);
-          await updateDoc(docRef, contactData);
-        } else {
-          await addDoc(collection(db, "contacts"), contactData);
-        }
-        closeModal(contactModal);
-        contactForm.reset();
-        editingContactId = null;
-        fetchContacts();
-      } catch (error) {
-        console.error("Veri kaydetme hatası: ", error);
-        alert("Kayıt yapılamadı, lütfen konsoldaki hatayı kontrol edin.");
-      }
-    });
-
-    contactsTableBody.addEventListener('click', async function(e) {
-      if (e.target.classList.contains('edit-btn')) {
-        const id = e.target.getAttribute('data-id');
-        const contact = fetchedContacts.find(c => c.id === id);
-        if (contact) {
-          editingContactId = id;
-          modalTitle.textContent = 'Kayıt Düzenle';
-          document.getElementById('isim').value = contact.isim;
-          document.getElementById('meslek').value = contact.meslek;
-          document.getElementById('puan').value = contact.puan;
-          document.getElementById('iletisim').value = contact.iletisim;
-          document.getElementById('konu').value = contact.konu;
-          document.getElementById('randevu').value = contact.randevu 
-            ? new Date(contact.randevu.seconds * 1000).toISOString().split('T')[0] 
-            : '';
-          document.getElementById('notlar').value = contact.notlar;
-          Array.from(kategoriSelect.options).forEach(option => {
-            option.selected = (contact.kategoriler || []).includes(option.value);
-          });
-          openModal(contactModal);
-        }
-      }
-      if (e.target.classList.contains('delete-btn')) {
-        const id = e.target.getAttribute('data-id');
-        if (confirm("Bu kaydı silmek istediğinize emin misiniz?")) {
-          try {
-            await deleteDoc(doc(db, "contacts", id));
-            fetchContacts();
-          } catch (error) {
-            console.error("Silme hatası: ", error);
-            alert("Kayıt silinemedi!");
-          }
-        }
-      }
-    });
-
-    // Arama
-    searchInput.addEventListener('input', function() {
-      const queryStr = searchInput.value.toLowerCase();
-      const rows = contactsTableBody.getElementsByTagName('tr');
-      Array.from(rows).forEach(row => {
-        const cells = row.getElementsByTagName('td');
-        let match = false;
-        for (let i = 0; i < 4; i++) {
-          if (cells[i] && cells[i].textContent.toLowerCase().indexOf(queryStr) > -1) {
-            match = true;
-            break;
-          }
-        }
-        row.style.display = match ? '' : 'none';
-      });
-    });
-
-    /********************************
-     *       Tema Değiştirme        *
-     ********************************/
-    themeSelect.addEventListener('change', function() {
-      const theme = themeSelect.value;
-      document.body.classList.remove('light-theme', 'dark-theme', 'blue-theme');
-      if (theme === 'light') {
-        document.body.classList.add('light-theme');
-      } else if (theme === 'dark') {
-        document.body.classList.add('dark-theme');
-      } else if (theme === 'blue') {
-        document.body.classList.add('blue-theme');
-      }
-    });
-    document.body.classList.add('light-theme'); // Varsayılan tema
-
-    /********************************
-     *     Proje Yönetimi Kısmı     *
-     ********************************/
-    async function fetchProjects() {
-      if (!auth.currentUser) return;
-      const projectsCol = collection(db, "projects");
-      const qProjects = query(
-        projectsCol,
-        orderBy("createdAt", "desc"),
-        where("userId", "==", auth.currentUser.uid)
-      );
-      const snapshot = await getDocs(qProjects);
-      fetchedProjects = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-      updateProjectsTable();
-    }
-
-    function updateProjectsTable() {
-      projectsTableBody.innerHTML = '';
-      fetchedProjects.forEach(project => {
-        const tr = document.createElement('tr');
-        const createdDate = project.createdAt 
-          ? new Date(project.createdAt.seconds * 1000).toLocaleDateString() 
-          : '';
-        const members = project.members || [];
-        const memberList = members.map(m => `${m.contactName} (${m.title || 'Üye'})`).join(', ');
-
-        tr.innerHTML = `
-          <td>${project.projectName}</td>
-          <td>${createdDate}</td>
-          <td>${memberList}</td>
-          <td>
-            <button class="edit-project" data-id="${project.id}">Düzenle</button>
-            <button class="members-project" data-id="${project.id}">Üyeler</button>
-            <button class="delete-project" data-id="${project.id}">Sil</button>
-          </td>
-        `;
-        projectsTableBody.appendChild(tr);
-      });
-    }
-
-    projectForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!auth.currentUser) {
-        alert("Lütfen giriş yapın!");
-        return;
-      }
-      const projectName = document.getElementById('projectName').value.trim();
-      const projectData = {
-        projectName,
-        userId: auth.currentUser.uid,
-        createdAt: new Date(),
-        members: []
-      };
-      try {
-        if (editingProjectId) {
-          const docRef = doc(db, "projects", editingProjectId);
-          await updateDoc(docRef, { projectName });
-        } else {
-          await addDoc(collection(db, "projects"), projectData);
-        }
-        closeModal(projectModalEl);
-        projectForm.reset();
-        editingProjectId = null;
-        fetchProjects();
-      } catch (error) {
-        console.error("Proje kaydetme hatası: ", error);
-        alert("Proje kaydedilemedi.");
-      }
-    });
-
-    projectsTableBody.addEventListener('click', async (e) => {
-      const btn = e.target;
-      if (btn.classList.contains('edit-project')) {
-        const id = btn.getAttribute('data-id');
-        const project = fetchedProjects.find(p => p.id === id);
-        if (project) {
-          editingProjectId = id;
-          projectModalTitle.textContent = "Proje Düzenle";
-          document.getElementById('projectName').value = project.projectName;
-          openModal(projectModalEl);
-        }
-      } else if (btn.classList.contains('delete-project')) {
-        const id = btn.getAttribute('data-id');
-        if (confirm("Bu projeyi silmek istediğinize emin misiniz?")) {
-          try {
-            await deleteDoc(doc(db, "projects", id));
-            fetchProjects();
-          } catch (error) {
-            console.error("Proje silme hatası: ", error);
-            alert("Proje silinemedi!");
-          }
-        }
-      } else if (btn.classList.contains('members-project')) {
-        const id = btn.getAttribute('data-id');
-        editingProjectId = id;
-        openProjectMembersModal(id);
-      }
-    });
-
-    function openProjectMembersModal(projectId) {
-      const project = fetchedProjects.find(p => p.id === projectId);
-      if (!project) return;
-      projectMembersSelect.innerHTML = '';
-      fetchedContacts.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.isim;
-        projectMembersSelect.appendChild(opt);
-      });
-      updateProjectMembersList(project);
-      openModal(projectMembersModal);
-    }
-
-    function updateProjectMembersList(project) {
-      existingMembersList.innerHTML = '';
-      if (!project.members) return;
-      project.members.forEach(member => {
-        const li = document.createElement('li');
-        li.textContent = `${member.contactName} - ${member.title || 'Üye'}`;
-        existingMembersList.appendChild(li);
-      });
-    }
-
-    projectMembersForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!editingProjectId) return;
-      const selectedContactId = projectMembersSelect.value;
-      const titleVal = memberTitle.value.trim();
-      const contact = fetchedContacts.find(c => c.id === selectedContactId);
-      if (!contact) return;
-      try {
-        const docRef = doc(db, "projects", editingProjectId);
-        const project = fetchedProjects.find(p => p.id === editingProjectId);
-
-        const newMember = {
-          contactId: contact.id,
-          contactName: contact.isim,
-          title: titleVal
-        };
-        // Firestore'da arrayUnion ile ekleme
-        await updateDoc(docRef, {
-          members: arrayUnion(newMember)
-        });
-        // Lokal veri güncelle
-        project.members.push(newMember);
-        updateProjectMembersList(project);
-
-        memberTitle.value = '';
-      } catch (error) {
-        console.error("Üye ekleme hatası: ", error);
-        alert("Üye eklenemedi!");
-      }
-    });
-
-    /********************************
-     *       Görev Yönetimi         *
-     ********************************/
-    async function fetchTasks() {
-      if (!auth.currentUser) return;
-      const tasksCol = collection(db, "tasks");
-      const qTasks = query(
-        tasksCol,
-        orderBy("dueDate", "asc"),
-        where("userId", "==", auth.currentUser.uid)
-      );
-      const snapshot = await getDocs(qTasks);
-      fetchedTasks = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-      updateTasksTable();
-    }
-
-    function updateTasksTable() {
-      tasksTableBody.innerHTML = '';
-      fetchedTasks.forEach(task => {
-        const proj = fetchedProjects.find(p => p.id === task.projectId);
-        const projectName = proj ? proj.projectName : "";
-        let assigneeInfo = "";
-        let assigneeTitle = "";
-        if (proj && proj.members) {
-          const member = proj.members.find(m => m.contactId === task.assigneeId);
-          if (member) {
-            assigneeInfo = member.contactName;
-            assigneeTitle = member.title;
-          }
-        }
-        let dueDateStr = "";
-        let rowClass = "";
-        if (task.dueDate) {
-          const due = new Date(task.dueDate.seconds * 1000);
-          dueDateStr = due.toLocaleDateString();
-
-          const now = new Date();
-          const diffInMs = due - now;
-          const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-          if (diffInDays <= DUE_SOON_DAYS && diffInDays >= 0 && task.status !== "Tamamlandı") {
-            rowClass = "task-due-soon";
-          }
-        }
-        const tr = document.createElement('tr');
-        tr.className = rowClass;
-        tr.innerHTML = `
-          <td>${task.title}</td>
-          <td>${projectName}</td>
-          <td>${assigneeInfo}</td>
-          <td>${assigneeTitle || ''}</td>
-          <td>${dueDateStr}</td>
-          <td>${task.status || ''}</td>
-          <td>
-            <button class="delete-task" data-id="${task.id}">Sil</button>
-          </td>
-        `;
-        tasksTableBody.appendChild(tr);
-      });
-    }
-
-    function populateProjectSelect() {
-      taskProjectSelect.innerHTML = '';
-      fetchedProjects.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.projectName;
-        taskProjectSelect.appendChild(opt);
-      });
-      loadAssigneesForProject(taskProjectSelect.value);
-    }
-
-    taskProjectSelect.addEventListener('change', () => {
-      loadAssigneesForProject(taskProjectSelect.value);
-    });
-
-    function loadAssigneesForProject(projectId) {
-      taskAssigneeSelect.innerHTML = '';
-      const proj = fetchedProjects.find(p => p.id === projectId);
-      if (proj && proj.members) {
-        proj.members.forEach(m => {
-          const opt = document.createElement('option');
-          opt.value = m.contactId;
-          opt.textContent = `${m.contactName} (${m.title || 'Üye'})`;
-          taskAssigneeSelect.appendChild(opt);
-        });
-      }
-    }
-
-    taskForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!auth.currentUser) {
-        alert("Lütfen giriş yapın!");
-        return;
-      }
-      const titleVal = taskTitle.value.trim();
-      const projectIdVal = taskProjectSelect.value;
-      const assigneeIdVal = taskAssigneeSelect.value;
-      const dueDateVal = taskDueDate.value;
-      const statusVal = taskStatus.value;
-
-      const taskData = {
-        title: titleVal,
-        projectId: projectIdVal,
-        assigneeId: assigneeIdVal,
-        dueDate: dueDateVal ? new Date(dueDateVal) : null,
-        status: statusVal,
-        userId: auth.currentUser.uid,
-        createdAt: new Date()
-      };
-
-      try {
-        await addDoc(collection(db, "tasks"), taskData);
-        closeModal(taskModalEl);
-        taskForm.reset();
-        fetchTasks();
-      } catch (error) {
-        console.error("Görev ekleme hatası: ", error);
-        alert("Görev eklenemedi!");
-      }
-    });
-
-    tasksTableBody.addEventListener('click', async (e) => {
-      if (e.target.classList.contains('delete-task')) {
-        const id = e.target.getAttribute('data-id');
-        if (confirm("Bu görevi silmek istediğinize emin misiniz?")) {
-          try {
-            await deleteDoc(doc(db, "tasks", id));
-            fetchTasks();
-          } catch (error) {
-            console.error("Görev silme hatası: ", error);
-            alert("Görev silinemedi!");
-          }
-        }
-      }
-    });
-  </script>
+// Harita ve ateş
+function initMap(){
+  window.leafletMap=L.map('map').setView([39,34],2);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+    maxZoom:19,attribution:'&copy; <a href="https://carto.com/">CartoDB</a>'
+  }).addTo(window.leafletMap);
+  L.marker([41.02,29.02]).addTo(window.leafletMap).bindPopup('🦅 <b>Mavi Klan</b> – Kadıköy');
+  L.marker([39.92,32.85]).addTo(window.leafletMap).bindPopup('🔥 <b>Kırmızı Klan</b> – Ankara');
+  L.marker([40.72,30.41]).addTo(window.leafletMap).bindPopup('🌟 <b>Sarı Klan</b> – Sakarya');
+  L.marker([38.43,27.15]).addTo(window.leafletMap).bindPopup('🦄 <b>Mor Klan</b> – İzmir');
+  // Klan Ateşi
+  let fireIcon=L.divIcon({html:'<span style="font-size:30px;">🔥</span>',className:''});
+  window.fireMarker=L.marker([40.99,29.06],{icon:fireIcon}).addTo(window.leafletMap).bindPopup('<b>Klan Ateşi</b><br>Katılım: <span id="fire-popup-cnt">1/3</span>');
+}
+function katilimciArttir(){
+  if(fireCount<3){fireCount++;document.getElementById('fireProgBar').style.width=(fireCount*33)+'%';document.getElementById('fireProgBar').innerText=fireCount+' / 3 Katılımcı';
+  if(window.fireMarker)window.fireMarker.bindPopup('<b>Klan Ateşi</b><br>Katılım: <span id="fire-popup-cnt">'+fireCount+'/3</span>');}
+  else{alert("Ateş yandı! +50 jeton kazandın.");jeton+=50;document.getElementById('jetonSayisi').innerText=jeton;}
+}
+// Referans kopyala
+function kopyala(){navigator.clipboard.writeText(document.getElementById('refKod').innerText);alert("Kod kopyalandı!");}
+</script>
 </body>
 </html>
