@@ -2,8 +2,8 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Klan App Prototip</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klan Uygulaması Responsive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     :root {
@@ -12,234 +12,232 @@
       --yellow: #ffd237;
       --purple: #b180ea;
       --gray: #25272f;
+      --bg: #171b20;
+      --box: #23242e;
     }
-    body {margin:0; background:#191b21; color:#fff; font-family:'Segoe UI',Arial,sans-serif;}
-    #app{max-width:960px;margin:28px auto 0 auto;border-radius:17px;box-shadow:0 4px 24px #0007;overflow:hidden;min-height:92vh;position:relative;}
-    .klan-secim{padding:34px 14px 14px 14px; background:#23242e;}
-    .klanlar{display:flex;flex-wrap:wrap;justify-content:space-around;}
-    .klan{flex:1 1 155px;margin:18px;background:#191b21;border-radius:18px;display:flex;flex-direction:column;align-items:center;padding:17px 0;cursor:pointer;transition:box-shadow .26s;}
-    .klan.selected,.klan:hover{box-shadow:0 0 0 4px #fff6,0 6px 22px #0006;}
-    .klan-blue{color:var(--blue);}
-    .klan-red{color:var(--red);}
-    .klan-yellow{color:var(--yellow);}
-    .klan-purple{color:var(--purple);}
-    .klan-symbol{font-size:44px;}
-    .klan-name{font-size:1.15rem;font-weight:700;margin-top:7px;}
-    .klan-desc{font-size:1rem;opacity:.66;}
-    .join-btn{display:block;margin:34px auto 0 auto;font-size:1.14rem;padding:13px 45px;border:none;border-radius:31px;background:linear-gradient(90deg,var(--blue),var(--purple));color:#1a1d23;font-weight:700;cursor:pointer;box-shadow:0 2px 16px #0002;}
-    .join-btn:disabled{background:#444;opacity:.7;cursor:not-allowed;}
-    #oyunui{display:none;position:relative;}
-    .jeton-bakiye{position:absolute;right:30px;top:18px;z-index:99;background:linear-gradient(90deg,#ffd237 70%,#f4ac35 95%);color:#191b21;border-radius:23px;padding:6px 20px 7px 15px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 3px 22px #0002;}
-    .jeton-icon{font-size:21px;}
-    #menu{display:flex;justify-content:space-around;align-items:center;background:#232a36;}
-    .menu-btn{flex:1 1 0;padding:13px 0 9px 0;font-size:1.03rem;color:#fff;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;border-bottom:3px solid transparent;transition:border .2s;}
-    .menu-btn.active,.menu-btn:hover{border-bottom:3px solid var(--purple);}
-    .menu-icon{font-size:22px;margin-bottom:1px;}
-    #icerik{background:#171b20;min-height:410px;padding:0;position:relative;}
-    /* Sol alt klan buton */
-    .solalt-klanbox{position:absolute;left:24px;bottom:26px;z-index:111;display:flex;flex-direction:column;align-items:flex-start;}
-    .klaninfo-btn{display:flex;align-items:center;gap:9px;min-width:130px;cursor:pointer;background:#25272fdd;border-radius:15px 21px 20px 18px;padding:10px 24px 10px 17px;box-shadow:0 2px 18px #0004;}
-    .klaninfo-symbol{font-size:29px;}
-    .klaninfo-name{font-size:1.06rem;font-weight:700;}
-    .klaninfo-popup{display:none;position:absolute;bottom:62px;left:0;z-index:999;background:#262730e6;padding:17px 18px 13px 18px;border-radius:17px 22px 20px 15px;min-width:195px;box-shadow:0 2px 24px #0006;}
-    .klaninfo-popup.active{display:block;animation:fadeIn .22s;}
-    .klaninfo-popup h4{margin:0 0 9px 0;}
-    .klaninfo-list{font-size:1.04rem;line-height:1.68;}
-    .klaninfo-list span{margin-right:7px;}
-    /* Sol alt tüm klanlar buton */
-    .tumklanlar-btn{display:flex;align-items:center;justify-content:center;background:#37398bcc;border-radius:14px 14px 13px 13px;width:44px;height:44px;margin-bottom:12px;box-shadow:0 2px 10px #0003;cursor:pointer;transition:background .15s;}
-    .tumklanlar-btn:hover{background:#7f8aff;}
-    .tumklanlar-popup{display:none;position:absolute;bottom:120px;left:0;z-index:1000;background:#23242ae9;padding:14px 12px 14px 15px;border-radius:16px 18px 17px 15px;min-width:222px;box-shadow:0 2px 32px #0007;}
-    .tumklanlar-popup.active{display:block;animation:fadeIn .23s;}
-    .tumklanlar-popup h4{margin:0 0 10px 0;}
-    .tumklanlar-list{font-size:0.99rem;}
-    .tumklanlar-list .tklan{display:flex;align-items:center;gap:7px;margin:5px 0;}
-    .tklan .rank{font-size:1.05rem;font-weight:800;width:20px;}
-    .tklan .tk-symbol{font-size:22px;}
+    html, body {
+      height: 100%; width: 100vw; margin: 0; padding: 0;
+      background: var(--bg); color: #fff; font-family: 'Segoe UI', Arial, sans-serif;
+      overscroll-behavior-y: contain;
+    }
+    #app {
+      height: 100vh; min-height: 100vh; width: 100vw; max-width: 100vw;
+      display: flex; flex-direction: column; position: relative;
+      background: var(--bg);
+    }
+    /* Klan Seçimi */
+    #klansec {
+      width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; z-index: 20;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      background: var(--bg);
+      padding-bottom: 14vw;
+      overflow-y: auto;
+    }
+    .klanlar {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 12px; width: 94vw; max-width: 420px;
+    }
+    .klan {
+      flex: 1 1 125px; min-width: 95px; max-width: 148px;
+      background: var(--box); border-radius: 15px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 19px 0 12px 0;
+      cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 8px #0003;
+      transition: box-shadow .2s, border .2s;
+    }
+    .klan.selected, .klan:hover {
+      box-shadow: 0 0 0 4px #fff5; border: 2px solid var(--purple);
+    }
+    .klan-blue { color: var(--blue);}
+    .klan-red { color: var(--red);}
+    .klan-yellow { color: var(--yellow);}
+    .klan-purple { color: var(--purple);}
+    .klan-symbol { font-size: 33px;}
+    .klan-name { font-size: 1.09rem; font-weight: 700; margin-top: 5px;}
+    .klan-desc { font-size: .97rem; opacity: .75;}
+    .join-btn {
+      margin: 30px auto 0 auto; padding: 12px 44px; border: none; border-radius: 20px;
+      font-size: 1.08rem; font-weight: 700; color: #191b21;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      cursor: pointer; box-shadow: 0 2px 12px #0002; display: block; letter-spacing:.03em;
+    }
+    .join-btn:disabled { background: #444; opacity: .65; cursor: not-allowed;}
+    /* Menü */
+    #menu {
+      width: 100vw; max-width: 100vw;
+      background: var(--box);
+      display: flex; justify-content: space-around; align-items: center;
+      height: 54px; border-top: 1px solid #202124;
+      position: fixed; bottom: 0; left: 0;
+      z-index: 30;
+    }
+    .menu-btn {
+      flex: 1 1 0;
+      font-size: 1rem; color: #fff; background: none; border: none;
+      height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-bottom: 3px solid transparent;
+      transition: border .2s, color .2s;
+      cursor: pointer;
+      padding: 0;
+    }
+    .menu-btn.active, .menu-btn:active {
+      border-bottom: 3px solid var(--purple); color: var(--purple);
+    }
+    .menu-icon { font-size: 21px; margin-bottom: 2px;}
+    /* İçerik */
+    #icerik {
+      flex: 1 1 auto; min-height: 0;
+      background: var(--bg);
+      position: relative; margin-bottom: 54px;
+      overflow-y: auto; height: calc(100vh - 54px);
+      width: 100vw; max-width: 100vw;
+    }
+    /* Harita */
+    #map {
+      width: 100vw; max-width: 100vw;
+      height: 74vh; min-height: 240px; max-height: 100vh;
+      border-radius: 0 0 14px 14px; box-shadow: 0 8px 18px #0002;
+      z-index: 2;
+    }
+    /* Sol alt butonlar */
+    .solalt-klanbox {
+      position: absolute; left: 11px; bottom: 17vw; z-index: 20;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+    }
+    .klaninfo-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--box); color: #fff; border-radius: 11px;
+      padding: 8px 15px; cursor: pointer; box-shadow: 0 1px 4px #0002;
+      font-weight: 600; border: 2px solid #fff1; min-width: 85px; font-size: 1rem;
+    }
+    .klaninfo-symbol{font-size:20px;}
+    .klaninfo-popup {
+      display: none; position: absolute; bottom: 40px; left: 0; z-index: 99;
+      background: #262730ec; padding: 10px 13px 10px 13px; border-radius: 10px;
+      min-width: 120px; box-shadow: 0 2px 10px #0007; font-size: .98rem;
+    }
+    .klaninfo-popup.active { display: block; }
+    .tumklanlar-btn {
+      width: 31px; height: 31px; display: flex; align-items: center; justify-content: center;
+      background: var(--blue); color: #fff; border-radius: 8px; cursor: pointer; box-shadow: 0 1px 5px #0002; font-size: 17px;}
+    .tumklanlar-popup {
+      display: none; position: absolute; bottom: 72px; left: 0; z-index: 100;
+      background: #23242ad6; padding: 9px 10px 8px 10px; border-radius: 9px;
+      min-width: 120px; box-shadow: 0 2px 10px #0007; font-size: .97rem;
+    }
+    .tumklanlar-popup.active { display: block;}
     /* Mağaza */
-    .tab-content{padding:48px 18px 33px 18px;text-align:center;}
-    .tab-content h3{margin-bottom:14px;}
-    .store-wrap{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;}
-    .store-product{background:#21242a;border-radius:16px;padding:18px 13px 15px 13px;margin:10px 2px;min-width:140px;flex:1 0 140px;max-width:180px;display:flex;flex-direction:column;align-items:center;transition:box-shadow .2s;}
-    .store-product:hover{box-shadow:0 2px 18px #a6a6ff;}
-    .store-symbol{font-size:28px;margin-bottom:4px;}
-    .store-name{font-size:1.02rem;font-weight:700;}
-    .store-price{font-size:1.01rem;margin:6px 0 12px 0;color:#ffd237;}
-    .store-btn{background:linear-gradient(90deg,#ffd237,#b180ea 70%);border:none;border-radius:18px;font-weight:700;color:#23222f;padding:6px 18px;cursor:pointer;}
-    /* Diğerleri */
-    .fire-map-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;}
-    .fire-badge{background:linear-gradient(90deg,#ff5757 80%,#ffd237);color:#fff;border-radius:13px;padding:7px 24px;font-weight:700;font-size:1.03rem;display:flex;align-items:center;gap:9px;margin-bottom:7px;}
-    .fire-progress{background:#353535;border-radius:11px;width:220px;height:18px;overflow:hidden;margin:0 auto 7px auto;}
-    .fire-progress-bar{height:100%;border-radius:11px;background:linear-gradient(90deg,#ff5757,#ffd237);text-align:left;color:#222;font-size:0.99rem;font-weight:700;padding-left:12px;line-height:18px;transition:width .3s;}
-    .profile-klan{display:flex;align-items:center;margin-bottom:20px;}
-    .profile-symbol{font-size:38px;margin-right:10px;}
-    .profile-klan-name{font-size:1.15rem;font-weight:700;}
-    .profile-data{font-size:1.05rem;margin:7px 0;display:flex;align-items:center;gap:9px;}
-    .prof-ikon{font-size:20px;opacity:.85;}
-    #map{width:100%;height:420px;min-height:280px;border-radius:0 0 17px 17px;z-index:10;}
-    @media (max-width:650px){
-      #app{max-width:100vw;margin:0;border-radius:0;}
-      #icerik{min-height:250px;}
-      .klanlar{flex-direction:column;}
-      .klan{margin:8px;}
-      .solalt-klanbox{left:5px;bottom:7px;}
-      .jeton-bakiye{right:8px;}
-      #map{height:220px;}
+    .tab-content { padding: 12vw 4vw 2vw 4vw; text-align: center;}
+    .tab-content h3 { margin-bottom: 12px;}
+    .store-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px;}
+    .store-product {
+      background: #22252a; border-radius: 9px; padding: 10px 7px 9px 7px; margin: 4px 1px;
+      min-width: 92px; flex: 1 0 89px; max-width: 118px;
+      display: flex; flex-direction: column; align-items: center;
     }
-    @keyframes fadeIn{0%{opacity:0;transform:translateY(24px);}100%{opacity:1;transform:none;}}
+    .store-symbol{font-size:21px;margin-bottom:2px;}
+    .store-name{font-size:.97rem;font-weight:700;}
+    .store-price{font-size:.94rem;margin:3px 0 5px 0;color:#ffd237;}
+    .store-btn{background:linear-gradient(90deg,#ffd237,#b180ea 60%);border:none;border-radius:7px;font-weight:700;color:#23222f;padding:3px 10px;cursor:pointer;}
+    /* Profil */
+    .tab-content .profile-klan{display:flex;align-items:center;margin-bottom:11px;}
+    .profile-symbol{font-size:18px;margin-right:5px;}
+    .profile-klan-name{font-size:.98rem;font-weight:600;}
+    .profile-data{font-size:.91rem;margin:3px 0;display:flex;align-items:center;gap:5px;}
+    .prof-ikon{font-size:13px;opacity:.82;}
+    /* Media Queries */
+    @media (min-width: 600px) {
+      #app, #icerik, #menu, #map { max-width: 480px; margin-left: auto; margin-right: auto;}
+      .klanlar{max-width:450px;}
+    }
+    @media (max-width:480px){
+      #app, #icerik, #menu, #map { max-width:100vw;}
+      .klanlar{max-width:100vw;}
+    }
   </style>
 </head>
 <body>
 <div id="app">
-  <!-- Klan Seçim -->
-  <div id="klansec" class="klan-secim">
-    <h2 style="text-align:center;margin:24px 0 12px 0;letter-spacing:0.03em;">Klanını Seç</h2>
+  <!-- Klan Seçimi -->
+  <div id="klansec">
+    <h2 style="font-size:1.23rem;">Klanını Seç</h2>
     <div class="klanlar">
       <div class="klan klan-blue" data-klan="blue">
         <span class="klan-symbol">🦅</span>
-        <span class="klan-name">Mavi Klan</span>
-        <span class="klan-desc">Strateji & Liderlik</span>
+        <span class="klan-name">Mavi</span>
+        <span class="klan-desc">Strateji</span>
       </div>
       <div class="klan klan-red" data-klan="red">
         <span class="klan-symbol">🔥</span>
-        <span class="klan-name">Kırmızı Klan</span>
-        <span class="klan-desc">Cesaret & Enerji</span>
+        <span class="klan-name">Kırmızı</span>
+        <span class="klan-desc">Cesaret</span>
       </div>
       <div class="klan klan-yellow" data-klan="yellow">
         <span class="klan-symbol">🌟</span>
-        <span class="klan-name">Sarı Klan</span>
-        <span class="klan-desc">Sosyallik & Parlaklık</span>
+        <span class="klan-name">Sarı</span>
+        <span class="klan-desc">Sosyallik</span>
       </div>
       <div class="klan klan-purple" data-klan="purple">
         <span class="klan-symbol">🦄</span>
-        <span class="klan-name">Mor Klan</span>
-        <span class="klan-desc">Hayal Gücü & Yaratıcılık</span>
+        <span class="klan-name">Mor</span>
+        <span class="klan-desc">Yaratıcılık</span>
       </div>
     </div>
     <button class="join-btn" id="joinBtn" disabled>KATIL</button>
   </div>
-  <!-- Oyun UI -->
-  <div id="oyunui">
-    <!-- Sol üstte sadece jeton bakiyesi -->
-    <div class="jeton-bakiye"><span class="jeton-icon">🪙</span><span id="jetonSayisi">780</span></div>
-    <!-- Menü -->
-    <div id="menu">
-      <button class="menu-btn active" data-tab="map"><span class="menu-icon">🗺️</span>Harita</button>
-      <button class="menu-btn" data-tab="store"><span class="menu-icon">🏪</span>Mağaza</button>
-      <button class="menu-btn" data-tab="fire"><span class="menu-icon">🔥</span>Klan Ateşi</button>
-      <button class="menu-btn" data-tab="profile"><span class="menu-icon">👤</span>Profil</button>
-      <button class="menu-btn" data-tab="flag"><span class="menu-icon">🚩</span>Bayrak Dik</button>
-      <button class="menu-btn" data-tab="qr"><span class="menu-icon">🔳</span>QR</button>
-      <button class="menu-btn" data-tab="ref"><span class="menu-icon">🎁</span>Davet</button>
+  <!-- Ana UI -->
+  <div id="oyunui" style="display:none;height:100vh;width:100vw;position:relative;">
+    <div class="solalt-klanbox" id="solaltBox" style="display:none;">
+      <div class="tumklanlar-btn" id="tumKlanBtn" title="Klan Sıralaması">🏆</div>
+      <div class="klaninfo-btn" id="klanInfoBtn"><span class="klaninfo-symbol"></span><span class="klaninfo-name"></span></div>
+      <div class="klaninfo-popup" id="klanInfoPopup"></div>
+      <div class="tumklanlar-popup" id="tumKlanlarPopup"></div>
     </div>
     <div id="icerik">
       <!-- Harita -->
       <div id="map-tab">
         <div id="map"></div>
-        <!-- Sol alt klan ve istatistikler harita üstünde -->
-        <div class="solalt-klanbox" style="pointer-events:auto;">
-          <div class="tumklanlar-btn" id="tumKlanBtn" title="Klan Sıralaması"><span style="font-size:22px;">🏆</span></div>
-          <div class="klaninfo-btn" id="klanInfoBtn"><span class="klaninfo-symbol"></span><span class="klaninfo-name"></span></div>
-          <div class="klaninfo-popup" id="klanInfoPopup"></div>
-          <div class="tumklanlar-popup" id="tumKlanlarPopup"></div>
-        </div>
       </div>
       <!-- Mağaza -->
       <div id="store-tab" class="tab-content" style="display:none;">
         <h3>Mağaza</h3>
         <div class="store-wrap" id="magazaBileklikler"></div>
       </div>
-      <!-- Klan Ateşi -->
-      <div id="fire-tab" class="tab-content" style="display:none;">
-        <h3>Klan Ateşi</h3>
-        <div class="fire-map-wrap">
-          <div class="fire-badge"><span style="font-size:23px;">🔥</span>Klan Ateşi Aktif! / Kadıköy</div>
-          <div class="fire-progress"><div class="fire-progress-bar" id="fireProgBar" style="width:33%;">1 / 3 Katılımcı</div></div>
-          <button class="store-btn" onclick="katilimciArttir()">Katıldım!</button>
-        </div>
-        <p style="margin-top:13px;opacity:.85;font-size:0.97rem;">3 kişi olunca ateş yanacak ve tüm katılımcılar ekstra jeton kazanacak!</p>
-      </div>
       <!-- Profil -->
-      <div id="profile-tab" style="display:none;">
-        <div id="profil">
-          <div class="profile-klan">
-            <span class="profile-symbol"></span>
-            <span class="profile-klan-name"></span>
-          </div>
-          <div class="profile-data"><span class="prof-ikon">⭐</span>Puan: <span id="puan">9/10</span></div>
-          <div class="profile-data"><span class="prof-ikon">👥</span>Arkadaş: <span id="arkadas">4</span></div>
-          <div class="profile-data"><span class="prof-ikon">⚡</span>Seviye: <span id="seviye">2</span></div>
-          <div class="profile-data"><span class="prof-ikon">🥇</span>Rütbe: <span id="rutbe">Ateşçi</span></div>
+      <div id="profile-tab" class="tab-content" style="display:none;">
+        <h3>Profil</h3>
+        <div class="profile-klan">
+          <span class="profile-symbol"></span>
+          <span class="profile-klan-name"></span>
         </div>
+        <div class="profile-data"><span class="prof-ikon">⭐</span>Puan: <span id="puan">9/10</span></div>
+        <div class="profile-data"><span class="prof-ikon">👥</span>Arkadaş: <span id="arkadas">4</span></div>
+        <div class="profile-data"><span class="prof-ikon">⚡</span>Seviye: <span id="seviye">2</span></div>
+        <div class="profile-data"><span class="prof-ikon">🥇</span>Rütbe: <span id="rutbe">Ateşçi</span></div>
       </div>
-      <!-- Bayrak Dik -->
-      <div id="flag-tab" class="tab-content" style="display:none;">
-        <h3>Bayrak Dik</h3>
-        <p>Haritada klanının alanını fethet!</p>
-        <button class="store-btn">Bayrak Dik!</button>
-      </div>
-      <!-- QR -->
-      <div id="qr-tab" class="tab-content" style="display:none;">
-        <h3>QR</h3>
-        <p>Arkadaş ekle ya da görev doğrula!</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?data=KlanApp-23456&size=140x140" alt="QR Kod" style="width:110px;border-radius:15px;margin:22px auto;">
-      </div>
-      <!-- Referans/Davet -->
-      <div id="ref-tab" class="tab-content" style="display:none;">
-        <div class="ref-box">
-          <div class="ref-head">Davet & Referans</div>
-          <div>Referans Kodun:</div>
-          <div class="ref-code" id="refKod">EMIR23</div>
-          <button class="store-btn" style="padding:4px 15px;font-size:0.99rem;" onclick="kopyala()">Kopyala</button>
-          <div class="ref-info">Her yeni üye başına <b>+50 jeton</b> kazanırsın.<br>Davet linkiyle veya kodunla paylaş!</div>
-        </div>
-      </div>
+    </div>
+    <div id="menu">
+      <button class="menu-btn active" data-tab="map"><span class="menu-icon">🗺️</span>Harita</button>
+      <button class="menu-btn" data-tab="store"><span class="menu-icon">🏪</span>Mağaza</button>
+      <button class="menu-btn" data-tab="profile"><span class="menu-icon">👤</span>Profil</button>
     </div>
   </div>
 </div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-// --- KLAN DATASI ---
+// Klanlar ve örnek istatistik
 const klans = {
-  blue:   {name:"Mavi Klan",   color:"#37a1f7", symbol:"🦅", desc:"Strateji & Liderlik",
-    bileklikler: [
-      {name:"Çırak", symbol:"⬛"}, {name:"Usta", symbol:"🦅"}, {name:"Şef", symbol:"🦅"}, {name:"Komutan", symbol:"🦅"},
-      {name:"Başkan", symbol:"🦅"}, {name:"Efsane", symbol:"🦅"}, {name:"Kartal", symbol:"🦅"}, {name:"Lider", symbol:"🦅"},
-      {name:"Savaşçı", symbol:"🦅"}, {name:"Hükümdar", symbol:"🦅"}
-    ]
-  },
-  red:    {name:"Kırmızı Klan", color:"#ff5757", symbol:"🔥", desc:"Cesaret & Enerji",
-    bileklikler: [
-      {name:"Çırak", symbol:"⬛"}, {name:"Usta", symbol:"🔥"}, {name:"Şef", symbol:"🔥"}, {name:"Komutan", symbol:"🔥"},
-      {name:"Başkan", symbol:"🔥"}, {name:"Efsane", symbol:"🔥"}, {name:"Alev", symbol:"🔥"}, {name:"Kaptan", symbol:"🔥"},
-      {name:"Savaşçı", symbol:"🔥"}, {name:"Hükümdar", symbol:"🔥"}
-    ]
-  },
-  yellow: {name:"Sarı Klan",    color:"#ffd237", symbol:"🌟", desc:"Sosyallik & Parlaklık",
-    bileklikler: [
-      {name:"Çırak", symbol:"⬛"}, {name:"Usta", symbol:"🌟"}, {name:"Şef", symbol:"🌟"}, {name:"Komutan", symbol:"🌟"},
-      {name:"Başkan", symbol:"🌟"}, {name:"Efsane", symbol:"🌟"}, {name:"Yıldız", symbol:"🌟"}, {name:"Parlak", symbol:"🌟"},
-      {name:"Savaşçı", symbol:"🌟"}, {name:"Hükümdar", symbol:"🌟"}
-    ]
-  },
-  purple: {name:"Mor Klan",   color:"#b180ea", symbol:"🦄", desc:"Hayal Gücü & Yaratıcılık",
-    bileklikler: [
-      {name:"Çırak", symbol:"⬛"}, {name:"Usta", symbol:"🦄"}, {name:"Şef", symbol:"🦄"}, {name:"Komutan", symbol:"🦄"},
-      {name:"Başkan", symbol:"🦄"}, {name:"Efsane", symbol:"🦄"}, {name:"Unicorn", symbol:"🦄"}, {name:"Sanatçı", symbol:"🦄"},
-      {name:"Savaşçı", symbol:"🦄"}, {name:"Hükümdar", symbol:"🦄"}
-    ]
-  }
+  blue:   {name:"Mavi",   color:"#37a1f7", symbol:"🦅", desc:"Strateji", bileklikler:["Çırak","Usta","Kartal","Lider"] },
+  red:    {name:"Kırmızı", color:"#ff5757", symbol:"🔥", desc:"Cesaret", bileklikler:["Çırak","Usta","Alev","Savaşçı"] },
+  yellow: {name:"Sarı",    color:"#ffd237", symbol:"🌟", desc:"Sosyallik", bileklikler:["Çırak","Usta","Yıldız","Parlak"] },
+  purple: {name:"Mor",   color:"#b180ea", symbol:"🦄", desc:"Yaratıcılık", bileklikler:["Çırak","Usta","Unicorn","Sanatçı"] }
 };
-// Sahte klan sıralaması örneği
 const tumKlanlarStats = [
-  {rank:1, name:"Sarı Klan", symbol:"🌟", color:"#ffd237", puan:7400, bayrak:18, uye:600},
-  {rank:2, name:"Mor Klan", symbol:"🦄", color:"#b180ea", puan:6890, bayrak:16, uye:570},
-  {rank:3, name:"Kırmızı Klan", symbol:"🔥", color:"#ff5757", puan:6550, bayrak:13, uye:540},
-  {rank:4, name:"Mavi Klan", symbol:"🦅", color:"#37a1f7", puan:6290, bayrak:11, uye:490},
+  {rank:1, name:"Sarı", symbol:"🌟", color:"#ffd237", puan:7400, bayrak:18, uye:600},
+  {rank:2, name:"Mor", symbol:"🦄", color:"#b180ea", puan:6890, bayrak:16, uye:570},
+  {rank:3, name:"Kırmızı", symbol:"🔥", color:"#ff5757", puan:6550, bayrak:13, uye:540},
+  {rank:4, name:"Mavi", symbol:"🦅", color:"#37a1f7", puan:6290, bayrak:11, uye:490},
 ];
-let seciliKlan = null, fireCount = 1, jeton = 780;
-
-// Klan seçimi
+let seciliKlan = null;
 document.querySelectorAll('.klan').forEach(k=>{
   k.onclick=()=>{
     document.querySelectorAll('.klan').forEach(el=>el.classList.remove('selected'));
@@ -251,56 +249,50 @@ document.querySelectorAll('.klan').forEach(k=>{
 document.getElementById('joinBtn').onclick=()=>{
   document.getElementById('klansec').style.display='none';
   document.getElementById('oyunui').style.display='block';
+  document.getElementById('solaltBox').style.display = "flex";
   const klan = klans[seciliKlan];
-  // Mağaza rütbe bilekliklerini üret
+  document.querySelector('.klaninfo-symbol').innerText = klan.symbol;
+  document.querySelector('.klaninfo-name').innerText = klan.name;
+  document.querySelector('.profile-symbol').innerText = klan.symbol;
+  document.querySelector('.profile-klan-name').innerText = klan.name;
+  guncelleKlanPopup();
+  guncelleTumKlanlar();
+  // Mağaza
   const magaza = document.getElementById('magazaBileklikler');
   magaza.innerHTML = '';
   klan.bileklikler.forEach((b,i)=>{
     magaza.innerHTML += `
       <div class="store-product">
-        <span class="store-symbol" style="color:${klan.color};">${b.symbol}</span>
-        <span class="store-name">${klan.name} ${b.name} Bileklik</span>
+        <span class="store-symbol" style="color:${klan.color};">${klan.symbol}</span>
+        <span class="store-name">${klan.name} ${b} Bileklik</span>
         <span class="store-price">₺${120+30*i}</span>
         <button class="store-btn">Satın Al</button>
       </div>
     `;
   });
-  // Sol alt klan info
-  document.querySelector('.klaninfo-symbol').innerText = klan.symbol;
-  document.querySelector('.klaninfo-name').innerText = klan.name;
-  // Profilde klan
-  document.querySelector('.profile-symbol').innerText = klan.symbol;
-  document.querySelector('.profile-klan-name').innerText = klan.name;
-  // Klan info popup içerik
-  guncelleKlanPopup();
-  // Tüm klan popup
-  guncelleTumKlanlar();
   setTimeout(initMap,80);
 }
-
-// Klan info ve istatistikler popup
 function guncelleKlanPopup(){
   if(!seciliKlan) return;
   let klan = klans[seciliKlan], stat = tumKlanlarStats.find(k=>k.name==klan.name);
-  let info = `<h4>${klan.symbol} ${klan.name}</h4>
-    <div class="klaninfo-list">
-      <span>🌟 Puan:</span> <b>${stat?.puan||"--"}</b><br>
-      <span>🚩 Bayrak:</span> <b>${stat?.bayrak||"--"}</b><br>
-      <span>👥 Üye:</span> <b>${stat?.uye||"--"}</b>
-    </div>`;
+  let info = `<b>${klan.symbol} ${klan.name}</b><br>
+    🌟 Puan: ${stat?.puan||"--"}<br>
+    🚩 Bayrak: ${stat?.bayrak||"--"}<br>
+    👥 Üye: ${stat?.uye||"--"}`;
   document.getElementById('klanInfoPopup').innerHTML = info;
 }
 function guncelleTumKlanlar(){
-  let html = `<h4>🏆 Tüm Klanlar</h4><div class="tumklanlar-list">`;
+  let html = `<b>🏆 Klan Sıralaması</b><br>`;
   tumKlanlarStats.forEach(k=>{
-    html += `<div class="tklan"><span class="rank">#${k.rank}</span><span class="tk-symbol" style="color:${k.color}">${k.symbol}</span>
+    html += `<div style="display:flex;align-items:center;gap:4px;margin:2px 0;">
+      <span>#${k.rank}</span><span style="color:${k.color}">${k.symbol}</span>
       <span style="color:${k.color};font-weight:600;">${k.name}</span>
-      <span style="margin-left:auto;">🌟 ${k.puan}</span> <span>🚩${k.bayrak}</span> <span>👥${k.uye}</span></div>`;
+      <span style="margin-left:auto;">${k.puan}</span>
+      <span>🚩${k.bayrak}</span>
+      <span>👥${k.uye}</span></div>`;
   });
-  html += '</div>';
   document.getElementById('tumKlanlarPopup').innerHTML = html;
 }
-// Klan info ve tüm klan popup açma/kapama
 document.body.onclick = function(e){
   if(!e.target.closest('.klaninfo-btn') && !e.target.closest('.klaninfo-popup'))
     document.getElementById('klanInfoPopup').classList.remove('active');
@@ -315,42 +307,27 @@ document.getElementById('tumKlanBtn').onclick=()=>{
   let pop=document.getElementById('tumKlanlarPopup');pop.classList.toggle('active');
   document.getElementById('klanInfoPopup').classList.remove('active');
 }
-
-// Menü geçişleri
 document.querySelectorAll('.menu-btn').forEach(btn=>{
   btn.onclick=()=>{
     document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    ['map','store','fire','profile','flag','qr','ref'].forEach(tab=>{
+    ['map','store','profile'].forEach(tab=>{
       document.getElementById(tab+'-tab').style.display=(btn.dataset.tab==tab)?'block':'none';
     });
-    // Harita tabına geçince harita boyutunu güncelle
     if(btn.dataset.tab==="map" && window.leafletMap) setTimeout(()=>{window.leafletMap.invalidateSize()},80);
   }
 });
-// Harita ve ateş
 function initMap(){
-  // Harita kutusunu görünürken başlat!
   if(window.leafletMap){ window.leafletMap.invalidateSize(); return; }
-  window.leafletMap=L.map('map').setView([39,34],2);
+  window.leafletMap=L.map('map',{zoomControl:false, attributionControl:false}).setView([39,34],6);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-    maxZoom:19,attribution:'&copy; <a href="https://carto.com/">CartoDB</a>'
+    maxZoom:19
   }).addTo(window.leafletMap);
   L.marker([41.02,29.02]).addTo(window.leafletMap).bindPopup('🦅 <b>Mavi Klan</b> – Kadıköy');
   L.marker([39.92,32.85]).addTo(window.leafletMap).bindPopup('🔥 <b>Kırmızı Klan</b> – Ankara');
   L.marker([40.72,30.41]).addTo(window.leafletMap).bindPopup('🌟 <b>Sarı Klan</b> – Sakarya');
   L.marker([38.43,27.15]).addTo(window.leafletMap).bindPopup('🦄 <b>Mor Klan</b> – İzmir');
-  // Klan Ateşi
-  let fireIcon=L.divIcon({html:'<span style="font-size:30px;">🔥</span>',className:''});
-  window.fireMarker=L.marker([40.99,29.06],{icon:fireIcon}).addTo(window.leafletMap).bindPopup('<b>Klan Ateşi</b><br>Katılım: <span id="fire-popup-cnt">1/3</span>');
 }
-function katilimciArttir(){
-  if(fireCount<3){fireCount++;document.getElementById('fireProgBar').style.width=(fireCount*33)+'%';document.getElementById('fireProgBar').innerText=fireCount+' / 3 Katılımcı';
-  if(window.fireMarker)window.fireMarker.bindPopup('<b>Klan Ateşi</b><br>Katılım: <span id="fire-popup-cnt">'+fireCount+'/3</span>');}
-  else{alert("Ateş yandı! +50 jeton kazandın.");jeton+=50;document.getElementById('jetonSayisi').innerText=jeton;}
-}
-// Referans kopyala
-function kopyala(){navigator.clipboard.writeText(document.getElementById('refKod').innerText);alert("Kod kopyalandı!");}
 </script>
 </body>
 </html>
