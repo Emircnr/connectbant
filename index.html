@@ -35,9 +35,9 @@
     .menu-btn{flex:1 1 0;padding:13px 0 9px 0;font-size:1.03rem;color:#fff;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;border-bottom:3px solid transparent;transition:border .2s;}
     .menu-btn.active,.menu-btn:hover{border-bottom:3px solid var(--purple);}
     .menu-icon{font-size:22px;margin-bottom:1px;}
-    #icerik{background:#171b20;min-height:410px;padding:0;}
+    #icerik{background:#171b20;min-height:410px;padding:0;position:relative;}
     /* Sol alt klan buton */
-    .solalt-klanbox{position:fixed;left:24px;bottom:26px;z-index:111;display:flex;flex-direction:column;align-items:flex-start;}
+    .solalt-klanbox{position:absolute;left:24px;bottom:26px;z-index:111;display:flex;flex-direction:column;align-items:flex-start;}
     .klaninfo-btn{display:flex;align-items:center;gap:9px;min-width:130px;cursor:pointer;background:#25272fdd;border-radius:15px 21px 20px 18px;padding:10px 24px 10px 17px;box-shadow:0 2px 18px #0004;}
     .klaninfo-symbol{font-size:29px;}
     .klaninfo-name{font-size:1.06rem;font-weight:700;}
@@ -76,7 +76,7 @@
     .profile-klan-name{font-size:1.15rem;font-weight:700;}
     .profile-data{font-size:1.05rem;margin:7px 0;display:flex;align-items:center;gap:9px;}
     .prof-ikon{font-size:20px;opacity:.85;}
-    /* Responsive */
+    #map{width:100%;height:420px;min-height:280px;border-radius:0 0 17px 17px;z-index:10;}
     @media (max-width:650px){
       #app{max-width:100vw;margin:0;border-radius:0;}
       #icerik{min-height:250px;}
@@ -84,6 +84,7 @@
       .klan{margin:8px;}
       .solalt-klanbox{left:5px;bottom:7px;}
       .jeton-bakiye{right:8px;}
+      #map{height:220px;}
     }
     @keyframes fadeIn{0%{opacity:0;transform:translateY(24px);}100%{opacity:1;transform:none;}}
   </style>
@@ -135,6 +136,13 @@
       <!-- Harita -->
       <div id="map-tab">
         <div id="map"></div>
+        <!-- Sol alt klan ve istatistikler harita üstünde -->
+        <div class="solalt-klanbox" style="pointer-events:auto;">
+          <div class="tumklanlar-btn" id="tumKlanBtn" title="Klan Sıralaması"><span style="font-size:22px;">🏆</span></div>
+          <div class="klaninfo-btn" id="klanInfoBtn"><span class="klaninfo-symbol"></span><span class="klaninfo-name"></span></div>
+          <div class="klaninfo-popup" id="klanInfoPopup"></div>
+          <div class="tumklanlar-popup" id="tumKlanlarPopup"></div>
+        </div>
       </div>
       <!-- Mağaza -->
       <div id="store-tab" class="tab-content" style="display:none;">
@@ -186,13 +194,6 @@
           <div class="ref-info">Her yeni üye başına <b>+50 jeton</b> kazanırsın.<br>Davet linkiyle veya kodunla paylaş!</div>
         </div>
       </div>
-    </div>
-    <!-- Sol alt klan ve istatistikler -->
-    <div class="solalt-klanbox">
-      <div class="tumklanlar-btn" id="tumKlanBtn" title="Klan Sıralaması"><span style="font-size:22px;">🏆</span></div>
-      <div class="klaninfo-btn" id="klanInfoBtn"><span class="klaninfo-symbol"></span><span class="klaninfo-name"></span></div>
-      <div class="klaninfo-popup" id="klanInfoPopup"></div>
-      <div class="tumklanlar-popup" id="tumKlanlarPopup"></div>
     </div>
   </div>
 </div>
@@ -274,7 +275,7 @@ document.getElementById('joinBtn').onclick=()=>{
   guncelleKlanPopup();
   // Tüm klan popup
   guncelleTumKlanlar();
-  setTimeout(initMap,30);
+  setTimeout(initMap,80);
 }
 
 // Klan info ve istatistikler popup
@@ -300,6 +301,12 @@ function guncelleTumKlanlar(){
   document.getElementById('tumKlanlarPopup').innerHTML = html;
 }
 // Klan info ve tüm klan popup açma/kapama
+document.body.onclick = function(e){
+  if(!e.target.closest('.klaninfo-btn') && !e.target.closest('.klaninfo-popup'))
+    document.getElementById('klanInfoPopup').classList.remove('active');
+  if(!e.target.closest('.tumklanlar-btn') && !e.target.closest('.tumklanlar-popup'))
+    document.getElementById('tumKlanlarPopup').classList.remove('active');
+}
 document.getElementById('klanInfoBtn').onclick=()=>{
   let pop=document.getElementById('klanInfoPopup');pop.classList.toggle('active');
   document.getElementById('tumKlanlarPopup').classList.remove('active');
@@ -307,13 +314,6 @@ document.getElementById('klanInfoBtn').onclick=()=>{
 document.getElementById('tumKlanBtn').onclick=()=>{
   let pop=document.getElementById('tumKlanlarPopup');pop.classList.toggle('active');
   document.getElementById('klanInfoPopup').classList.remove('active');
-}
-// Popup dışına tıklayınca kapat
-document.body.onclick = function(e){
-  if(!e.target.closest('.klaninfo-btn') && !e.target.closest('.klaninfo-popup'))
-    document.getElementById('klanInfoPopup').classList.remove('active');
-  if(!e.target.closest('.tumklanlar-btn') && !e.target.closest('.tumklanlar-popup'))
-    document.getElementById('tumKlanlarPopup').classList.remove('active');
 }
 
 // Menü geçişleri
@@ -324,11 +324,14 @@ document.querySelectorAll('.menu-btn').forEach(btn=>{
     ['map','store','fire','profile','flag','qr','ref'].forEach(tab=>{
       document.getElementById(tab+'-tab').style.display=(btn.dataset.tab==tab)?'block':'none';
     });
-    if(btn.dataset.tab==="map" && window.leafletMap) setTimeout(()=>{window.leafletMap.invalidateSize()},60);
+    // Harita tabına geçince harita boyutunu güncelle
+    if(btn.dataset.tab==="map" && window.leafletMap) setTimeout(()=>{window.leafletMap.invalidateSize()},80);
   }
 });
 // Harita ve ateş
 function initMap(){
+  // Harita kutusunu görünürken başlat!
+  if(window.leafletMap){ window.leafletMap.invalidateSize(); return; }
   window.leafletMap=L.map('map').setView([39,34],2);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
     maxZoom:19,attribution:'&copy; <a href="https://carto.com/">CartoDB</a>'
