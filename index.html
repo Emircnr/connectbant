@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>KlanApp - Yeni Nesil Topluluk</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Leaflet Harita CSS -->
+  <!-- Leaflet Harita CSS (ileride harita için gerek) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     :root {
@@ -80,6 +80,7 @@
     </div>
     <button id="klanSecBtn" class="klan-secim-btn" disabled>Klanı Seç</button>
   </div>
+  <!-- (BURAYA 2. ve 3. kodun mainApp'i gelecek) -->
 </div>
 <script>
 /* --- Klanlar verisi --- */
@@ -126,15 +127,13 @@ document.getElementById('klanSecBtn').onclick = function() {
   // Tema güncelle
   document.body.setAttribute("data-theme", seciliKlan);
   document.getElementById('klanSecimKap').style.display = "none";
-  // Burada devamında ana uygulama ekranı açılacak (2. parça)
-  // window.scrollTo(0,0);
-  // loadMainApp();
-  alert("Klanını seçtin: " + KLANS.find(k=>k.id===seciliKlan).name + "\nDevamı için 2. kısmı bekleyin!");
+  // Burada devamında ana uygulama ekranı açılacak (2. kısımda)
+  // openMainApp(); // 2. kodda ekleyeceksin!
 }
 </script>
 </body>
 </html>
-<!-- ANA UYGULAMA EKRANI (Klan seçildikten sonra açılır) -->
+<!-- ANA UYGULAMA EKRANI -->
 <div id="mainApp" style="display:none;">
   <!-- Jeton bakiyesi sağ üst -->
   <div id="jetonBox" style="position:absolute;right:22px;top:18px;z-index:11;background:linear-gradient(90deg,#ffd237,#fff6);color:#222;border-radius:20px;padding:6px 18px 6px 11px;font-weight:700;box-shadow:0 2px 18px #0002;display:flex;align-items:center;gap:6px;">
@@ -152,7 +151,7 @@ document.getElementById('klanSecBtn').onclick = function() {
   </div>
   <!-- İçerik Panelleri -->
   <div id="icerikKap" style="padding-bottom:75px;">
-    <!-- Harita Tabı -->
+    <!-- 1. Harita Tabı -->
     <div id="tab-map" class="main-tab fadein">
       <div id="haritaBox" style="width:100vw;max-width:500px;height:64vh;border-radius:0 0 24px 24px;box-shadow:0 1px 14px #0006;overflow:hidden;margin:0 auto;position:relative;">
         <div id="harita"></div>
@@ -178,7 +177,7 @@ document.getElementById('klanSecBtn').onclick = function() {
         </div>
       </div>
     </div>
-    <!-- Diğer menü tabları (dummy, 3. kısımda doldurulacak) -->
+    <!-- Diğer sekmeler (3. kodda doldurulacak) -->
     <div id="tab-store" class="main-tab fadein" style="display:none;text-align:center;padding:38px 0 0 0;">
       <h2>Mağaza</h2>
       <div style="opacity:.7;">(Mağaza içeriği 3. kısımda gelecek)</div>
@@ -207,7 +206,6 @@ document.getElementById('klanSecBtn').onclick = function() {
 </div>
 
 <style>
-  /* Menü ve harita stilini daha mobil odaklı ve modern yaptım! */
   .main-tab{min-height:66vh;}
   .menu-btn{
     flex:1 1 0;padding:8px 0 4px 0;font-size:1.05rem;color:#fff;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;border-bottom:3px solid transparent;transition:border .2s;font-weight:600;
@@ -312,185 +310,10 @@ function haritaInit(){
   });
 }
 </script>
-<!-- MAİNAPP: Tüm menü ve ekranlar ile tam işlevli demo -->
-<div id="mainApp" style="display:none;">
-  <!-- Jeton bakiyesi sağ üst -->
-  <div id="jetonBox" style="position:absolute;right:22px;top:18px;z-index:11;background:linear-gradient(90deg,#ffd237,#fff6);color:#222;border-radius:20px;padding:6px 18px 6px 11px;font-weight:700;box-shadow:0 2px 18px #0002;display:flex;align-items:center;gap:6px;">
-    <span style="font-size:21px;">🪙</span><span id="jetonSayisi">850</span>
-  </div>
-  <!-- Alt Menü Barı -->
-  <div id="mainMenu" style="position:fixed;bottom:0;left:0;width:100vw;z-index:21;display:flex;justify-content:space-around;align-items:center;background:var(--gray);padding:0;height:65px;box-shadow:0 -2px 24px #0005;">
-    <button class="menu-btn active" data-tab="map"><span class="menu-ikon">🗺️</span><div>Harita</div></button>
-    <button class="menu-btn" data-tab="store"><span class="menu-ikon">🏪</span><div>Mağaza</div></button>
-    <button class="menu-btn" data-tab="fire"><span class="menu-ikon">🔥</span><div>Klan Ateşi</div></button>
-    <button class="menu-btn" data-tab="profile"><span class="menu-ikon">👤</span><div>Profil</div></button>
-    <button class="menu-btn" data-tab="flag"><span class="menu-ikon">🚩</span><div>Bayrak</div></button>
-    <button class="menu-btn" data-tab="qr"><span class="menu-ikon">🔳</span><div>QR</div></button>
-    <button class="menu-btn" data-tab="ref"><span class="menu-ikon">🎁</span><div>Davet</div></button>
-  </div>
-  <!-- İçerik Panelleri -->
-  <div id="icerikKap" style="padding-bottom:75px;">
-    <!-- 1. Harita Tabı (Aynı) -->
-    <div id="tab-map" class="main-tab fadein">
-      <div id="haritaBox" style="width:100vw;max-width:500px;height:64vh;border-radius:0 0 24px 24px;box-shadow:0 1px 14px #0006;overflow:hidden;margin:0 auto;position:relative;">
-        <div id="harita"></div>
-        <!-- Sol alt klan kutusu -->
-        <div id="klanPanel" style="position:absolute;left:14px;bottom:14px;z-index:10;">
-          <div id="klanInfoBtn" style="background:var(--gray);border-radius:16px 21px 18px 15px;padding:9px 16px;display:flex;align-items:center;gap:9px;box-shadow:0 2px 10px #0003;cursor:pointer;">
-            <span id="klanLogo" style="font-size:25px;"></span>
-            <span id="klanName" style="font-size:1.03rem;font-weight:700;"></span>
-          </div>
-          <!-- Popup -->
-          <div id="klanPopup" style="display:none;position:absolute;bottom:55px;left:0;z-index:100;background:#24283ab8;padding:13px 15px 13px 13px;border-radius:15px 19px 16px 14px;min-width:172px;box-shadow:0 2px 20px #0007;font-size:0.98rem;">
-            <div style="font-size:1.06rem;font-weight:700;margin-bottom:8px;" id="klanPopupTitle"></div>
-            <div>🌟 Puan: <span id="klanPuan">3120</span></div>
-            <div>🚩 Bayrak: <span id="klanBayrak">6</span></div>
-            <div>👥 Üye: <span id="klanUye">310</span></div>
-            <div style="margin:8px 0 0 0;"><button id="tumKlanlarBtn" style="padding:4px 13px;border-radius:11px;background:var(--primary);color:#fff;font-weight:600;border:none;cursor:pointer;">Tüm Klanlar</button></div>
-          </div>
-          <!-- Tüm Klanlar popup -->
-          <div id="tumKlanlarPopup" style="display:none;position:absolute;bottom:150px;left:0;z-index:110;background:#191c2be6;padding:12px 9px 11px 13px;border-radius:14px 16px 13px 14px;min-width:185px;box-shadow:0 2px 34px #0008;">
-            <div style="font-size:1.02rem;font-weight:700;margin-bottom:7px;">🏆 Tüm Klanlar</div>
-            <div id="tumKlanlarList"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- 2. Mağaza -->
-    <div id="tab-store" class="main-tab fadein" style="display:none;padding:28px 10px;">
-      <h2>Mağaza</h2>
-      <div id="magazaUrunler" style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin-top:23px;"></div>
-    </div>
-    <!-- 3. Klan Ateşi -->
-    <div id="tab-fire" class="main-tab fadein" style="display:none;padding:28px 10px;text-align:center;">
-      <h2>Klan Ateşi</h2>
-      <div id="fireEventList">
-        <div style="background:rgba(80,0,0,.17);border-radius:15px;padding:17px 0 12px 0;max-width:330px;margin:0 auto 10px auto;">
-          <div style="font-size:1.4rem;">🔥 Kadıköy Etkinliği</div>
-          <div style="margin:9px 0;">Katılımcı: <b>2 / 7</b></div>
-          <button class="fireBtn" onclick="katilFireEtkinlik(this)">Katıl</button>
-        </div>
-        <div style="background:rgba(0,60,100,.17);border-radius:15px;padding:17px 0 12px 0;max-width:330px;margin:0 auto 10px auto;">
-          <div style="font-size:1.25rem;">🔥 Ankara Ateşi</div>
-          <div style="margin:9px 0;">Katılımcı: <b>1 / 5</b></div>
-          <button class="fireBtn" onclick="katilFireEtkinlik(this)">Katıl</button>
-        </div>
-      </div>
-      <button id="yeniAtesBtn" class="fireBtn" style="margin-top:23px;">Ateş Yak!</button>
-    </div>
-    <!-- 4. Profil -->
-    <div id="tab-profile" class="main-tab fadein" style="display:none;padding:28px 10px;">
-      <h2>Profil</h2>
-      <div style="display:flex;align-items:center;gap:15px;margin-bottom:13px;">
-        <div style="font-size:2.5rem;border-radius:30px;background:var(--gray);padding:11px 19px 7px 19px;">👤</div>
-        <div>
-          <div style="font-size:1.17rem;font-weight:700;">@<span id="profilIsim"></span></div>
-          <div id="profilKlan" style="margin-top:2px;"></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;">
-        <div class="profilCard"><b>Seviye:</b> <span id="profilSeviye">8</span></div>
-        <div class="profilCard"><b>Rütbe:</b> <span id="profilRutbe">Öncü</span></div>
-        <div class="profilCard"><b>Puan:</b> <span id="profilPuan">660</span></div>
-        <div class="profilCard"><b>Arkadaş:</b> <span id="profilArk">5</span></div>
-        <div class="profilCard"><b>Referans:</b> <span id="profilRef">KLAN-EMIR</span></div>
-      </div>
-      <button onclick="acGorevler()" class="fireBtn" style="margin-bottom:17px;">Görevler & Rütbe Paneli</button>
-      <button onclick="acArkadaslar()" class="fireBtn">Arkadaşlar</button>
-      <div id="profilExtra" style="margin-top:24px;"></div>
-    </div>
-    <!-- Görevler & Rütbe Paneli -->
-    <div id="gorevlerPanel" style="display:none;padding:27px 9px;">
-      <h2>Görevler & Rütbe Yolculuğu</h2>
-      <div style="margin-bottom:9px;"><b>Şu anki seviye:</b> <span>8</span> / <span>60</span></div>
-      <div style="margin-bottom:16px;">Bir sonraki rütbeye: <b>320 XP</b></div>
-      <div><b>Rütbe Yolculuğu:</b></div>
-      <div style="margin:13px 0 18px 0;display:flex;overflow-x:auto;gap:10px;">
-        <div class="rutbeKart aktif">Keşifçi</div>
-        <div class="rutbeKart">Çırak</div>
-        <div class="rutbeKart">Öncü</div>
-        <div class="rutbeKart">Koruyucu</div>
-        <div class="rutbeKart">Usta</div>
-        <div class="rutbeKart">Lider</div>
-        <div class="rutbeKart">Bilge</div>
-        <div class="rutbeKart">Efsane</div>
-        <div class="rutbeKart">Efsanevi</div>
-        <div class="rutbeKart">Başusta</div>
-      </div>
-      <button onclick="kapatGorevler()" class="fireBtn">Kapat</button>
-    </div>
-    <!-- Arkadaşlar Paneli -->
-    <div id="arkadasPanel" style="display:none;padding:27px 9px;">
-      <h2>Arkadaşlar</h2>
-      <div>
-        <div style="margin:6px 0;"><b>En Yakın:</b> <span>Ali</span> (Mavi Klan)</div>
-        <div style="margin:6px 0;"><b>Çevrimiçi:</b> <span>Ayşe</span> (Mor Klan)</div>
-        <div style="margin:6px 0;"><b>Bekleyen:</b> <span>Mehmet</span></div>
-      </div>
-      <button onclick="kapatArkadas()" class="fireBtn" style="margin-top:19px;">Kapat</button>
-    </div>
-    <!-- 5. Bayrak Dik -->
-    <div id="tab-flag" class="main-tab fadein" style="display:none;text-align:center;padding:28px 0 0 0;">
-      <h2>Bayrak Dik</h2>
-      <div style="margin-bottom:13px;">Şu anki konuma bayrak dikmek ister misin?</div>
-      <button class="fireBtn" onclick="bayrakDik()">Bayrak Dik!</button>
-      <div id="bayrakSonuc" style="margin-top:13px;color:#ffd237;font-weight:600;"></div>
-      <div style="margin-top:22px;"><b>Bölgedeki bayraklar:</b></div>
-      <ul style="margin-top:6px;text-align:left;display:inline-block;">
-        <li>Mor Klan: 2</li>
-        <li>Mavi Klan: 1</li>
-        <li>Kırmızı Klan: 1</li>
-      </ul>
-    </div>
-    <!-- 6. QR -->
-    <div id="tab-qr" class="main-tab fadein" style="display:none;text-align:center;padding:28px 0 0 0;">
-      <h2>QR Kod</h2>
-      <div>Arkadaş eklemek veya görev onaylamak için QR kodunu kullan!</div>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?data=KlanApp-EMIR&size=110x110" style="margin:23px auto;border-radius:13px;display:block;">
-      <button class="fireBtn" onclick="qrTara()">QR Tara</button>
-      <div id="qrSonuc" style="margin-top:15px;"></div>
-    </div>
-    <!-- 7. Davet -->
-    <div id="tab-ref" class="main-tab fadein" style="display:none;text-align:center;padding:28px 0 0 0;">
-      <h2>Davet & Referans</h2>
-      <div>Referans Kodun: <span style="font-weight:700;">KLAN-EMIR</span></div>
-      <button class="fireBtn" onclick="kopyalaKod()">Kopyala</button>
-      <div style="margin-top:9px;font-size:.96rem;opacity:.7;">Her davet için <b>+50 jeton</b> kazanırsın!</div>
-    </div>
-    <!-- 8. Klan Duvarı -->
-    <div id="tab-wall" class="main-tab fadein" style="display:none;padding:28px 10px;">
-      <h2>Klan Duvarı</h2>
-      <button class="fireBtn" onclick="acGonderiOlustur()">Gönderi Oluştur</button>
-      <div id="duvarGonderiler" style="margin-top:19px;">
-        <div class="duvarPost">
-          <div><b>Ayşe</b> <span style="color:#b180ea;">🦄</span> <span style="opacity:.6;font-size:.95em;">16:32</span></div>
-          <div>Mor Klan buluşması çok iyiydi 💜</div>
-          <button class="duvarBtn" onclick="begenGonderi(this)">👍 Beğen (12)</button>
-          <button class="duvarBtn" onclick="yorumYapGonderi(this)">💬 Yorum (3)</button>
-        </div>
-        <div class="duvarPost">
-          <div><b>Emir</b> <span style="color:#32a1f5;">🦅</span> <span style="opacity:.6;font-size:.95em;">15:22</span></div>
-          <div>Kadıköy’de harika bir klan ateşi etkinliği yaptık!</div>
-          <button class="duvarBtn" onclick="begenGonderi(this)">👍 Beğen (8)</button>
-          <button class="duvarBtn" onclick="yorumYapGonderi(this)">💬 Yorum (1)</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
-.fireBtn{background:linear-gradient(90deg,var(--primary) 55%,#ffd237 90%);color:#23222f;font-weight:700;font-size:1.05rem;padding:8px 22px;border-radius:19px;border:none;margin:5px 3px;box-shadow:0 2px 10px #0002;cursor:pointer;}
-.fireBtn:hover{background:linear-gradient(90deg,#ffd237 20%,var(--primary) 80%);}
-.profilCard{background:var(--gray);padding:8px 18px;border-radius:13px;margin-bottom:5px;font-size:1rem;}
-.rutbeKart{background:var(--gray);padding:10px 16px;border-radius:15px;min-width:74px;text-align:center;}
-.rutbeKart.aktif{background:var(--primary);color:#fff;}
-.duvarPost{background:var(--gray);border-radius:15px;padding:12px 13px;margin-bottom:13px;}
-.duvarBtn{background:none;color:#ffd237;font-weight:600;border:none;cursor:pointer;margin-right:12px;font-size:.98em;}
-</style>
+<!-- Mağaza Tabı İçeriği -->
 <script>
-/* Mağaza demo */
-const urunler = [
+// Mağaza için demo ürünler
+const MAGAZA_URUNLER = [
   {isim:"Çırak Bileklik",fiyat:150,symbol:"⬛"},
   {isim:"Usta Bileklik",fiyat:220,symbol:"🦅"},
   {isim:"XP Paketi",fiyat:60,symbol:"⚡"},
@@ -498,4 +321,119 @@ const urunler = [
   {isim:"Rütbe Yükseltici",fiyat:330,symbol:"🎖️"}
 ];
 function urunleriYukle(){
-  let m = document.getElementById('magazaUrunler
+  let m = document.getElementById('tab-store');
+  let html = `<h2>Mağaza</h2>
+  <div id="magazaUrunler" style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin-top:23px;">`;
+  MAGAZA_URUNLER.forEach(u=>{
+    html += `<div style="background:var(--gray);border-radius:16px;padding:13px 14px 10px 14px;min-width:130px;max-width:150px;display:flex;flex-direction:column;align-items:center;box-shadow:0 1px 8px #0002;margin-bottom:11px;">
+      <div style="font-size:2.1rem;">${u.symbol}</div>
+      <div style="font-weight:700;margin:6px 0 5px 0;">${u.isim}</div>
+      <div style="color:#ffd237;font-size:1.01rem;">₺${u.fiyat}</div>
+      <button onclick="alert('Demo: Satın alma henüz aktif değil!')" style="margin-top:6px;background:linear-gradient(90deg,#ffd237,#b180ea 80%);border:none;border-radius:18px;font-weight:700;color:#23222f;padding:6px 15px;cursor:pointer;">Satın Al</button>
+    </div>`;
+  });
+  html += "</div>";
+  m.innerHTML = html;
+}
+
+// Klan Ateşi demo içeriği
+function klanAtesiYukle() {
+  let f = document.getElementById('tab-fire');
+  f.innerHTML = `
+    <h2>Klan Ateşi</h2>
+    <div style="background:rgba(80,0,0,.14);border-radius:15px;padding:17px 0 12px 0;max-width:330px;margin:0 auto 14px auto;">
+      <div style="font-size:1.3rem;">🔥 Kadıköy Etkinliği</div>
+      <div style="margin:9px 0;">Katılımcı: <b>2 / 7</b></div>
+      <button class="fireBtn" onclick="alert('Demo: Katıldın!')">Katıl</button>
+    </div>
+    <button class="fireBtn" onclick="alert('Demo: Ateş Yak!')">Ateş Yak!</button>
+  `;
+}
+
+// Profil paneli demo içeriği
+function profilYukle(){
+  let p = document.getElementById('tab-profile');
+  p.innerHTML = `
+    <h2>Profil</h2>
+    <div style="display:flex;align-items:center;gap:15px;margin-bottom:13px;">
+      <div style="font-size:2.3rem;border-radius:30px;background:var(--gray);padding:8px 16px 5px 16px;">👤</div>
+      <div>
+        <div style="font-size:1.12rem;font-weight:700;">@${kullanici.isim}</div>
+        <div id="profilKlan" style="margin-top:2px;">${seciliKlanObj.logo} ${seciliKlanObj.name}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:15px;flex-wrap:wrap;margin-bottom:13px;">
+      <div class="profilCard"><b>Seviye:</b> 8</div>
+      <div class="profilCard"><b>Rütbe:</b> Öncü</div>
+      <div class="profilCard"><b>Puan:</b> 660</div>
+      <div class="profilCard"><b>Arkadaş:</b> 5</div>
+      <div class="profilCard"><b>Referans:</b> KLAN-${kullanici.isim.toUpperCase()}</div>
+    </div>
+    <button onclick="alert('Demo: Görevler açılacak!')" class="fireBtn" style="margin-bottom:17px;">Görevler & Rütbe Paneli</button>
+    <button onclick="alert('Demo: Arkadaşlar açılacak!')" class="fireBtn">Arkadaşlar</button>
+  `;
+}
+
+// Bayrak dikme paneli demo
+function bayrakPanelYukle(){
+  let b = document.getElementById('tab-flag');
+  b.innerHTML = `
+    <h2>Bayrak Dik</h2>
+    <div style="margin-bottom:13px;">Şu anki konuma bayrak dikmek ister misin?</div>
+    <button class="fireBtn" onclick="alert('Demo: Bayrak dikildi!')">Bayrak Dik!</button>
+    <div style="margin-top:22px;"><b>Bölgedeki bayraklar:</b></div>
+    <ul style="margin-top:6px;text-align:left;display:inline-block;">
+      <li>Mor Klan: 2</li>
+      <li>Mavi Klan: 1</li>
+      <li>Kırmızı Klan: 1</li>
+    </ul>
+  `;
+}
+
+// QR ve Davet paneli demo
+function qrPanelYukle(){
+  let q = document.getElementById('tab-qr');
+  q.innerHTML = `
+    <h2>QR Kod</h2>
+    <div>Arkadaş eklemek için QR kodunu göster!</div>
+    <img src="https://api.qrserver.com/v1/create-qr-code/?data=KlanApp-${kullanici.isim}&size=110x110" style="margin:23px auto;border-radius:13px;display:block;">
+    <button class="fireBtn" onclick="alert('Demo: QR Tara!')">QR Tara</button>
+  `;
+}
+function davetPanelYukle(){
+  let r = document.getElementById('tab-ref');
+  r.innerHTML = `
+    <h2>Davet & Referans</h2>
+    <div>Referans Kodun: <span style="font-weight:700;">KLAN-${kullanici.isim.toUpperCase()}</span></div>
+    <button class="fireBtn" onclick="navigator.clipboard.writeText('KLAN-${kullanici.isim.toUpperCase()}');alert('Kod kopyalandı!')">Kopyala</button>
+    <div style="margin-top:9px;font-size:.96rem;opacity:.7;">Her davet için <b>+50 jeton</b> kazanırsın!</div>
+  `;
+}
+
+/* Menü geçişlerinde panel içerikleri yükle */
+function tablariYukle() {
+  urunleriYukle();
+  klanAtesiYukle();
+  profilYukle();
+  bayrakPanelYukle();
+  qrPanelYukle();
+  davetPanelYukle();
+}
+
+/* 2. kodun openMainApp fonksiyonuna EKLE: */
+let mainAppYuklu = false;
+let eskiOpenMainApp = openMainApp;
+openMainApp = function() {
+  eskiOpenMainApp();
+  if(!mainAppYuklu) {
+    tablariYukle();
+    mainAppYuklu = true;
+  }
+};
+
+</script>
+<style>
+.fireBtn{background:linear-gradient(90deg,var(--primary) 55%,#ffd237 90%);color:#23222f;font-weight:700;font-size:1.05rem;padding:8px 22px;border-radius:19px;border:none;margin:5px 3px;box-shadow:0 2px 10px #0002;cursor:pointer;}
+.fireBtn:hover{background:linear-gradient(90deg,#ffd237 20%,var(--primary) 80%);}
+.profilCard{background:var(--gray);padding:8px 18px;border-radius:13px;margin-bottom:5px;font-size:1rem;}
+</style>
