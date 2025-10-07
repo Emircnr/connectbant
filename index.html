@@ -3,534 +3,308 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Elite RTS - Global Warfare</title>
+  <title>Global Warfare - Gerçek Dünya Stratejisi</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700;900&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
   
   <style>
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
-    body { 
-      font-family: 'Rajdhani', sans-serif; 
-      background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #000000 100%);
-      overflow: hidden; 
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       color: #fff;
+      overflow: hidden;
     }
     
     .orbitron { font-family: 'Orbitron', sans-serif; }
     
-    /* Animated Background */
-    .stars {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-    
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle 3s infinite;
-    }
-    
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-    
-    /* Glass Morphism */
+    /* Glass Effect */
     .glass {
-      background: rgba(13, 27, 42, 0.6);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(100, 200, 255, 0.2);
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(100, 180, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     }
     
-    .glass-bright {
-      background: rgba(30, 58, 90, 0.7);
-      backdrop-filter: blur(25px);
-      border: 1px solid rgba(100, 200, 255, 0.4);
-      box-shadow: 
-        0 8px 40px rgba(59, 130, 246, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    }
-    
-    /* Neon Button */
-    .btn-neon {
-      position: relative;
-      padding: 0.8rem 2rem;
-      font-size: 1rem;
+    /* Buttons */
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      border: none;
-      border-radius: 12px;
+      letter-spacing: 1px;
       cursor: pointer;
       transition: all 0.3s ease;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      box-shadow: 
-        0 0 20px rgba(102, 126, 234, 0.5),
-        0 5px 15px rgba(0, 0, 0, 0.3);
+      border: none;
+      font-size: 0.95rem;
     }
     
-    .btn-neon:hover {
-      transform: translateY(-3px);
-      box-shadow: 
-        0 0 40px rgba(102, 126, 234, 0.8),
-        0 10px 25px rgba(0, 0, 0, 0.4);
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
     }
     
-    .btn-neon:active {
-      transform: translateY(-1px);
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
     }
     
-    .btn-cyan {
-      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-      box-shadow: 
-        0 0 20px rgba(6, 182, 212, 0.5),
-        0 5px 15px rgba(0, 0, 0, 0.3);
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
     }
     
-    .btn-cyan:hover {
-      box-shadow: 
-        0 0 40px rgba(6, 182, 212, 0.8),
-        0 10px 25px rgba(0, 0, 0, 0.4);
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
     }
     
-    .btn-red {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      box-shadow: 
-        0 0 20px rgba(239, 68, 68, 0.5),
-        0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-    
-    .btn-red:hover {
-      box-shadow: 
-        0 0 40px rgba(239, 68, 68, 0.8),
-        0 10px 25px rgba(0, 0, 0, 0.4);
+    .btn-secondary {
+      background: linear-gradient(135deg, #64748b, #475569);
+      box-shadow: 0 4px 15px rgba(100, 116, 139, 0.4);
     }
     
     /* Resource Badge */
-    .resource-badge {
+    .resource {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.6rem 1.2rem;
-      background: linear-gradient(135deg, rgba(30, 58, 90, 0.9), rgba(13, 27, 42, 0.9));
-      border: 1px solid rgba(100, 200, 255, 0.3);
-      border-radius: 20px;
-      font-size: 1.1rem;
+      padding: 0.5rem 1rem;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(100, 180, 255, 0.3);
+      border-radius: 12px;
       font-weight: 700;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      transition: all 0.3s ease;
-    }
-    
-    .resource-badge:hover {
-      transform: scale(1.05);
-      border-color: rgba(100, 200, 255, 0.6);
+      font-size: 1rem;
     }
     
     /* Map */
-    #map { 
-      width: 100%; 
-      height: 100%; 
+    #map {
+      width: 100%;
+      height: 100%;
       background: #0a0e1a;
-      filter: brightness(0.9) contrast(1.1);
     }
     
-    /* Unit Marker */
-    .unit-marker {
-      width: 32px;
-      height: 32px;
+    /* Markers */
+    .unit-marker, .building-marker {
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
       border: 3px solid;
-      transition: all 0.3s ease;
       cursor: pointer;
-      position: relative;
+      transition: all 0.2s;
+      background: rgba(0, 0, 0, 0.6);
     }
     
-    .unit-marker::before {
-      content: '';
-      position: absolute;
-      inset: -6px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+    .unit-marker {
+      width: 28px;
+      height: 28px;
     }
     
-    .unit-marker:hover::before {
-      opacity: 0.2;
-      animation: pulse-ring 1.5s infinite;
+    .building-marker {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      font-size: 22px;
     }
     
-    .unit-marker.selected {
-      animation: selected-pulse 1s infinite;
-      border-width: 4px;
+    .unit-marker.selected, .building-marker.selected {
+      animation: pulse 1s infinite;
       box-shadow: 0 0 20px currentColor;
+      border-width: 4px;
     }
     
-    @keyframes selected-pulse {
+    @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.15); }
     }
     
-    @keyframes pulse-ring {
-      0% { transform: scale(1); opacity: 0.3; }
-      100% { transform: scale(1.5); opacity: 0; }
-    }
-    
-    /* Building Marker */
-    .building-marker {
-      width: 48px;
-      height: 48px;
+    /* Input */
+    .input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(30, 41, 59, 0.8);
+      border: 2px solid rgba(100, 180, 255, 0.3);
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      border: 3px solid;
-      background: rgba(0, 0, 0, 0.7);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      outline: none;
     }
     
-    .building-marker:hover {
-      transform: scale(1.1);
-      box-shadow: 0 6px 25px currentColor;
+    .input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
     }
     
-    /* Range Circle */
-    .range-indicator {
-      stroke-width: 2;
-      stroke-dasharray: 10, 5;
-      fill: none;
-      opacity: 0.6;
-      animation: rotate-dash 20s linear infinite;
+    /* Panel */
+    .panel {
+      width: 340px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(100, 180, 255, 0.2);
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
     }
     
-    @keyframes rotate-dash {
-      to { stroke-dashoffset: -1000; }
-    }
+    /* Scrollbar */
+    .scrollbar::-webkit-scrollbar { width: 6px; }
+    .scrollbar::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); }
+    .scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
     
-    /* Combat Log */
-    .combat-log-entry {
-      padding: 0.5rem 1rem;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), transparent);
+    /* Log Entry */
+    .log-entry {
+      padding: 0.5rem;
+      margin-bottom: 0.4rem;
+      background: rgba(239, 68, 68, 0.15);
       border-left: 3px solid #ef4444;
       border-radius: 4px;
-      font-size: 0.9rem;
-      animation: slideIn 0.3s ease;
+      font-size: 0.85rem;
+      animation: slideIn 0.3s;
     }
     
     @keyframes slideIn {
-      from { 
-        opacity: 0; 
-        transform: translateX(20px); 
-      }
-      to { 
-        opacity: 1; 
-        transform: translateX(0); 
-      }
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: translateX(0); }
     }
     
     /* Modal */
-    .modal-overlay {
+    .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.9);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10000;
-      animation: fadeIn 0.3s ease;
     }
     
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    .modal-content {
-      animation: scaleIn 0.3s ease;
-    }
-    
-    @keyframes scaleIn {
-      from { 
-        opacity: 0; 
-        transform: scale(0.9); 
-      }
-      to { 
-        opacity: 1; 
-        transform: scale(1); 
-      }
-    }
-    
-    /* Input */
-    .input-neon {
-      width: 100%;
-      padding: 1rem 1.5rem;
-      background: rgba(13, 27, 42, 0.8);
-      border: 2px solid rgba(100, 200, 255, 0.3);
-      border-radius: 12px;
-      color: white;
-      font-size: 1.1rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      outline: none;
-    }
-    
-    .input-neon:focus {
-      border-color: #06b6d4;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
-    }
-    
-    .input-neon::placeholder {
-      color: rgba(255, 255, 255, 0.4);
-    }
-    
-    /* Panel */
-    .side-panel {
-      width: 320px;
-      background: rgba(13, 27, 42, 0.95);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(100, 200, 255, 0.2);
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-    }
-    
-    /* Scrollbar */
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(13, 27, 42, 0.5);
-      border-radius: 4px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #667eea, #764ba2);
-      border-radius: 4px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, #764ba2, #667eea);
-    }
-    
-    /* Hidden */
     .hidden { display: none !important; }
     
-    /* Glow Effect */
-    .glow {
-      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
-    }
-    
     /* Title */
-    .game-title {
-      font-size: 4rem;
+    .title {
+      font-size: 3.5rem;
       font-weight: 900;
-      background: linear-gradient(135deg, #667eea 0%, #06b6d4 50%, #764ba2 100%);
-      background-clip: text;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
-      letter-spacing: 4px;
-      animation: glow-pulse 3s ease-in-out infinite;
+      text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
     }
     
-    @keyframes glow-pulse {
-      0%, 100% { filter: brightness(1); }
-      50% { filter: brightness(1.3); }
+    /* Progress Bar */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.3rem;
     }
     
-    /* Beam Effect */
-    .beam-line {
-      stroke-linecap: round;
-      filter: drop-shadow(0 0 8px currentColor);
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      transition: width 0.3s;
     }
   </style>
 </head>
 <body>
 
-<!-- Animated Stars Background -->
-<div class="stars" id="starsContainer"></div>
-
-<!-- ============================================ -->
-<!-- VIEW A: LOGIN -->
-<!-- ============================================ -->
-<div id="viewA" data-view="A" class="fixed inset-0 flex items-center justify-center z-50">
-  <div class="glass-bright rounded-3xl p-12 max-w-xl w-full mx-4 text-center">
-    <h1 class="game-title orbitron mb-4">ELITE RTS</h1>
-    <p class="text-xl text-cyan-300 mb-8 font-semibold">Global Tactical Warfare</p>
+<!-- ===================== VIEW A: LOGIN ===================== -->
+<div id="viewA" class="fixed inset-0 flex items-center justify-center z-50">
+  <div class="glass rounded-2xl p-10 max-w-lg w-full mx-4 text-center">
+    <h1 class="title orbitron mb-3">GLOBAL WARFARE</h1>
+    <p class="text-xl text-blue-300 mb-8 font-bold">Real-World Strategy Combat</p>
     
-    <input 
-      id="nickInput" 
-      type="text" 
-      placeholder="Komutan Adınız"
-      class="input-neon mb-6"
-    />
+    <input id="nickInput" type="text" placeholder="Komutan Adınız" class="input mb-6" />
     
-    <button id="loginBtn" class="btn-neon btn-cyan orbitron w-full text-lg py-4">
-      ⚡ SAVAŞA HAZIR
+    <button id="loginBtn" class="btn btn-primary w-full text-lg py-3">
+      ⚡ SAVAŞA KATIL
     </button>
+  </div>
+</div>
+
+<!-- ===================== VIEW B: LOBBY ===================== -->
+<div id="viewB" class="hidden fixed inset-0 flex items-center justify-center z-50">
+  <div class="glass rounded-2xl p-8 max-w-2xl w-full mx-4">
+    <h2 class="text-3xl font-black orbitron text-blue-400 mb-6 text-center">KOMUTA MERKEZİ</h2>
     
-    <p class="text-xs text-slate-400 mt-6 opacity-60">
-      Firebase Realtime Multiplayer
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <button id="createRoomBtn" class="btn btn-primary py-5">
+        ➕ YENİ SAVAŞ
+      </button>
+      <button id="joinRoomBtn" class="btn btn-success py-5">
+        🚪 SAVAŞA KATIL
+      </button>
+    </div>
+    
+    <div id="joinPanel" class="hidden">
+      <input id="roomIdInput" type="text" placeholder="Savaş Kodu" class="input mb-3" />
+      <button id="joinConfirmBtn" class="btn btn-success w-full">BAĞLAN</button>
+    </div>
+    
+    <p class="text-center mt-4 text-blue-300">
+      Komutan: <span id="userDisplay" class="font-bold"></span>
     </p>
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- VIEW B: LOBBY -->
-<!-- ============================================ -->
-<div id="viewB" data-view="B" class="hidden fixed inset-0 flex items-center justify-center z-50">
-  <div class="glass-bright rounded-3xl p-10 max-w-3xl w-full mx-4">
-    <h2 class="text-4xl font-black orbitron text-cyan-400 mb-8 glow text-center">
-      🎮 KOMUTA MERKEZİ
-    </h2>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <button id="createRoomBtn" class="btn-neon orbitron text-lg py-6">
-        ➕ YENİ OPERASYON BAŞLAT
-      </button>
-      
-      <button id="joinRoomBtn" class="btn-neon btn-cyan orbitron text-lg py-6">
-        🚪 OPERASYONA KATIL
-      </button>
-    </div>
-    
-    <div id="joinRoomPanel" class="hidden">
-      <input 
-        id="roomIdInput" 
-        type="text" 
-        placeholder="Operasyon Kodu"
-        class="input-neon mb-4"
-      />
-      <button id="joinRoomConfirmBtn" class="btn-neon btn-cyan orbitron w-full py-3">
-        BAĞLAN
-      </button>
-    </div>
-    
-    <div class="text-center mt-6">
-      <p class="text-sm text-slate-300">
-        Komutan: <span id="userNickDisplay" class="text-cyan-400 font-bold text-lg"></span>
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================ -->
-<!-- VIEW C: ROOM -->
-<!-- ============================================ -->
-<div id="viewC" data-view="C" class="hidden fixed inset-0 flex items-center justify-center z-50">
-  <div class="glass-bright rounded-3xl p-10 max-w-3xl w-full mx-4">
-    <h2 class="text-3xl font-black orbitron text-cyan-400 mb-4 glow text-center">
-      🏠 OPERASYON ODASI
-    </h2>
-    <p class="text-center text-lg mb-8">
-      Kod: <span id="roomIdDisplay" class="text-cyan-300 font-mono font-black text-2xl tracking-widest"></span>
+<!-- ===================== VIEW C: ROOM ===================== -->
+<div id="viewC" class="hidden fixed inset-0 flex items-center justify-center z-50">
+  <div class="glass rounded-2xl p-8 max-w-2xl w-full mx-4">
+    <h2 class="text-3xl font-black orbitron text-blue-400 mb-3 text-center">SAVAŞ ODASI</h2>
+    <p class="text-center text-lg mb-6">
+      Kod: <span id="roomDisplay" class="text-blue-300 font-mono font-bold text-2xl"></span>
     </p>
     
-    <div id="playersListInRoom" class="mb-8 space-y-4">
-      <!-- Dynamic players -->
-    </div>
+    <div id="playersList" class="mb-6 space-y-3"></div>
     
-    <div class="flex gap-4">
-      <button id="readyToggleBtn" class="btn-neon flex-1 py-4">
-        ✓ HAZIR
-      </button>
-      
-      <button id="startGameBtn" class="btn-neon btn-cyan flex-1 py-4 hidden">
-        🚀 OPERASYON BAŞLAT
-      </button>
-      
-      <button id="leaveRoomBtn" class="btn-neon btn-red py-4 px-8">
-        ← ÇIKIŞ
-      </button>
+    <div class="flex gap-3">
+      <button id="readyBtn" class="btn btn-success flex-1 py-3">✓ HAZIR</button>
+      <button id="startBtn" class="btn btn-primary flex-1 py-3 hidden">🚀 BAŞLAT</button>
+      <button id="leaveRoomBtn" class="btn btn-danger px-6 py-3">ÇIKIŞ</button>
     </div>
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- VIEW D: GAME -->
-<!-- ============================================ -->
-<div id="viewD" data-view="D" class="hidden fixed inset-0 flex flex-col">
+<!-- ===================== VIEW D: GAME ===================== -->
+<div id="viewD" class="hidden fixed inset-0 flex flex-col">
   
   <!-- TOP BAR -->
-  <div class="glass-bright p-4 flex items-center justify-between gap-4 z-20 border-b border-cyan-500/30">
-    <div class="flex items-center gap-3 flex-wrap">
-      <div class="resource-badge">
-        <span class="text-2xl">💰</span>
-        <span id="resMoney" class="text-xl">300</span>
-      </div>
-      <div class="resource-badge">
-        <span class="text-2xl">🛢️</span>
-        <span id="resOil" class="text-xl">120</span>
-      </div>
-      <div class="resource-badge">
-        <span class="text-2xl">⛓️</span>
-        <span id="resIron" class="text-xl">120</span>
-      </div>
-      <div class="resource-badge">
-        <span class="text-2xl">🪙</span>
-        <span id="resGold" class="text-xl">10</span>
-      </div>
-      <div class="resource-badge">
-        <span class="text-2xl">👥</span>
-        <span id="resPop" class="text-xl">0</span>/<span id="resPopMax" class="text-lg">200</span>
-      </div>
+  <div class="glass p-3 flex items-center justify-between z-20">
+    <div class="flex gap-3 flex-wrap">
+      <div class="resource"><span class="text-xl">💰</span><span id="rMoney">500</span></div>
+      <div class="resource"><span class="text-xl">🛢️</span><span id="rOil">200</span></div>
+      <div class="resource"><span class="text-xl">⛓️</span><span id="rIron">150</span></div>
+      <div class="resource"><span class="text-xl">💎</span><span id="rRare">50</span></div>
+      <div class="resource"><span class="text-xl">👥</span><span id="rPop">0</span>/<span id="rPopMax">200</span></div>
     </div>
     
-    <div class="flex items-center gap-3">
-      <button id="helpBtn" class="btn-neon btn-cyan text-sm px-4 py-2">❓ YARDIM</button>
-      <button id="leaveGameBtn" class="btn-neon btn-red text-sm px-4 py-2">🚪 ÇIKIŞ</button>
+    <div class="flex gap-2">
+      <button id="helpBtn" class="btn btn-secondary text-sm px-3 py-2">❓</button>
+      <button id="exitBtn" class="btn btn-danger text-sm px-3 py-2">ÇIKIŞ</button>
     </div>
   </div>
   
-  <!-- MAIN GAME AREA -->
-  <div class="flex-1 flex relative overflow-hidden">
+  <!-- MAIN AREA -->
+  <div class="flex-1 flex overflow-hidden">
     
     <!-- LEFT PANEL -->
-    <div class="side-panel p-6 overflow-y-auto custom-scrollbar z-10">
-      <h3 class="text-2xl font-black orbitron text-cyan-400 mb-4 glow">
-        🏗️ İNŞA & ÜRETİM
-      </h3>
+    <div class="panel p-4 overflow-y-auto scrollbar">
+      <h3 class="text-xl font-black text-blue-400 mb-3">🏗️ İNŞAAT & ÜRETİM</h3>
       
-      <button id="toggleBuildBtn" class="btn-neon w-full mb-4 py-3">
-        İNŞAAT MENÜSÜ
-      </button>
-      
-      <div id="buildMenu" class="hidden space-y-2 mb-6">
-        <!-- Dynamic build menu -->
+      <div class="mb-4">
+        <button id="buildBtn" class="btn btn-primary w-full mb-2">İNŞAAT</button>
+        <div id="buildMenu" class="hidden space-y-2"></div>
       </div>
       
-      <button id="toggleProduceBtn" class="btn-neon btn-cyan w-full mb-4 py-3">
-        BİRİM ÜRETİMİ
-      </button>
-      
-      <div id="produceMenu" class="hidden space-y-2">
-        <p class="text-sm text-slate-400 text-center">Bir bina seçin</p>
+      <div>
+        <button id="produceBtn" class="btn btn-success w-full mb-2">BİRİM ÜRETİMİ</button>
+        <div id="produceMenu" class="hidden space-y-2">
+          <p class="text-sm text-gray-400 text-center">Bina seçin</p>
+        </div>
       </div>
     </div>
     
@@ -540,111 +314,57 @@
     </div>
     
     <!-- RIGHT PANEL -->
-    <div class="side-panel p-6 overflow-y-auto custom-scrollbar z-10">
-      <h3 class="text-2xl font-black orbitron text-cyan-400 mb-4 glow">
-        📊 TAKTİK BİLGİ
-      </h3>
+    <div class="panel p-4 overflow-y-auto scrollbar">
+      <h3 class="text-xl font-black text-blue-400 mb-3">📊 BİLGİ</h3>
       
-      <div class="mb-6">
-        <h4 class="text-lg font-bold text-cyan-300 mb-3">Seçili Birimler</h4>
-        <div id="selectedUnitsInfo" class="text-sm text-slate-300 space-y-2">
-          <p class="text-slate-500">Birim seçilmedi</p>
+      <div class="mb-4">
+        <h4 class="font-bold text-blue-300 mb-2">Seçili</h4>
+        <div id="selectedInfo" class="text-sm">
+          <p class="text-gray-500">Seçim yok</p>
         </div>
       </div>
       
-      <div class="mb-6">
-        <h4 class="text-lg font-bold text-cyan-300 mb-3">Üretim Kuyruğu</h4>
-        <div id="productionQueue" class="text-sm text-slate-300 space-y-2">
-          <p class="text-slate-500">Kuyruk boş</p>
-        </div>
+      <div class="mb-4">
+        <h4 class="font-bold text-blue-300 mb-2">Üretim Kuyruğu</h4>
+        <div id="queueInfo" class="text-sm space-y-1"></div>
       </div>
       
       <div>
-        <h4 class="text-lg font-bold text-red-400 mb-3">⚔️ Savaş Günlüğü</h4>
-        <div id="combatLog" class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar">
-          <!-- Dynamic log -->
-        </div>
+        <h4 class="font-bold text-red-400 mb-2">⚔️ Savaş Günlüğü</h4>
+        <div id="combatLog" class="space-y-1 max-h-72 overflow-y-auto scrollbar"></div>
       </div>
     </div>
   </div>
   
   <!-- BOTTOM HINT -->
-  <div class="glass-bright p-3 text-center text-sm font-semibold text-cyan-300 z-10 border-t border-cyan-500/30">
-    <span id="hintText">🎯 Sol tık: Seç | Tekrar tık: Hareket | Birim otomatik saldırır</span>
+  <div class="glass p-2 text-center text-sm font-semibold text-blue-300">
+    <span id="hint">Tıkla seç | Tekrar tıkla hareket/saldır | Sadece kepçeler inşaat yapar</span>
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- HELP MODAL -->
-<!-- ============================================ -->
-<div id="helpModal" class="hidden modal-overlay">
-  <div class="modal-content glass-bright rounded-3xl p-8 max-w-2xl">
-    <h2 class="text-3xl font-black orbitron text-cyan-400 mb-6 glow text-center">
-      📖 TAKTİK REHBER
-    </h2>
-    
-    <div class="space-y-4 text-lg">
-      <div class="flex items-start gap-3">
-        <span class="text-cyan-400 font-black">🎯</span>
-        <div>
-          <strong class="text-cyan-300">Sol Tık:</strong> 
-          <span class="text-slate-300">Birim/bina seç</span>
-        </div>
-      </div>
-      
-      <div class="flex items-start gap-3">
-        <span class="text-cyan-400 font-black">🎯</span>
-        <div>
-          <strong class="text-cyan-300">Tekrar Tık:</strong> 
-          <span class="text-slate-300">Seçili birim hedefe hareket eder</span>
-        </div>
-      </div>
-      
-      <div class="flex items-start gap-3">
-        <span class="text-cyan-400 font-black">⚔️</span>
-        <div>
-          <strong class="text-cyan-300">Otomatik Saldırı:</strong> 
-          <span class="text-slate-300">Düşman menzile girerse otomatik ateş edilir</span>
-        </div>
-      </div>
-      
-      <div class="flex items-start gap-3">
-        <span class="text-cyan-400 font-black">🎯</span>
-        <div>
-          <strong class="text-cyan-300">Menzil Gösterimi:</strong> 
-          <span class="text-slate-300">Birime tıklayınca menzil halkası görünür</span>
-        </div>
-      </div>
+<!-- ===================== MODALS ===================== -->
+<div id="helpModal" class="hidden modal">
+  <div class="glass rounded-2xl p-8 max-w-xl">
+    <h2 class="text-2xl font-black text-blue-400 mb-4 text-center">YARDIM</h2>
+    <div class="space-y-3 text-base">
+      <p>🎯 <strong>Seç:</strong> Birime tıkla</p>
+      <p>🎯 <strong>Hareket/Saldır:</strong> Hedefe tıkla (menzil içindeyse saldırır)</p>
+      <p>🏗️ <strong>İnşaat:</strong> Sadece kepçeler inşaat yapabilir</p>
+      <p>💰 <strong>Ekonomi:</strong> Madenler gelir üretir, birimler kaynak harcar</p>
+      <p>🎖️ <strong>Hedef:</strong> Düşman HQ'yu yok et!</p>
     </div>
-    
-    <div class="mt-8 p-4 glass rounded-xl border border-red-500/50">
-      <p class="text-center text-lg font-bold text-red-400">
-        🎯 HEDEF: Düşman Merkez Üs'ünü Yok Et!
-      </p>
-    </div>
-    
-    <button id="closeHelpBtn" class="btn-neon btn-cyan orbitron w-full mt-8 py-4">
-      ANLADIM
-    </button>
+    <button id="closeHelpBtn" class="btn btn-primary w-full mt-6">ANLADIM</button>
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- RESULT MODAL -->
-<!-- ============================================ -->
-<div id="resultModal" class="hidden modal-overlay">
-  <div class="modal-content glass-bright rounded-3xl p-12 text-center max-w-lg">
-    <h2 id="resultTitle" class="text-5xl font-black orbitron mb-6 glow">🏆</h2>
-    <p id="resultText" class="text-2xl text-slate-200 mb-8 font-semibold"></p>
-    <button id="closeResultBtn" class="btn-neon btn-cyan orbitron w-full py-4 text-lg">
-      KOMUTA MERKEZİNE DÖN
-    </button>
+<div id="resultModal" class="hidden modal">
+  <div class="glass rounded-2xl p-10 text-center max-w-md">
+    <h2 id="resultTitle" class="text-4xl font-black mb-4"></h2>
+    <p id="resultText" class="text-xl mb-6"></p>
+    <button id="closeResultBtn" class="btn btn-primary w-full py-3">LOBIYE DÖN</button>
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- SCRIPTS -->
-<!-- ============================================ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -652,23 +372,7 @@
 
 <script>
 // ============================================
-// ANIMATED BACKGROUND
-// ============================================
-function createStars() {
-  const container = document.getElementById('starsContainer');
-  for (let i = 0; i < 100; i++) {
-    const star = document.createElement('div');
-    star.className = 'star';
-    star.style.left = Math.random() * 100 + '%';
-    star.style.top = Math.random() * 100 + '%';
-    star.style.animationDelay = Math.random() * 3 + 's';
-    container.appendChild(star);
-  }
-}
-createStars();
-
-// ============================================
-// FIREBASE CONFIG
+// FIREBASE
 // ============================================
 const firebaseConfig = {
   apiKey: "AIzaSyCV609XeHMtmZtD3FZDJ0cQnDiXke4YlUs",
@@ -677,8 +381,7 @@ const firebaseConfig = {
   projectId: "globalrts-ea3b4",
   storageBucket: "globalrts-ea3b4.firebasestorage.app",
   messagingSenderId: "404807030737",
-  appId: "1:404807030737:web:2efecfef884db0b58632f0",
-  measurementId: "G-Q5YKGP8EXR"
+  appId: "1:404807030737:web:2efecfef884db0b58632f0"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -686,171 +389,349 @@ const auth = firebase.auth();
 const db = firebase.database();
 
 // ============================================
-// GLOBAL STATE
+// STATE
 // ============================================
 const state = {
-  currentView: 'A',
+  view: 'A',
   uid: null,
   nick: null,
   roomId: null,
   isHost: false,
-  gameStarted: false,
+  started: false,
   
   tick: 0,
   entities: new Map(),
-  selectedId: null,
-  myTeam: null,
+  selected: null,
+  team: null,
   
-  resources: {
-    money: 300,
-    oil: 120,
-    iron: 120,
-    gold: 10,
-    pop: 0,
-    popMax: 200
-  },
+  res: { money: 500, oil: 200, iron: 150, rare: 50, pop: 0, popMax: 200 },
   
-  commandBuffer: [],
-  lastSimTime: 0,
-  simulationRunning: false,
+  cmdBuffer: [],
+  lastSim: 0,
+  running: false,
   
   map: null,
   mapReady: false,
   rangeCircle: null,
   
-  combatLog: [],
+  log: [],
   
-  seed: 12345,
+  seed: 0,
   rng: null
 };
 
 // ============================================
-// CONSTANTS
+// CONSTANTS - GERÇEK MENZİLLER (METRE)
 // ============================================
-const WORLD_SCALE = 100; // 1 px = 100m
-const NET_TICK_RATE = 10;
-const NET_DT = 1 / NET_TICK_RATE;
+const WORLD_SCALE = 100; // 1 leaflet unit = 100m
+const TICK_RATE = 10;
+const DT = 0.1;
 const INPUT_DELAY = 3;
-
-// GERÇEK MENZİLLER (metre)
-const UNIT_TYPES = {
-  Infantry: { 
-    hp: 100, speed: 1.4, range: 400, dps: 8, fireRate: 5, 
-    icon: '🪖', cost: { money: 40 }, buildTime: 5,
-    name: 'Piyade'
-  },
-  MG: { 
-    hp: 120, speed: 1.2, range: 600, dps: 15, fireRate: 8, 
-    icon: '⚔️', cost: { money: 60 }, buildTime: 6,
-    name: 'Ağır Silah'
-  },
-  Sniper: { 
-    hp: 80, speed: 1.3, range: 1200, dps: 35, fireRate: 0.8, 
-    icon: '🎯', cost: { money: 90, iron: 10 }, buildTime: 8,
-    name: 'Keskin Nişancı'
-  },
-  AT: { 
-    hp: 100, speed: 1.2, range: 1500, dps: 50, fireRate: 0.4, 
-    icon: '🚀', cost: { money: 120, iron: 20 }, buildTime: 10,
-    name: 'Tanksavar'
-  },
-  APC: { 
-    hp: 350, speed: 15, range: 800, dps: 12, fireRate: 4, 
-    icon: '🚐', cost: { money: 180, oil: 40, iron: 40 }, buildTime: 12,
-    name: 'Zırhlı Araç'
-  },
-  Tank: { 
-    hp: 600, speed: 12, range: 2500, dps: 60, fireRate: 0.3, 
-    icon: '🛡️', cost: { money: 300, oil: 100, iron: 150 }, buildTime: 20,
-    name: 'Ana Muharebe Tankı'
-  },
-  Artillery: { 
-    hp: 250, speed: 8, range: 8000, dps: 45, fireRate: 0.2, 
-    icon: '💣', cost: { money: 280, oil: 80, iron: 120 }, buildTime: 18,
-    name: 'Topçu'
-  },
-  MLRS: { 
-    hp: 300, speed: 10, range: 12000, dps: 40, fireRate: 0.15, 
-    icon: '💥', cost: { money: 350, oil: 100, iron: 140 }, buildTime: 22,
-    name: 'Çok Namlulu Roketatar'
-  },
-  Helicopter: { 
-    hp: 200, speed: 35, range: 3000, dps: 25, fireRate: 2, 
-    icon: '🚁', cost: { money: 320, oil: 120 }, buildTime: 18,
-    name: 'Saldırı Helikopteri'
-  },
-  Drone: { 
-    hp: 150, speed: 28, range: 5000, dps: 18, fireRate: 1.5, 
-    icon: '✈️', cost: { money: 250, oil: 80 }, buildTime: 15,
-    name: 'Silahlı İHA'
-  }
-};
-
-const BUILDING_TYPES = {
-  HQ: { 
-    hp: 1200, icon: '🏛️', produces: ['Infantry'], 
-    cost: { money: 0 }, buildTime: 0,
-    name: 'Merkez Üs'
-  },
-  Barracks: { 
-    hp: 600, icon: '🏰', produces: ['Infantry', 'MG', 'Sniper', 'AT'], 
-    cost: { money: 150 }, buildTime: 20,
-    name: 'Kışla'
-  },
-  Factory: { 
-    hp: 700, icon: '🏭', produces: ['APC', 'Tank'], 
-    cost: { money: 250, oil: 50, iron: 50 }, buildTime: 30,
-    name: 'Tank Fabrikası'
-  },
-  Artillery_Base: { 
-    hp: 650, icon: '🔧', produces: ['Artillery', 'MLRS'], 
-    cost: { money: 280, iron: 80 }, buildTime: 28,
-    name: 'Topçu Üssü'
-  },
-  Airfield: { 
-    hp: 800, icon: '🛫', produces: ['Helicopter', 'Drone'], 
-    cost: { money: 400, oil: 100 }, buildTime: 35,
-    name: 'Hava Üssü'
-  },
-  Refinery: { 
-    hp: 500, icon: '🛢️', income: { oil: 3 }, 
-    cost: { money: 180 }, buildTime: 25,
-    name: 'Rafineri'
-  },
-  Mine: { 
-    hp: 550, icon: '⛓️', income: { iron: 3 }, 
-    cost: { money: 200 }, buildTime: 28,
-    name: 'Maden'
-  },
-  Bank: { 
-    hp: 450, icon: '🏦', income: { money: 10 }, 
-    cost: { money: 150 }, buildTime: 20,
-    name: 'Ekonomi Merkezi'
-  }
-};
-
 const INCOME_TICKS = 30; // 3 saniye
+
+// BİRİMLER - Gerçekçi menziller ve hızlar
+const UNITS = {
+  // Kepçe - İnşaat için
+  Excavator: {
+    name: 'Kepçe',
+    icon: '🚜',
+    hp: 150,
+    speed: 8, // m/s
+    range: 0,
+    dps: 0,
+    cost: { money: 100, oil: 30 },
+    time: 10,
+    builds: true // Sadece kepçe inşaat yapabilir
+  },
+  
+  // Piyade Birimleri
+  Infantry: {
+    name: 'Piyade',
+    icon: '🪖',
+    hp: 100,
+    speed: 1.4, // m/s (~5 km/h)
+    range: 250, // m
+    dps: 10,
+    fireRate: 6,
+    cost: { money: 50 },
+    time: 6
+  },
+  
+  MG_Team: {
+    name: 'Makineli Tüfek Timi',
+    icon: '⚔️',
+    hp: 120,
+    speed: 1.2,
+    range: 600,
+    dps: 25,
+    fireRate: 10,
+    cost: { money: 80 },
+    time: 8
+  },
+  
+  Sniper: {
+    name: 'Keskin Nişancı',
+    icon: '🎯',
+    hp: 80,
+    speed: 1.3,
+    range: 1200,
+    dps: 50,
+    fireRate: 0.5,
+    cost: { money: 120, rare: 5 },
+    time: 12
+  },
+  
+  AT_Team: {
+    name: 'Tanksavar Timi',
+    icon: '🚀',
+    hp: 100,
+    speed: 1.2,
+    range: 3000,
+    dps: 80,
+    fireRate: 0.3,
+    cost: { money: 200, iron: 30 },
+    time: 15
+  },
+  
+  // Araçlar
+  Jeep: {
+    name: 'Hafif Araç',
+    icon: '🚙',
+    hp: 200,
+    speed: 18, // ~65 km/h
+    range: 400,
+    dps: 15,
+    fireRate: 8,
+    cost: { money: 150, oil: 40 },
+    time: 10
+  },
+  
+  APC: {
+    name: 'Zırhlı Personel Taşıyıcı',
+    icon: '🚐',
+    hp: 400,
+    speed: 15, // ~54 km/h
+    range: 800,
+    dps: 30,
+    fireRate: 5,
+    cost: { money: 250, oil: 80, iron: 60 },
+    time: 18
+  },
+  
+  IFV: {
+    name: 'Piyade Savaş Aracı',
+    icon: '🔫',
+    hp: 500,
+    speed: 16,
+    range: 1500,
+    dps: 45,
+    fireRate: 4,
+    cost: { money: 400, oil: 100, iron: 120 },
+    time: 22
+  },
+  
+  // Tanklar
+  Light_Tank: {
+    name: 'Hafif Tank',
+    icon: '🛡️',
+    hp: 600,
+    speed: 14,
+    range: 2500,
+    dps: 60,
+    fireRate: 1,
+    cost: { money: 500, oil: 120, iron: 150 },
+    time: 25
+  },
+  
+  MBT: {
+    name: 'Ana Muharebe Tankı',
+    icon: '⚙️',
+    hp: 1000,
+    speed: 12,
+    range: 4000,
+    dps: 120,
+    fireRate: 0.4,
+    cost: { money: 800, oil: 200, iron: 300 },
+    time: 35
+  },
+  
+  Heavy_Tank: {
+    name: 'Ağır Tank',
+    icon: '🏋️',
+    hp: 1500,
+    speed: 10,
+    range: 4500,
+    dps: 150,
+    fireRate: 0.3,
+    cost: { money: 1200, oil: 300, iron: 450, rare: 20 },
+    time: 45
+  },
+  
+  // Topçu
+  Artillery: {
+    name: 'Topçu',
+    icon: '💣',
+    hp: 300,
+    speed: 8,
+    range: 25000, // 25km
+    dps: 80,
+    fireRate: 0.2,
+    cost: { money: 600, oil: 150, iron: 200 },
+    time: 30
+  },
+  
+  MLRS: {
+    name: 'Çok Namlulu Roketatar',
+    icon: '💥',
+    hp: 350,
+    speed: 10,
+    range: 70000, // 70km
+    dps: 100,
+    fireRate: 0.1,
+    cost: { money: 900, oil: 250, iron: 300 },
+    time: 40
+  },
+  
+  // Hava Araçları
+  Attack_Heli: {
+    name: 'Saldırı Helikopteri',
+    icon: '🚁',
+    hp: 400,
+    speed: 70, // ~252 km/h
+    range: 6000,
+    dps: 70,
+    fireRate: 3,
+    cost: { money: 1000, oil: 300, rare: 30 },
+    time: 35
+  },
+  
+  Drone: {
+    name: 'Silahlı İHA',
+    icon: '✈️',
+    hp: 200,
+    speed: 40,
+    range: 8000,
+    dps: 40,
+    fireRate: 2,
+    cost: { money: 600, oil: 150, rare: 20 },
+    time: 25
+  }
+};
+
+// BİNALAR
+const BUILDINGS = {
+  HQ: {
+    name: 'Merkez Üs',
+    icon: '🏛️',
+    hp: 2000,
+    produces: ['Excavator', 'Infantry'],
+    cost: {},
+    time: 0
+  },
+  
+  Barracks: {
+    name: 'Kışla',
+    icon: '🏰',
+    hp: 800,
+    produces: ['Infantry', 'MG_Team', 'Sniper', 'AT_Team'],
+    cost: { money: 200 },
+    time: 25
+  },
+  
+  Vehicle_Factory: {
+    name: 'Araç Fabrikası',
+    icon: '🏭',
+    hp: 1000,
+    produces: ['Jeep', 'APC', 'IFV'],
+    cost: { money: 350, oil: 80, iron: 100 },
+    time: 35
+  },
+  
+  Tank_Factory: {
+    name: 'Tank Fabrikası',
+    icon: '🔧',
+    hp: 1200,
+    produces: ['Light_Tank', 'MBT', 'Heavy_Tank'],
+    cost: { money: 500, oil: 150, iron: 200 },
+    time: 45
+  },
+  
+  Artillery_Base: {
+    name: 'Topçu Üssü',
+    icon: '🎖️',
+    hp: 900,
+    produces: ['Artillery', 'MLRS'],
+    cost: { money: 450, iron: 150 },
+    time: 40
+  },
+  
+  Airfield: {
+    name: 'Hava Üssü',
+    icon: '🛫',
+    hp: 1100,
+    produces: ['Attack_Heli', 'Drone'],
+    cost: { money: 800, oil: 200, rare: 30 },
+    time: 50
+  },
+  
+  // Ekonomi Binaları
+  Money_Gen: {
+    name: 'Ekonomi Merkezi',
+    icon: '🏦',
+    hp: 600,
+    income: { money: 15 },
+    cost: { money: 250 },
+    time: 20
+  },
+  
+  Oil_Refinery: {
+    name: 'Petrol Rafinerisi',
+    icon: '🛢️',
+    hp: 700,
+    income: { oil: 8 },
+    cost: { money: 300, iron: 50 },
+    time: 25
+  },
+  
+  Iron_Mine: {
+    name: 'Demir Madeni',
+    icon: '⛓️',
+    hp: 750,
+    income: { iron: 6 },
+    cost: { money: 350, oil: 40 },
+    time: 28
+  },
+  
+  Rare_Mine: {
+    name: 'Nadir Element Madeni',
+    icon: '💎',
+    hp: 800,
+    income: { rare: 3 },
+    cost: { money: 500, iron: 80 },
+    time: 35
+  },
+  
+  Power_Plant: {
+    name: 'Enerji Santrali',
+    icon: '⚡',
+    hp: 900,
+    income: { money: 10, oil: 5 },
+    cost: { money: 400, iron: 100 },
+    time: 30
+  }
+};
 
 // ============================================
 // RNG
 // ============================================
-class SeededRandom {
-  constructor(seed) {
-    this.seed = seed;
-  }
-  
-  next() {
-    this.seed = (this.seed * 9301 + 49297) % 233280;
-    return this.seed / 233280;
-  }
-  
-  range(min, max) {
-    return min + this.next() * (max - min);
-  }
+class RNG {
+  constructor(seed) { this.s = seed; }
+  next() { this.s = (this.s * 9301 + 49297) % 233280; return this.s / 233280; }
+  range(a, b) { return a + this.next() * (b - a); }
 }
 
 // ============================================
-// ENTITY CLASSES
+// ENTITIES
 // ============================================
 class Entity {
   constructor(id, type, team, lat, lng) {
@@ -867,9 +748,9 @@ class Entity {
       state.map.removeLayer(this.marker);
       this.marker = null;
     }
-    if (state.selectedId === this.id) {
-      state.selectedId = null;
-      updateSelection();
+    if (state.selected === this.id) {
+      state.selected = null;
+      updateUI();
     }
   }
 }
@@ -879,119 +760,115 @@ class Unit extends Entity {
     super(id, type, team, lat, lng);
     this.stats = { ...stats };
     this.hp = stats.hp;
-    this.targetPos = null;
-    this.targetEnemy = null;
+    this.target = null;
     this.cooldown = 0;
   }
   
   update(dt) {
-    if (this.cooldown > 0) {
-      this.cooldown -= dt;
+    if (this.cooldown > 0) this.cooldown -= dt;
+    
+    // Otomatik düşman tarama
+    if (!this.target && this.stats.range > 0) {
+      this.findEnemy();
     }
     
-    // Düşman tarama (otomatik saldırı)
-    if (!this.targetEnemy && this.stats.range > 0) {
-      this.scanForEnemies();
-    }
-    
-    // Düşmana saldır
-    if (this.targetEnemy) {
-      const enemy = state.entities.get(this.targetEnemy);
-      if (enemy && enemy.hp > 0) {
-        const dx = enemy.lng - this.lng;
-        const dy = enemy.lat - this.lat;
-        const dist = Math.sqrt(dx*dx + dy*dy) * WORLD_SCALE;
-        
-        if (dist <= this.stats.range) {
-          // Menzil içinde - ateş et
-          if (this.cooldown <= 0) {
-            const damage = this.stats.dps / this.stats.fireRate;
-            enemy.hp -= damage;
-            this.cooldown = 1 / this.stats.fireRate;
-            
-            drawBeam(this.lat, this.lng, enemy.lat, enemy.lng);
-            
-            if (enemy.hp <= 0) {
-              addCombatLog(`${this.stats.name} bir ${enemy.stats.name} imha etti!`);
-              destroyEntity(enemy.id);
+    if (this.target) {
+      if (this.target.id) {
+        // Düşmana saldır
+        const enemy = state.entities.get(this.target.id);
+        if (enemy && enemy.hp > 0) {
+          const dist = this.distTo(enemy) * WORLD_SCALE;
+          
+          if (dist <= this.stats.range) {
+            // Menzil içinde - ateş
+            if (this.cooldown <= 0 && this.stats.dps > 0) {
+              const dmg = this.stats.dps / this.stats.fireRate;
+              enemy.hp -= dmg;
+              this.cooldown = 1 / this.stats.fireRate;
               
-              if (enemy.type === 'HQ') {
-                endGame(this.team);
+              drawBeam(this.lat, this.lng, enemy.lat, enemy.lng);
+              
+              if (enemy.hp <= 0) {
+                log(`${this.stats.name} bir ${enemy.stats.name} imha etti!`);
+                destroy(enemy.id);
+                if (enemy.type === 'HQ') endGame(this.team);
               }
             }
+          } else {
+            // Yaklaş
+            this.moveTo(enemy.lat, enemy.lng, dt);
           }
         } else {
-          // Menzil dışında - yaklaş
-          const speed = this.stats.speed / WORLD_SCALE * dt;
-          const ratio = Math.min(1, speed / (dist / WORLD_SCALE));
-          this.lng += dx * ratio;
-          this.lat += dy * ratio;
+          this.target = null;
         }
       } else {
-        this.targetEnemy = null;
-      }
-    }
-    
-    // Normal hareket (düşman yoksa)
-    if (!this.targetEnemy && this.targetPos) {
-      const dx = this.targetPos.lng - this.lng;
-      const dy = this.targetPos.lat - this.lat;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      
-      if (dist > 0.0001) {
-        const speed = this.stats.speed / WORLD_SCALE * dt;
-        const ratio = Math.min(1, speed / dist);
-        this.lng += dx * ratio;
-        this.lat += dy * ratio;
-      } else {
-        this.targetPos = null;
+        // Pozisyona hareket
+        const dist = Math.sqrt(
+          (this.target.lat - this.lat)**2 + 
+          (this.target.lng - this.lng)**2
+        );
+        
+        if (dist > 0.0001) {
+          this.moveTo(this.target.lat, this.target.lng, dt);
+        } else {
+          this.target = null;
+        }
       }
     }
   }
   
-  scanForEnemies() {
-    const maxRange = (this.stats.range + 100) / WORLD_SCALE;
+  findEnemy() {
+    const scanRange = (this.stats.range + 500) / WORLD_SCALE;
     let closest = null;
-    let closestDist = Infinity;
+    let minDist = Infinity;
     
     state.entities.forEach(e => {
       if (e.team !== this.team && e.hp > 0) {
-        const dx = e.lng - this.lng;
-        const dy = e.lat - this.lat;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        if (dist < maxRange && dist < closestDist) {
-          closest = e.id;
-          closestDist = dist;
+        const d = this.distTo(e);
+        if (d < scanRange && d < minDist) {
+          closest = e;
+          minDist = d;
         }
       }
     });
     
     if (closest) {
-      this.targetEnemy = closest;
-      this.targetPos = null;
+      this.target = { id: closest.id };
     }
   }
   
+  moveTo(lat, lng, dt) {
+    const dx = lng - this.lng;
+    const dy = lat - this.lat;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const speed = this.stats.speed / WORLD_SCALE * dt;
+    const ratio = Math.min(1, speed / dist);
+    this.lng += dx * ratio;
+    this.lat += dy * ratio;
+  }
+  
+  distTo(e) {
+    return Math.sqrt((e.lng - this.lng)**2 + (e.lat - this.lat)**2);
+  }
+  
   createMarker() {
-    const color = this.team === 'p1' ? '#06b6d4' : '#ef4444';
+    const color = this.team === 'p1' ? '#3b82f6' : '#ef4444';
     const icon = L.divIcon({
       className: '',
-      html: `<div class="unit-marker" style="background:${color}20; border-color:${color}; color:${color};">${this.stats.icon}</div>`,
-      iconSize: [32, 32]
+      html: `<div class="unit-marker" style="border-color:${color};color:${color};">${this.stats.icon}</div>`,
+      iconSize: [28, 28]
     });
     
     this.marker = L.marker([this.lat, this.lng], { icon });
     this.marker.entityId = this.id;
     this.marker.addTo(state.map);
-    
     this.marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
-      handleUnitClick(this.id);
+      handleClick(this.id);
     });
   }
   
-  updateMarkerPosition() {
+  updatePos() {
     if (this.marker) {
       this.marker.setLatLng([this.lat, this.lng]);
     }
@@ -1003,309 +880,402 @@ class Building extends Entity {
     super(id, type, team, lat, lng);
     this.stats = { ...stats };
     this.hp = stats.hp;
-    this.productionQueue = [];
+    this.queue = [];
   }
   
   update(dt) {
     // Gelir
-    if (this.stats.income && state.tick % INCOME_TICKS === 0) {
-      if (this.team === state.myTeam) {
-        Object.entries(this.stats.income).forEach(([res, val]) => {
-          state.resources[res] = (state.resources[res] || 0) + val;
-        });
-      }
+    if (this.stats.income && state.tick % INCOME_TICKS === 0 && this.team === state.team) {
+      Object.entries(this.stats.income).forEach(([k, v]) => {
+        state.res[k] += v;
+      });
     }
     
     // Üretim
-    if (this.productionQueue.length > 0) {
-      const item = this.productionQueue[0];
+    if (this.queue.length > 0) {
+      const item = this.queue[0];
       item.progress += dt;
       
       if (item.progress >= item.time) {
-        this.productionQueue.shift();
-        
-        if (this.team === state.myTeam) {
-          spawnUnit(item.unitType, this.team, this.lat + 0.002, this.lng + 0.002);
-          addCombatLog(`${UNIT_TYPES[item.unitType].name} savaşa hazır!`);
+        this.queue.shift();
+        if (this.team === state.team) {
+          spawn(item.unit, this.team, this.lat + 0.002, this.lng + 0.002);
+          log(`${UNITS[item.unit].name} hazır!`);
         }
       }
     }
   }
   
   createMarker() {
-    const color = this.team === 'p1' ? '#06b6d4' : '#ef4444';
+    const color = this.team === 'p1' ? '#3b82f6' : '#ef4444';
     const icon = L.divIcon({
       className: '',
-      html: `<div class="building-marker" style="border-color:${color}; color:${color};">${this.stats.icon}</div>`,
-      iconSize: [48, 48]
+      html: `<div class="building-marker" style="border-color:${color};color:${color};">${this.stats.icon}</div>`,
+      iconSize: [40, 40]
     });
     
     this.marker = L.marker([this.lat, this.lng], { icon });
     this.marker.entityId = this.id;
     this.marker.addTo(state.map);
-    
     this.marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
-      handleBuildingClick(this.id);
+      handleClick(this.id);
     });
   }
   
-  updateMarkerPosition() {
-    // Buildings don't move
-  }
+  updatePos() {}
 }
 
 // ============================================
 // ENTITY MANAGEMENT
 // ============================================
-function spawnUnit(type, team, lat, lng) {
-  const id = `u_${Date.now()}_${Math.random()}`;
-  const stats = UNIT_TYPES[type];
+function spawn(type, team, lat, lng) {
+  const id = `u${Date.now()}${Math.random()}`;
+  const stats = UNITS[type];
   const unit = new Unit(id, type, team, lat, lng, stats);
   state.entities.set(id, unit);
   
-  if (state.mapReady) {
-    unit.createMarker();
-  }
-  
-  if (team === state.myTeam) {
-    state.resources.pop++;
-  }
+  if (state.mapReady) unit.createMarker();
+  if (team === state.team) state.res.pop++;
   
   return unit;
 }
 
-function createBuilding(type, team, lat, lng) {
-  const id = `b_${Date.now()}_${Math.random()}`;
-  const stats = BUILDING_TYPES[type];
+function build(type, team, lat, lng) {
+  const id = `b${Date.now()}${Math.random()}`;
+  const stats = BUILDINGS[type];
   const building = new Building(id, type, team, lat, lng, stats);
   state.entities.set(id, building);
   
-  if (state.mapReady) {
-    building.createMarker();
-  }
+  if (state.mapReady) building.createMarker();
   
   return building;
 }
 
-function destroyEntity(id) {
-  const entity = state.entities.get(id);
-  if (entity) {
-    entity.destroy();
+function destroy(id) {
+  const e = state.entities.get(id);
+  if (e) {
+    e.destroy();
     state.entities.delete(id);
-    
-    if (entity instanceof Unit && entity.team === state.myTeam) {
-      state.resources.pop = Math.max(0, state.resources.pop - 1);
+    if (e instanceof Unit && e.team === state.team) {
+      state.res.pop = Math.max(0, state.res.pop - 1);
     }
   }
 }
 
 // ============================================
-// CLICK HANDLERS
+// CLICK HANDLER
 // ============================================
-function handleUnitClick(unitId) {
-  const unit = state.entities.get(unitId);
-  if (!unit || unit.team !== state.myTeam) return;
+function handleClick(id) {
+  const e = state.entities.get(id);
+  if (!e || e.team !== state.team) return;
   
-  if (state.selectedId === unitId) {
-    // Zaten seçili - hareket komutu için bekle
-    document.getElementById('hintText').textContent = '📍 Hedefe tıklayın - Birim hareket edecek';
+  if (state.selected === id) {
+    // Zaten seçili - hareket/saldır için bekle
+    document.getElementById('hint').textContent = '📍 Hedefe tıklayın';
     return;
   }
   
-  state.selectedId = unitId;
-  updateSelection();
-}
-
-function handleBuildingClick(buildingId) {
-  const building = state.entities.get(buildingId);
-  if (!building || building.team !== state.myTeam) return;
-  
-  state.selectedId = buildingId;
-  updateSelection();
+  state.selected = id;
+  updateUI();
 }
 
 function handleMapClick(latlng) {
-  if (state.selectedId) {
-    const entity = state.entities.get(state.selectedId);
-    
-    if (entity instanceof Unit) {
-      // Hareket komutu gönder
-      state.commandBuffer.push({
-        type: 'MOVE',
-        unitId: entity.id,
-        target: { lat: latlng.lat, lng: latlng.lng }
-      });
-      
-      addCombatLog(`${entity.stats.name} hedefe doğru ilerliyor`);
-      document.getElementById('hintText').textContent = '✓ Hareket komutu verildi';
+  if (!state.selected) return;
+  
+  const e = state.entities.get(state.selected);
+  if (!e || !(e instanceof Unit)) return;
+  
+  // Hedef kontrol - düşman mı?
+  let targetEnemy = null;
+  state.entities.forEach(ent => {
+    if (ent.team !== state.team && ent.marker) {
+      const d = state.map.distance(latlng, ent.marker.getLatLng());
+      if (d < 100) targetEnemy = ent;
     }
+  });
+  
+  if (targetEnemy) {
+    // Saldır
+    state.cmdBuffer.push({
+      type: 'ATTACK',
+      unitId: e.id,
+      targetId: targetEnemy.id
+    });
+    log(`${e.stats.name} saldırıya geçti`);
+  } else {
+    // Hareket
+    state.cmdBuffer.push({
+      type: 'MOVE',
+      unitId: e.id,
+      lat: latlng.lat,
+      lng: latlng.lng
+    });
   }
 }
 
 // ============================================
-// SELECTION & RANGE DISPLAY
+// UI UPDATE
 // ============================================
-function updateSelection() {
-  // Tüm marker'ları güncelle
-  state.entities.forEach(entity => {
-    if (entity.marker && entity.marker.getElement()) {
-      const el = entity.marker.getElement().querySelector('.unit-marker, .building-marker');
+function updateUI() {
+  // Marker seçimi
+  state.entities.forEach(e => {
+    if (e.marker && e.marker.getElement()) {
+      const el = e.marker.getElement().querySelector('.unit-marker, .building-marker');
       if (el) {
-        if (state.selectedId === entity.id) {
-          el.classList.add('selected');
-        } else {
-          el.classList.remove('selected');
-        }
+        el.classList.toggle('selected', state.selected === e.id);
       }
     }
   });
   
-  // Menzil halkası
-  updateRangeCircle();
-  
-  // UI güncelle
-  updateSelectedUnitsUI();
-  updateProduceMenu();
-}
-
-function updateRangeCircle() {
+  // Menzil
   if (state.rangeCircle) {
     state.map.removeLayer(state.rangeCircle);
     state.rangeCircle = null;
   }
   
-  if (state.selectedId) {
-    const entity = state.entities.get(state.selectedId);
-    
-    if (entity instanceof Unit && entity.stats.range > 0) {
-      const color = entity.team === 'p1' ? '#06b6d4' : '#ef4444';
-      state.rangeCircle = L.circle([entity.lat, entity.lng], {
-        radius: entity.stats.range,
-        color: color,
-        fillOpacity: 0.08,
-        weight: 2,
-        className: 'range-indicator'
+  if (state.selected) {
+    const e = state.entities.get(state.selected);
+    if (e instanceof Unit && e.stats.range > 0) {
+      state.rangeCircle = L.circle([e.lat, e.lng], {
+        radius: e.stats.range,
+        color: e.team === 'p1' ? '#3b82f6' : '#ef4444',
+        fillOpacity: 0.1,
+        weight: 2
       }).addTo(state.map);
     }
   }
+  
+  updateSelectedInfo();
+  updateProduceMenu();
 }
 
-function updateSelectedUnitsUI() {
-  const container = document.getElementById('selectedUnitsInfo');
+function updateSelectedInfo() {
+  const div = document.getElementById('selectedInfo');
   
-  if (!state.selectedId) {
-    container.innerHTML = '<p class="text-slate-500">Birim seçilmedi</p>';
+  if (!state.selected) {
+    div.innerHTML = '<p class="text-gray-500">Seçim yok</p>';
     return;
   }
   
-  const entity = state.entities.get(state.selectedId);
-  if (!entity) {
-    container.innerHTML = '<p class="text-slate-500">Birim seçilmedi</p>';
+  const e = state.entities.get(state.selected);
+  if (!e) {
+    div.innerHTML = '<p class="text-gray-500">Seçim yok</p>';
     return;
   }
   
-  const hpPercent = (entity.hp / entity.stats.hp * 100).toFixed(0);
-  const hpColor = hpPercent > 60 ? 'text-green-400' : hpPercent > 30 ? 'text-yellow-400' : 'text-red-400';
+  const hp = Math.round(e.hp);
+  const maxHp = e.stats.hp;
+  const hpPct = (hp / maxHp * 100).toFixed(0);
   
-  let rangeText = '';
-  if (entity instanceof Unit && entity.stats.range > 0) {
-    rangeText = `<div class="text-cyan-400">📏 Menzil: ${entity.stats.range}m</div>`;
-  }
-  
-  container.innerHTML = `
-    <div class="glass p-3 rounded-lg">
-      <div class="text-2xl mb-2">${entity.stats.icon} ${entity.stats.name}</div>
-      <div class="${hpColor} font-bold">❤️ Sağlık: ${Math.round(entity.hp)}/${entity.stats.hp} (${hpPercent}%)</div>
-      ${rangeText}
-      ${entity instanceof Unit ? `<div class="text-slate-400">⚡ DPS: ${entity.stats.dps}</div>` : ''}
-    </div>
+  let html = `
+    <div class="glass p-2 rounded">
+      <div class="text-lg mb-1">${e.stats.icon} ${e.stats.name}</div>
+      <div class="text-sm">❤️ ${hp}/${maxHp} (${hpPct}%)</div>
   `;
+  
+  if (e instanceof Unit) {
+    html += `
+      <div class="text-sm text-blue-300">📏 ${e.stats.range}m</div>
+      <div class="text-sm text-red-300">⚔️ ${e.stats.dps} DPS</div>
+    `;
+  }
+  
+  html += '</div>';
+  div.innerHTML = html;
+}
+
+function updateResourceUI() {
+  document.getElementById('rMoney').textContent = Math.floor(state.res.money);
+  document.getElementById('rOil').textContent = Math.floor(state.res.oil);
+  document.getElementById('rIron').textContent = Math.floor(state.res.iron);
+  document.getElementById('rRare').textContent = Math.floor(state.res.rare);
+  document.getElementById('rPop').textContent = state.res.pop;
+}
+
+function updateQueueUI() {
+  const div = document.getElementById('queueInfo');
+  const items = [];
+  
+  state.entities.forEach(e => {
+    if (e instanceof Building && e.team === state.team && e.queue.length > 0) {
+      e.queue.forEach(q => {
+        const pct = (q.progress / q.time * 100).toFixed(0);
+        items.push(`${UNITS[q.unit].icon} ${pct}%`);
+      });
+    }
+  });
+  
+  if (items.length === 0) {
+    div.innerHTML = '<p class="text-gray-500 text-xs">Kuyruk boş</p>';
+  } else {
+    div.innerHTML = items.map(i => `<div class="glass p-1 rounded text-xs">${i}</div>`).join('');
+  }
 }
 
 // ============================================
-// BEAM EFFECT
+// BUILD & PRODUCE MENUS
+// ============================================
+document.getElementById('buildBtn').addEventListener('click', () => {
+  const menu = document.getElementById('buildMenu');
+  menu.classList.toggle('hidden');
+  
+  if (!menu.classList.contains('hidden') && menu.children.length === 0) {
+    Object.entries(BUILDINGS).forEach(([type, stats]) => {
+      if (type === 'HQ') return;
+      
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-secondary w-full text-left text-xs py-2';
+      btn.innerHTML = `${stats.icon} ${stats.name}<br><span class="text-xs opacity-75">${fmtCost(stats.cost)}</span>`;
+      btn.onclick = () => startBuild(type);
+      menu.appendChild(btn);
+    });
+  }
+});
+
+document.getElementById('produceBtn').addEventListener('click', () => {
+  const menu = document.getElementById('produceMenu');
+  menu.classList.toggle('hidden');
+});
+
+function updateProduceMenu() {
+  const menu = document.getElementById('produceMenu');
+  
+  if (!state.selected) {
+    menu.innerHTML = '<p class="text-sm text-gray-400 text-center">Bina seçin</p>';
+    return;
+  }
+  
+  const e = state.entities.get(state.selected);
+  if (!(e instanceof Building) || !e.stats.produces) {
+    menu.innerHTML = '<p class="text-sm text-gray-400 text-center">Üretim yapamaz</p>';
+    return;
+  }
+  
+  menu.innerHTML = '';
+  e.stats.produces.forEach(unit => {
+    const s = UNITS[unit];
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-success w-full text-left text-xs py-2';
+    btn.innerHTML = `${s.icon} ${s.name}<br><span class="text-xs opacity-75">${fmtCost(s.cost)}</span>`;
+    btn.onclick = () => {
+      state.cmdBuffer.push({
+        type: 'PRODUCE',
+        buildingId: e.id,
+        unit: unit
+      });
+    };
+    menu.appendChild(btn);
+  });
+}
+
+function startBuild(type) {
+  // Sadece kepçe inşaat yapabilir
+  const sel = state.entities.get(state.selected);
+  if (!sel || !(sel instanceof Unit) || !sel.stats.builds) {
+    log('❌ Sadece kepçeler inşaat yapabilir!');
+    return;
+  }
+  
+  document.getElementById('hint').textContent = `🏗️ ${BUILDINGS[type].name} - Konum seçin`;
+  
+  const handler = (e) => {
+    state.cmdBuffer.push({
+      type: 'BUILD',
+      buildingType: type,
+      lat: e.latlng.lat,
+      lng: e.latlng.lng
+    });
+    
+    state.map.off('click', handler);
+    document.getElementById('hint').textContent = '✓ İnşaat emri verildi';
+  };
+  
+  state.map.once('click', handler);
+}
+
+function fmtCost(cost) {
+  const p = [];
+  if (cost.money) p.push(`💰${cost.money}`);
+  if (cost.oil) p.push(`🛢️${cost.oil}`);
+  if (cost.iron) p.push(`⛓️${cost.iron}`);
+  if (cost.rare) p.push(`💎${cost.rare}`);
+  return p.join(' ');
+}
+
+// ============================================
+// BEAM
 // ============================================
 function drawBeam(lat1, lng1, lat2, lng2) {
   if (!state.map) return;
   
-  const color = '#ff6b00';
   const line = L.polyline([[lat1, lng1], [lat2, lng2]], {
-    color: color,
+    color: '#ff6600',
     weight: 3,
-    opacity: 1,
-    className: 'beam-line'
+    opacity: 1
   }).addTo(state.map);
   
-  setTimeout(() => {
-    state.map.removeLayer(line);
-  }, 150);
+  setTimeout(() => state.map.removeLayer(line), 120);
 }
 
 // ============================================
-// COMBAT LOG
+// LOG
 // ============================================
-function addCombatLog(message) {
-  state.combatLog.unshift(message);
-  if (state.combatLog.length > 30) state.combatLog.pop();
+function log(msg) {
+  state.log.unshift(msg);
+  if (state.log.length > 30) state.log.pop();
   
-  const container = document.getElementById('combatLog');
+  const div = document.getElementById('combatLog');
   const entry = document.createElement('div');
-  entry.className = 'combat-log-entry';
-  entry.textContent = message;
-  container.insertBefore(entry, container.firstChild);
+  entry.className = 'log-entry';
+  entry.textContent = msg;
+  div.insertBefore(entry, div.firstChild);
   
-  if (container.children.length > 30) {
-    container.removeChild(container.lastChild);
+  if (div.children.length > 30) {
+    div.removeChild(div.lastChild);
   }
 }
 
 // ============================================
-// VIEW MANAGEMENT
+// VIEWS
 // ============================================
-function showView(viewId) {
-  ['A', 'B', 'C', 'D'].forEach(v => {
-    const el = document.getElementById(`view${v}`);
-    if (el) {
-      el.classList.toggle('hidden', v !== viewId);
-    }
+function show(v) {
+  ['A', 'B', 'C', 'D'].forEach(x => {
+    document.getElementById(`view${x}`).classList.toggle('hidden', x !== v);
   });
-  state.currentView = viewId;
+  state.view = v;
   
-  if (viewId === 'D' && !state.mapReady) {
+  if (v === 'D' && !state.mapReady) {
     setTimeout(initMap, 100);
   }
 }
 
 // ============================================
-// FIREBASE AUTH
+// AUTH
 // ============================================
-document.getElementById('loginBtn').addEventListener('click', async () => {
+document.getElementById('loginBtn').onclick = async () => {
   try {
-    const result = await auth.signInAnonymously();
-    state.uid = result.user.uid;
+    const res = await auth.signInAnonymously();
+    state.uid = res.user.uid;
     state.nick = document.getElementById('nickInput').value.trim() || `Commander${Math.floor(Math.random()*1000)}`;
-    
-    document.getElementById('userNickDisplay').textContent = state.nick;
-    showView('B');
+    document.getElementById('userDisplay').textContent = state.nick;
+    show('B');
   } catch (err) {
-    alert('Giriş hatası: ' + err.message);
+    alert('Hata: ' + err.message);
   }
-});
+};
 
 // ============================================
-// ROOM MANAGEMENT
+// ROOM
 // ============================================
-document.getElementById('createRoomBtn').addEventListener('click', async () => {
-  const roomId = generateRoomId();
+document.getElementById('createRoomBtn').onclick = async () => {
+  const roomId = genId();
   const seed = Math.floor(Math.random() * 1000000);
   
   await db.ref(`rooms/${roomId}/meta`).set({
-    createdAt: Date.now(),
+    created: Date.now(),
     seed: seed,
-    tickRate: NET_TICK_RATE,
-    inputDelay: INPUT_DELAY,
-    hostUid: state.uid
+    host: state.uid
   });
   
   await db.ref(`rooms/${roomId}/players/${state.uid}`).set({
@@ -1314,38 +1284,29 @@ document.getElementById('createRoomBtn').addEventListener('click', async () => {
     ready: false
   });
   
-  await db.ref(`rooms/${roomId}/presence/${state.uid}`).set({
-    online: true,
-    lastSeen: Date.now()
-  });
-  
-  db.ref(`rooms/${roomId}/presence/${state.uid}`).onDisconnect().update({
-    online: false
-  });
-  
   state.roomId = roomId;
   state.isHost = true;
-  state.myTeam = 'p1';
+  state.team = 'p1';
   
-  joinRoomUI(roomId);
-});
+  joinRoom(roomId);
+};
 
-document.getElementById('joinRoomBtn').addEventListener('click', () => {
-  document.getElementById('joinRoomPanel').classList.remove('hidden');
-});
+document.getElementById('joinRoomBtn').onclick = () => {
+  document.getElementById('joinPanel').classList.remove('hidden');
+};
 
-document.getElementById('joinRoomConfirmBtn').addEventListener('click', async () => {
+document.getElementById('joinConfirmBtn').onclick = async () => {
   const roomId = document.getElementById('roomIdInput').value.trim().toUpperCase();
   if (!roomId) return;
   
-  const snapshot = await db.ref(`rooms/${roomId}/meta`).once('value');
-  if (!snapshot.exists()) {
+  const snap = await db.ref(`rooms/${roomId}/meta`).once('value');
+  if (!snap.exists()) {
     alert('Oda bulunamadı!');
     return;
   }
   
-  const playersSnap = await db.ref(`rooms/${roomId}/players`).once('value');
-  const players = playersSnap.val() || {};
+  const pSnap = await db.ref(`rooms/${roomId}/players`).once('value');
+  const players = pSnap.val() || {};
   
   if (Object.keys(players).length >= 2) {
     alert('Oda dolu!');
@@ -1360,239 +1321,222 @@ document.getElementById('joinRoomConfirmBtn').addEventListener('click', async ()
     ready: false
   });
   
-  await db.ref(`rooms/${roomId}/presence/${state.uid}`).set({
-    online: true,
-    lastSeen: Date.now()
-  });
-  
-  db.ref(`rooms/${roomId}/presence/${state.uid}`).onDisconnect().update({
-    online: false
-  });
-  
   state.roomId = roomId;
   state.isHost = false;
-  state.myTeam = side;
+  state.team = side;
   
-  joinRoomUI(roomId);
-});
+  joinRoom(roomId);
+};
 
-function joinRoomUI(roomId) {
-  document.getElementById('roomIdDisplay').textContent = roomId;
-  showView('C');
+function joinRoom(id) {
+  document.getElementById('roomDisplay').textContent = id;
+  show('C');
   
-  db.ref(`rooms/${roomId}/players`).on('value', updatePlayersUI);
-  
-  db.ref(`rooms/${roomId}/meta`).on('value', (snap) => {
+  db.ref(`rooms/${id}/players`).on('value', updatePlayers);
+  db.ref(`rooms/${id}/meta`).on('value', (snap) => {
     const meta = snap.val();
-    if (meta && meta.startedAt && !state.gameStarted) {
+    if (meta && meta.started && !state.started) {
       startGame(meta);
     }
   });
 }
 
-function updatePlayersUI(snapshot) {
-  const players = snapshot.val() || {};
-  const container = document.getElementById('playersListInRoom');
-  container.innerHTML = '';
+function updatePlayers(snap) {
+  const players = snap.val() || {};
+  const div = document.getElementById('playersList');
+  div.innerHTML = '';
   
-  let allReady = true;
+  let ready = true;
   let count = 0;
   
   Object.entries(players).forEach(([uid, data]) => {
     count++;
-    const div = document.createElement('div');
-    div.className = 'glass-bright p-4 rounded-xl';
-    div.innerHTML = `
-      <div class="flex items-center justify-between">
+    const el = document.createElement('div');
+    el.className = 'glass p-3 rounded';
+    el.innerHTML = `
+      <div class="flex justify-between">
         <div>
-          <span class="font-bold text-xl text-cyan-300">${data.nick}</span>
-          <span class="text-sm text-slate-400 ml-3">${data.side === 'p1' ? '🔵 Mavi' : '🔴 Kırmızı'}</span>
+          <span class="font-bold">${data.nick}</span>
+          <span class="text-sm text-gray-400 ml-2">${data.side === 'p1' ? '🔵' : '🔴'}</span>
         </div>
-        <div class="text-lg font-bold ${data.ready ? 'text-green-400' : 'text-yellow-400'}">
-          ${data.ready ? '✓ HAZIR' : '⏳ BEKLİYOR'}
-        </div>
+        <span class="${data.ready ? 'text-green-400' : 'text-yellow-400'}">${data.ready ? '✓' : '⏳'}</span>
       </div>
     `;
-    container.appendChild(div);
+    div.appendChild(el);
     
-    if (!data.ready) allReady = false;
+    if (!data.ready) ready = false;
   });
   
-  if (state.isHost && count >= 2 && allReady) {
-    document.getElementById('startGameBtn').classList.remove('hidden');
+  if (state.isHost && count >= 2 && ready) {
+    document.getElementById('startBtn').classList.remove('hidden');
   } else {
-    document.getElementById('startGameBtn').classList.add('hidden');
+    document.getElementById('startBtn').classList.add('hidden');
   }
 }
 
-document.getElementById('readyToggleBtn').addEventListener('click', async () => {
+document.getElementById('readyBtn').onclick = async () => {
   const ref = db.ref(`rooms/${state.roomId}/players/${state.uid}/ready`);
-  const snapshot = await ref.once('value');
-  const currentReady = snapshot.val() || false;
-  await ref.set(!currentReady);
-  
-  document.getElementById('readyToggleBtn').textContent = !currentReady ? '✓ HAZIR' : '⏳ HAZIR DEĞİL';
-});
+  const snap = await ref.once('value');
+  const curr = snap.val() || false;
+  await ref.set(!curr);
+};
 
-document.getElementById('startGameBtn').addEventListener('click', async () => {
-  await db.ref(`rooms/${state.roomId}/meta/startedAt`).set(Date.now());
-});
+document.getElementById('startBtn').onclick = async () => {
+  await db.ref(`rooms/${state.roomId}/meta/started`).set(Date.now());
+};
 
-document.getElementById('leaveRoomBtn').addEventListener('click', () => {
-  leaveRoom();
-  showView('B');
-});
+document.getElementById('leaveRoomBtn').onclick = () => {
+  leave();
+  show('B');
+};
 
-function leaveRoom() {
+function leave() {
   if (state.roomId) {
     db.ref(`rooms/${state.roomId}/players/${state.uid}`).remove();
-    db.ref(`rooms/${state.roomId}/presence/${state.uid}`).remove();
     db.ref(`rooms/${state.roomId}`).off();
   }
   state.roomId = null;
   state.isHost = false;
-  state.gameStarted = false;
+  state.started = false;
 }
 
 // ============================================
 // GAME START
 // ============================================
 async function startGame(meta) {
-  state.gameStarted = true;
+  state.started = true;
   state.seed = meta.seed;
-  state.rng = new SeededRandom(meta.seed);
+  state.rng = new RNG(meta.seed);
   state.tick = 0;
-  state.lastSimTime = Date.now();
+  state.lastSim = Date.now();
   
-  showView('D');
+  show('D');
   
-  await initEntities();
+  await initWorld();
   
   db.ref(`rooms/${state.roomId}/approved`).on('child_added', (snap) => {
     const tick = parseInt(snap.key);
     const data = snap.val();
-    if (data && data.merged) {
-      applyCommands(tick, data.merged);
+    if (data && data.cmds) {
+      applyCmds(tick, data.cmds);
     }
   });
   
-  state.simulationRunning = true;
-  simulationLoop();
+  state.running = true;
+  simLoop();
   requestAnimationFrame(renderLoop);
   
-  addCombatLog('🎖️ OPERASYON BAŞLADI!');
+  log('🎖️ SAVAŞ BAŞLADI!');
 }
 
-async function initEntities() {
-  // Rastgele başlangıç pozisyonları
-  const baseLat = state.rng.range(35, 50);
-  const baseLng = state.rng.range(20, 45);
+async function initWorld() {
+  // Rastgele spawn
+  const baseLat = state.rng.range(30, 55);
+  const baseLng = state.rng.range(15, 50);
   
-  const p1Lat = baseLat + state.rng.range(-0.03, 0.03);
-  const p1Lng = baseLng + state.rng.range(-0.05, -0.02);
+  const p1Lat = baseLat + state.rng.range(-0.05, 0.05);
+  const p1Lng = baseLng + state.rng.range(-0.08, -0.03);
   
-  const p2Lat = baseLat + state.rng.range(-0.03, 0.03);
-  const p2Lng = baseLng + state.rng.range(0.02, 0.05);
+  const p2Lat = baseLat + state.rng.range(-0.05, 0.05);
+  const p2Lng = baseLng + state.rng.range(0.03, 0.08);
   
   // P1
-  createBuilding('HQ', 'p1', p1Lat, p1Lng);
-  createBuilding('Barracks', 'p1', p1Lat + 0.004, p1Lng + 0.003);
-  createBuilding('Bank', 'p1', p1Lat - 0.004, p1Lng + 0.003);
+  build('HQ', 'p1', p1Lat, p1Lng);
+  build('Barracks', 'p1', p1Lat + 0.005, p1Lng);
+  build('Money_Gen', 'p1', p1Lat - 0.005, p1Lng);
   
-  for (let i = 0; i < 5; i++) {
-    spawnUnit('Infantry', 'p1', p1Lat + state.rng.range(-0.003, 0.003), p1Lng + state.rng.range(-0.003, 0.003));
+  spawn('Excavator', 'p1', p1Lat - 0.003, p1Lng);
+  for (let i = 0; i < 6; i++) {
+    spawn('Infantry', 'p1', p1Lat + state.rng.range(-0.004, 0.004), p1Lng + state.rng.range(-0.004, 0.004));
   }
-  spawnUnit('Tank', 'p1', p1Lat - 0.005, p1Lng);
-  spawnUnit('APC', 'p1', p1Lat - 0.006, p1Lng + 0.002);
+  spawn('Jeep', 'p1', p1Lat - 0.006, p1Lng + 0.002);
   
   // P2
-  createBuilding('HQ', 'p2', p2Lat, p2Lng);
-  createBuilding('Barracks', 'p2', p2Lat + 0.004, p2Lng - 0.003);
-  createBuilding('Bank', 'p2', p2Lat - 0.004, p2Lng - 0.003);
+  build('HQ', 'p2', p2Lat, p2Lng);
+  build('Barracks', 'p2', p2Lat + 0.005, p2Lng);
+  build('Money_Gen', 'p2', p2Lat - 0.005, p2Lng);
   
-  for (let i = 0; i < 5; i++) {
-    spawnUnit('Infantry', 'p2', p2Lat + state.rng.range(-0.003, 0.003), p2Lng + state.rng.range(-0.003, 0.003));
+  spawn('Excavator', 'p2', p2Lat - 0.003, p2Lng);
+  for (let i = 0; i < 6; i++) {
+    spawn('Infantry', 'p2', p2Lat + state.rng.range(-0.004, 0.004), p2Lng + state.rng.range(-0.004, 0.004));
   }
-  spawnUnit('Tank', 'p2', p2Lat - 0.005, p2Lng);
-  spawnUnit('APC', 'p2', p2Lat - 0.006, p2Lng - 0.002);
+  spawn('Jeep', 'p2', p2Lat - 0.006, p2Lng - 0.002);
   
   if (state.map) {
-    state.map.setView([baseLat, baseLng], 13);
+    state.map.setView([baseLat, baseLng], 12);
   }
 }
 
 // ============================================
 // SIMULATION
 // ============================================
-function simulationLoop() {
-  if (!state.simulationRunning) return;
+function simLoop() {
+  if (!state.running) return;
   
   const now = Date.now();
-  const elapsed = (now - state.lastSimTime) / 1000;
+  const elapsed = (now - state.lastSim) / 1000;
   
-  if (elapsed >= NET_DT) {
-    state.lastSimTime = now;
+  if (elapsed >= DT) {
+    state.lastSim = now;
     state.tick++;
     
-    simulate(NET_DT);
+    simulate(DT);
     
-    if (state.commandBuffer.length > 0) {
-      sendCommands(state.tick + INPUT_DELAY, state.commandBuffer);
-      state.commandBuffer = [];
+    if (state.cmdBuffer.length > 0) {
+      sendCmds(state.tick + INPUT_DELAY, state.cmdBuffer);
+      state.cmdBuffer = [];
     }
     
     if (state.isHost) {
-      hostMergeCommands(state.tick);
+      mergeCmds(state.tick);
     }
   }
   
-  setTimeout(simulationLoop, 10);
+  setTimeout(simLoop, 10);
 }
 
 function simulate(dt) {
-  state.entities.forEach(entity => {
-    if (entity.update) {
-      entity.update(dt);
-    }
+  state.entities.forEach(e => {
+    if (e.update) e.update(dt);
   });
   
-  updateResourcesUI();
-  updateProductionQueueUI();
+  updateResourceUI();
+  updateQueueUI();
 }
 
-function applyCommands(tick, commands) {
-  commands.forEach(cmd => {
+function applyCmds(tick, cmds) {
+  cmds.forEach(c => {
     try {
-      if (cmd.type === 'MOVE') {
-        const unit = state.entities.get(cmd.unitId);
-        if (unit && unit instanceof Unit) {
-          unit.targetPos = { lat: cmd.target.lat, lng: cmd.target.lng };
-          unit.targetEnemy = null;
+      if (c.type === 'MOVE') {
+        const u = state.entities.get(c.unitId);
+        if (u && u instanceof Unit) {
+          u.target = { lat: c.lat, lng: c.lng };
         }
-      } else if (cmd.type === 'BUILD') {
-        if (cmd.team === state.myTeam) {
-          const cost = BUILDING_TYPES[cmd.buildingType]?.cost || {};
+      } else if (c.type === 'ATTACK') {
+        const u = state.entities.get(c.unitId);
+        if (u && u instanceof Unit) {
+          u.target = { id: c.targetId };
+        }
+      } else if (c.type === 'BUILD') {
+        if (c.team === state.team) {
+          const cost = BUILDINGS[c.buildingType].cost;
           if (canAfford(cost)) {
-            deductResources(cost);
-            createBuilding(cmd.buildingType, cmd.team, cmd.at.lat, cmd.at.lng);
+            deduct(cost);
+            build(c.buildingType, c.team, c.lat, c.lng);
           }
         }
-      } else if (cmd.type === 'PRODUCE') {
-        const building = state.entities.get(cmd.buildingId);
-        if (building && building instanceof Building && building.team === state.myTeam) {
-          const unitStats = UNIT_TYPES[cmd.unitType];
-          if (unitStats && canAfford(unitStats.cost)) {
-            deductResources(unitStats.cost);
-            building.productionQueue.push({
-              unitType: cmd.unitType,
-              time: unitStats.buildTime,
-              progress: 0
-            });
+      } else if (c.type === 'PRODUCE') {
+        const b = state.entities.get(c.buildingId);
+        if (b && b instanceof Building && b.team === state.team) {
+          const s = UNITS[c.unit];
+          if (canAfford(s.cost)) {
+            deduct(s.cost);
+            b.queue.push({ unit: c.unit, time: s.time, progress: 0 });
           }
         }
       }
     } catch (err) {
-      console.error('Command error:', err);
+      console.error(err);
     }
   });
 }
@@ -1600,36 +1544,33 @@ function applyCommands(tick, commands) {
 // ============================================
 // NETWORK
 // ============================================
-async function sendCommands(targetTick, commands) {
-  if (!state.roomId || !state.uid || targetTick <= state.tick) return;
+async function sendCmds(tick, cmds) {
+  if (!state.roomId || tick <= state.tick) return;
   
   try {
-    await db.ref(`rooms/${state.roomId}/commands/${targetTick}/${state.uid}`).set({
-      cmds: commands,
-      timestamp: Date.now()
+    await db.ref(`rooms/${state.roomId}/commands/${tick}/${state.uid}`).set({
+      cmds: cmds
     });
   } catch (err) {
-    console.error('Send error:', err);
+    console.error(err);
   }
 }
 
-async function hostMergeCommands(tick) {
+async function mergeCmds(tick) {
   try {
-    const snapshot = await db.ref(`rooms/${state.roomId}/commands/${tick}`).once('value');
-    const data = snapshot.val();
+    const snap = await db.ref(`rooms/${state.roomId}/commands/${tick}`).once('value');
+    const data = snap.val();
     
     const merged = [];
     if (data) {
-      Object.entries(data).forEach(([uid, cmdData]) => {
-        if (cmdData.cmds && Array.isArray(cmdData.cmds)) {
-          cmdData.cmds.forEach(cmd => merged.push(cmd));
-        }
+      Object.values(data).forEach(d => {
+        if (d.cmds) merged.push(...d.cmds);
       });
     }
     
-    await db.ref(`rooms/${state.roomId}/approved/${tick}`).set({ merged });
+    await db.ref(`rooms/${state.roomId}/approved/${tick}`).set({ cmds: merged });
   } catch (err) {
-    console.error('Merge error:', err);
+    console.error(err);
   }
 }
 
@@ -1637,16 +1578,14 @@ async function hostMergeCommands(tick) {
 // RENDER
 // ============================================
 function renderLoop() {
-  state.entities.forEach(entity => {
-    if (entity.updateMarkerPosition) {
-      entity.updateMarkerPosition();
-    }
+  state.entities.forEach(e => {
+    if (e.updatePos) e.updatePos();
   });
   
-  if (state.selectedId) {
-    const entity = state.entities.get(state.selectedId);
-    if (entity && state.rangeCircle) {
-      state.rangeCircle.setLatLng([entity.lat, entity.lng]);
+  if (state.selected && state.rangeCircle) {
+    const e = state.entities.get(state.selected);
+    if (e) {
+      state.rangeCircle.setLatLng([e.lat, e.lng]);
     }
   }
   
@@ -1663,7 +1602,7 @@ function initMap() {
     worldCopyJump: true,
     minZoom: 3,
     maxZoom: 18
-  }).setView([41, 29], 6);
+  }).setView([40, 30], 6);
   
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     attribution: 'Esri'
@@ -1672,200 +1611,74 @@ function initMap() {
   state.map = map;
   state.mapReady = true;
   
-  state.entities.forEach(entity => {
-    if (entity.createMarker) {
-      entity.createMarker();
-    }
+  state.entities.forEach(e => {
+    if (e.createMarker) e.createMarker();
   });
   
-  map.on('click', (e) => {
-    handleMapClick(e.latlng);
-  });
+  map.on('click', (e) => handleMapClick(e.latlng));
 }
 
 // ============================================
 // ECONOMY
 // ============================================
 function canAfford(cost) {
-  return Object.entries(cost).every(([res, val]) => (state.resources[res] || 0) >= val);
+  return Object.entries(cost).every(([k, v]) => (state.res[k] || 0) >= v);
 }
 
-function deductResources(cost) {
-  Object.entries(cost).forEach(([res, val]) => {
-    state.resources[res] = (state.resources[res] || 0) - val;
+function deduct(cost) {
+  Object.entries(cost).forEach(([k, v]) => {
+    state.res[k] -= v;
   });
-}
-
-function updateResourcesUI() {
-  document.getElementById('resMoney').textContent = Math.floor(state.resources.money);
-  document.getElementById('resOil').textContent = Math.floor(state.resources.oil);
-  document.getElementById('resIron').textContent = Math.floor(state.resources.iron);
-  document.getElementById('resGold').textContent = Math.floor(state.resources.gold);
-  document.getElementById('resPop').textContent = state.resources.pop;
-  document.getElementById('resPopMax').textContent = state.resources.popMax;
-}
-
-// ============================================
-// BUILD & PRODUCE MENUS
-// ============================================
-document.getElementById('toggleBuildBtn').addEventListener('click', () => {
-  const menu = document.getElementById('buildMenu');
-  menu.classList.toggle('hidden');
-  
-  if (!menu.classList.contains('hidden') && menu.children.length === 0) {
-    Object.entries(BUILDING_TYPES).forEach(([type, stats]) => {
-      if (type === 'HQ') return;
-      
-      const btn = document.createElement('button');
-      btn.className = 'btn-neon w-full text-left py-2 px-3 text-sm';
-      btn.innerHTML = `${stats.icon} ${stats.name}<br><span class="text-xs opacity-75">${formatCost(stats.cost)}</span>`;
-      btn.addEventListener('click', () => startBuildMode(type));
-      menu.appendChild(btn);
-    });
-  }
-});
-
-document.getElementById('toggleProduceBtn').addEventListener('click', () => {
-  const menu = document.getElementById('produceMenu');
-  menu.classList.toggle('hidden');
-});
-
-function updateProduceMenu() {
-  const menu = document.getElementById('produceMenu');
-  
-  if (!state.selectedId) {
-    menu.innerHTML = '<p class="text-sm text-slate-400 text-center">Bir bina seçin</p>';
-    return;
-  }
-  
-  const entity = state.entities.get(state.selectedId);
-  
-  if (!(entity instanceof Building) || !entity.stats.produces) {
-    menu.innerHTML = '<p class="text-sm text-slate-400 text-center">Bu bina üretim yapamaz</p>';
-    return;
-  }
-  
-  menu.innerHTML = '';
-  entity.stats.produces.forEach(unitType => {
-    const stats = UNIT_TYPES[unitType];
-    const btn = document.createElement('button');
-    btn.className = 'btn-neon btn-cyan w-full text-left py-2 px-3 text-sm';
-    btn.innerHTML = `${stats.icon} ${stats.name}<br><span class="text-xs opacity-75">${formatCost(stats.cost)}</span>`;
-    btn.addEventListener('click', () => {
-      state.commandBuffer.push({
-        type: 'PRODUCE',
-        buildingId: entity.id,
-        unitType: unitType,
-        team: state.myTeam
-      });
-    });
-    menu.appendChild(btn);
-  });
-}
-
-function formatCost(cost) {
-  const parts = [];
-  if (cost.money) parts.push(`💰${cost.money}`);
-  if (cost.oil) parts.push(`🛢️${cost.oil}`);
-  if (cost.iron) parts.push(`⛓️${cost.iron}`);
-  if (cost.gold) parts.push(`🪙${cost.gold}`);
-  return parts.join(' ');
-}
-
-function startBuildMode(buildingType) {
-  document.getElementById('hintText').textContent = `🏗️ ${BUILDING_TYPES[buildingType].name} yerleştirilecek. Haritada konum seçin.`;
-  
-  const handler = (e) => {
-    state.commandBuffer.push({
-      type: 'BUILD',
-      buildingType: buildingType,
-      at: { lat: e.latlng.lat, lng: e.latlng.lng },
-      team: state.myTeam
-    });
-    
-    state.map.off('click', handler);
-    document.getElementById('hintText').textContent = '✓ İnşaat komutu verildi!';
-    setTimeout(() => {
-      document.getElementById('hintText').textContent = '🎯 Sol tık: Seç | Tekrar tık: Hareket | Birim otomatik saldırır';
-    }, 2000);
-  };
-  
-  state.map.once('click', handler);
-}
-
-function updateProductionQueueUI() {
-  const container = document.getElementById('productionQueue');
-  const queue = [];
-  
-  state.entities.forEach(entity => {
-    if (entity instanceof Building && entity.team === state.myTeam && entity.productionQueue.length > 0) {
-      entity.productionQueue.forEach(item => {
-        const progress = Math.round((item.progress / item.time) * 100);
-        queue.push(`${UNIT_TYPES[item.unitType].icon} ${UNIT_TYPES[item.unitType].name} - ${progress}%`);
-      });
-    }
-  });
-  
-  if (queue.length === 0) {
-    container.innerHTML = '<p class="text-slate-500">Kuyruk boş</p>';
-  } else {
-    container.innerHTML = queue.map(q => `<div class="glass p-2 rounded text-sm">${q}</div>`).join('');
-  }
 }
 
 // ============================================
 // GAME END
 // ============================================
-function endGame(winnerTeam) {
-  state.simulationRunning = false;
+function endGame(winner) {
+  state.running = false;
   
-  const isVictory = winnerTeam === state.myTeam;
-  document.getElementById('resultTitle').textContent = isVictory ? '🏆 ZAFER!' : '💀 YENİLGİ';
-  document.getElementById('resultText').textContent = isVictory 
-    ? 'Düşman komuta merkezini imha ettiniz!'
-    : 'Komuta merkeziniz düştü!';
-  
+  const won = winner === state.team;
+  document.getElementById('resultTitle').textContent = won ? '🏆 ZAFER' : '💀 YENİLGİ';
+  document.getElementById('resultText').textContent = won ? 'Düşman üssü yok edildi!' : 'Üssünüz düştü!';
   document.getElementById('resultModal').classList.remove('hidden');
 }
 
-document.getElementById('closeResultBtn').addEventListener('click', () => {
+document.getElementById('closeResultBtn').onclick = () => {
   document.getElementById('resultModal').classList.add('hidden');
-  leaveRoom();
-  showView('B');
-});
+  leave();
+  show('B');
+};
 
 // ============================================
-// UI EVENTS
+// UI
 // ============================================
-document.getElementById('helpBtn').addEventListener('click', () => {
+document.getElementById('helpBtn').onclick = () => {
   document.getElementById('helpModal').classList.remove('hidden');
-});
+};
 
-document.getElementById('closeHelpBtn').addEventListener('click', () => {
+document.getElementById('closeHelpBtn').onclick = () => {
   document.getElementById('helpModal').classList.add('hidden');
-});
+};
 
-document.getElementById('leaveGameBtn').addEventListener('click', () => {
-  if (confirm('Operasyondan çıkmak istediğinize emin misiniz?')) {
-    state.simulationRunning = false;
-    leaveRoom();
-    showView('B');
+document.getElementById('exitBtn').onclick = () => {
+  if (confirm('Çıkmak istediğinize emin misiniz?')) {
+    state.running = false;
+    leave();
+    show('B');
   }
-});
+};
 
 // ============================================
-// UTILITIES
+// UTILS
 // ============================================
-function generateRoomId() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function genId() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let id = '';
-  for (let i = 0; i < 8; i++) {
-    id += chars[Math.floor(Math.random() * chars.length)];
-  }
+  for (let i = 0; i < 8; i++) id += c[Math.floor(Math.random() * c.length)];
   return id;
 }
 
-console.log('🎖️ Elite RTS başlatıldı!');
+console.log('🌍 Global Warfare başlatıldı!');
 </script>
 
 </body>
