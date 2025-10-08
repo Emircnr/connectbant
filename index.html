@@ -1,79 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { Star, Search, TrendingUp, User, LogOut, Shield, Plus, Home, Filter, X, Trash2, Users, Menu, ChevronRight, Eye } from 'lucide-react';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js';
+import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, limit, updateDoc, doc, deleteDoc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+import { Star, Search, TrendingUp, User, LogOut, Shield, Plus, Home, Filter, X, Edit, Trash2, Users, BarChart3, Settings, Mail } from 'lucide-react';
 
-const DEFAULT_CATEGORIES = [
+const firebaseConfig = {
+  apiKey: "AIzaSyAh6JbnjsZtD-d0g3iSb2maSerPntUP6To",
+  authDomain: "macbot-b7b45.firebaseapp.com",
+  databaseURL: "https://macbot-b7b45-default-rtdb.firebaseio.com",
+  projectId: "macbot-b7b45",
+  storageBucket: "macbot-b7b45.firebasestorage.app",
+  messagingSenderId: "88494187419",
+  appId: "1:88494187419:web:9e0fd1a37e51332203373e",
+  measurementId: "G-SVG851WK7Y"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const INITIAL_CATEGORIES = [
   'Celebrities', 'Brands', 'Companies', 'Stocks/Funds', 'Sports Clubs',
-  'Politicians', 'YouTube Channels', 'Movies/TV Shows', 'Music', 'Technology'
+  'Politicians', 'YouTube Channels', 'Movies/Series', 'Music', 'Technology'
 ];
 
 const INITIAL_ITEMS = [
   {
-    id: '1',
-    name: 'Tarkan',
-    category: 'Celebrities',
-    description: 'Legendary Turkish pop music icon, globally recognized artist',
-    imageUrl: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400',
-    tags: ['music', 'pop', 'artist', 'turkish'],
-    averageRating: 0,
-    reviewCount: 0,
-    viewCount: 0
-  },
-  {
-    id: '2',
     name: 'Apple',
     category: 'Brands',
-    description: 'Leading technology brand, innovation and design icon',
+    description: 'Leading technology brand, icon of innovation and design',
     imageUrl: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400',
-    tags: ['technology', 'phone', 'computer', 'innovation'],
-    averageRating: 0,
-    reviewCount: 0,
-    viewCount: 0
+    tags: ['technology', 'phone', 'computer', 'innovation']
   },
   {
-    id: '3',
-    name: 'Galatasaray',
-    category: 'Sports Clubs',
-    description: 'One of Turkey\'s most prestigious sports clubs, UEFA Cup champion',
-    imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400',
-    tags: ['football', 'sports', 'turkey', 'yellow-red'],
-    averageRating: 0,
-    reviewCount: 0,
-    viewCount: 0
-  },
-  {
-    id: '4',
     name: 'Tesla',
     category: 'Companies',
-    description: 'Revolutionary electric vehicle company, sustainable energy leader',
+    description: 'Electric vehicle revolution leader, sustainable energy company',
     imageUrl: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400',
-    tags: ['electric vehicle', 'technology', 'sustainability', 'autonomous'],
-    averageRating: 0,
-    reviewCount: 0,
-    viewCount: 0
+    tags: ['electric vehicle', 'technology', 'sustainability', 'autonomous']
   },
   {
-    id: '5',
     name: 'MrBeast',
     category: 'YouTube Channels',
     description: 'One of the world\'s most subscribed YouTube channels',
     imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400',
-    tags: ['youtube', 'content', 'entertainment', 'philanthropy'],
-    averageRating: 0,
-    reviewCount: 0,
-    viewCount: 0
+    tags: ['youtube', 'content', 'entertainment', 'philanthropy']
   }
 ];
 
-function StarRating({ rating, onRate, readonly = false, size = 'md' }) {
+function StarRating({ rating, onRate, readonly = false }) {
   const [hover, setHover] = useState(0);
-  const sizeClasses = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-8 h-8' : 'w-6 h-6';
   
   return (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
-          className={`${sizeClasses} ${readonly ? '' : 'cursor-pointer'} transition-all`}
+          className={`w-6 h-6 ${readonly ? '' : 'cursor-pointer'} transition-all`}
           fill={star <= (hover || rating) ? '#fbbf24' : 'none'}
           stroke={star <= (hover || rating) ? '#fbbf24' : '#9ca3af'}
           onMouseEnter={() => !readonly && setHover(star)}
@@ -85,7 +68,7 @@ function StarRating({ rating, onRate, readonly = false, size = 'md' }) {
   );
 }
 
-function ItemCard({ item, onClick, showStats = false }) {
+function ItemCard({ item, onClick }) {
   return (
     <div
       onClick={onClick}
@@ -100,23 +83,17 @@ function ItemCard({ item, onClick, showStats = false }) {
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-purple-600">
           {item.category}
         </div>
-        {showStats && (
-          <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-white flex items-center gap-1">
-            <Eye className="w-4 h-4" />
-            {item.viewCount || 0}
-          </div>
-        )}
       </div>
       <div className="p-5">
-        <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-1">{item.name}</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-2">{item.name}</h3>
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
-        <div className="flex items-center justify-between mb-3">
-          <StarRating rating={Math.round(item.averageRating || 0)} readonly size="sm" />
+        <div className="flex items-center justify-between">
+          <StarRating rating={item.averageRating || 0} readonly />
           <span className="text-sm text-gray-500">
             {item.reviewCount || 0} reviews
           </span>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mt-3">
           {item.tags?.slice(0, 3).map((tag, i) => (
             <span key={i} className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full">
               #{tag}
@@ -132,26 +109,25 @@ export default function OolidoPlatform() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [page, setPage] = useState('home');
-  const [items, setItems] = useState(INITIAL_ITEMS);
-  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [authMode, setAuthMode] = useState('login');
+  const [items, setItems] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [userReviews, setUserReviews] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('login');
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState('');
+  
+  // Auth States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [newRating, setNewRating] = useState(0);
-  const [newComment, setNewComment] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [nextUserId, setNextUserId] = useState(1);
-  const [nextItemId, setNextItemId] = useState(6);
-  const [nextReviewId, setNextReviewId] = useState(1);
+  const [authError, setAuthError] = useState('');
   
+  // Admin Panel States
   const [newItem, setNewItem] = useState({
     name: '',
     category: '',
@@ -159,144 +135,318 @@ export default function OolidoPlatform() {
     imageUrl: '',
     tags: ''
   });
+  const [newCategory, setNewCategory] = useState('');
+  const [adminTab, setAdminTab] = useState('items');
+  const [editingItem, setEditingItem] = useState(null);
 
-  const handleLogin = () => {
-    // Admin login check
-    if (email === 'admin' && password === '321') {
-      const adminUser = {
-        id: 'admin',
-        email: 'admin@oolido.com',
-        displayName: 'Administrator',
-        isAdmin: true
-      };
-      setUser(adminUser);
-      setIsAdmin(true);
-      setShowAuthModal(false);
-      setPage('admin');
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists() && userDoc.data().isAdmin) {
+          setIsAdmin(true);
+        }
+        loadUserReviews(currentUser.uid);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    
+    initializeData();
+    loadItems();
+    loadCategories();
+    loadAllUsers();
+    
+    return () => unsubscribe();
+  }, []);
+
+  const initializeData = async () => {
+    try {
+      const catQuery = query(collection(db, 'categories'), limit(1));
+      const catSnapshot = await getDocs(catQuery);
+      
+      if (catSnapshot.empty) {
+        for (const cat of INITIAL_CATEGORIES) {
+          await addDoc(collection(db, 'categories'), {
+            name: cat,
+            createdAt: new Date()
+          });
+        }
+      }
+
+      const itemQuery = query(collection(db, 'items'), limit(1));
+      const itemSnapshot = await getDocs(itemQuery);
+      
+      if (itemSnapshot.empty) {
+        const categoriesSnapshot = await getDocs(collection(db, 'categories'));
+        const firstCategory = categoriesSnapshot.docs[0]?.data()?.name || 'Brands';
+        
+        for (const item of INITIAL_ITEMS) {
+          await addDoc(collection(db, 'items'), {
+            ...item,
+            category: item.category || firstCategory,
+            averageRating: 0,
+            reviewCount: 0,
+            viewCount: 0,
+            createdAt: new Date()
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error initializing data:', error);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const q = query(collection(db, 'categories'), orderBy('name', 'asc'));
+      const snapshot = await getDocs(q);
+      const categoriesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  const loadItems = async () => {
+    try {
+      const q = query(collection(db, 'items'), orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+      const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setItems(itemsData);
+    } catch (error) {
+      console.error('Error loading items:', error);
+    }
+  };
+
+  const loadReviews = async (itemId) => {
+    try {
+      const q = query(
+        collection(db, 'reviews'),
+        where('itemId', '==', itemId),
+        orderBy('createdAt', 'desc')
+      );
+      const snapshot = await getDocs(q);
+      const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setReviews(reviewsData);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    }
+  };
+
+  const loadUserReviews = async (userId) => {
+    try {
+      const q = query(
+        collection(db, 'reviews'),
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+      const snapshot = await getDocs(q);
+      const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUserReviews(reviewsData);
+    } catch (error) {
+      console.error('Error loading user reviews:', error);
+    }
+  };
+
+  const loadAllUsers = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'users'));
+      const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAllUsers(usersData);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      
+      await setDoc(doc(db, 'users', result.user.uid), {
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
+        createdAt: new Date(),
+        isAdmin: false
+      }, { merge: true });
+      
+      loadAllUsers();
+    } catch (error) {
+      setAuthError(error.message);
+    }
+  };
+
+  const handleEmailAuth = async () => {
+    try {
+      setAuthError('');
+      
+      if (email === 'admin' && password === '321') {
+        const adminResult = await signInWithEmailAndPassword(auth, 'admin@oolido.com', 'admin321');
+        await updateDoc(doc(db, 'users', adminResult.user.uid), {
+          isAdmin: true
+        });
+        setIsAdmin(true);
+        return;
+      } catch (adminError) {
+        if (adminError.code === 'auth/user-not-found') {
+          const adminResult = await createUserWithEmailAndPassword(auth, 'admin@oolido.com', 'admin321');
+          await updateProfile(adminResult.user, { displayName: 'Admin' });
+          await setDoc(doc(db, 'users', adminResult.user.uid), {
+            email: 'admin@oolido.com',
+            displayName: 'Admin',
+            createdAt: new Date(),
+            isAdmin: true
+          });
+          setIsAdmin(true);
+          loadAllUsers();
+          return;
+        }
+      }
+      
+      if (authMode === 'signup') {
+        if (!displayName) {
+          setAuthError('Please enter your name');
+          return;
+        }
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(result.user, { displayName: displayName });
+        
+        await setDoc(doc(db, 'users', result.user.uid), {
+          email: email,
+          displayName: displayName,
+          createdAt: new Date(),
+          isAdmin: false
+        });
+        
+        loadAllUsers();
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+      
       setEmail('');
       setPassword('');
-      return;
-    }
-
-    // Regular user login
-    const existingUser = allUsers.find(u => u.email === email);
-    if (existingUser && existingUser.password === password) {
-      setUser(existingUser);
-      setShowAuthModal(false);
-      setEmail('');
-      setPassword('');
-    } else {
-      alert('Invalid email or password!');
+      setDisplayName('');
+    } catch (error) {
+      setAuthError(error.message);
     }
   };
 
-  const handleSignup = () => {
-    if (!email || !password || !displayName) {
-      alert('Please fill all fields!');
-      return;
-    }
-
-    const existingUser = allUsers.find(u => u.email === email);
-    if (existingUser) {
-      alert('Email already registered!');
-      return;
-    }
-
-    const newUser = {
-      id: `user-${nextUserId}`,
-      email,
-      password,
-      displayName,
-      createdAt: new Date().toISOString()
-    };
-
-    setAllUsers([...allUsers, newUser]);
-    setNextUserId(nextUserId + 1);
-    setUser(newUser);
-    setShowAuthModal(false);
-    setEmail('');
-    setPassword('');
-    setDisplayName('');
-  };
-
-  const handleGoogleLogin = () => {
-    // Simulate Google login
-    const googleUser = {
-      id: `google-${nextUserId}`,
-      email: `user${nextUserId}@gmail.com`,
-      displayName: `Google User ${nextUserId}`,
-      photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
-      createdAt: new Date().toISOString()
-    };
-
-    setAllUsers([...allUsers, googleUser]);
-    setNextUserId(nextUserId + 1);
-    setUser(googleUser);
-    setShowAuthModal(false);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
+  const handleLogout = async () => {
+    await signOut(auth);
     setIsAdmin(false);
     setPage('home');
-    setSelectedItem(null);
   };
 
-  const handleAddItem = () => {
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) {
+      alert('Please enter a category name');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'categories'), {
+        name: newCategory,
+        createdAt: new Date()
+      });
+      
+      setNewCategory('');
+      loadCategories();
+      alert('Category added successfully!');
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId, categoryName) => {
+    if (!confirm(`Are you sure you want to delete "${categoryName}"?`)) return;
+
+    try {
+      await deleteDoc(doc(db, 'categories', categoryId));
+      loadCategories();
+      alert('Category deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting category:', error);
+    }
+  };
+
+  const handleAddItem = async () => {
     if (!newItem.name || !newItem.description || !newItem.imageUrl || !newItem.category) {
       alert('Please fill all fields!');
       return;
     }
 
-    const tags = newItem.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-    const item = {
-      id: `item-${nextItemId}`,
-      name: newItem.name,
-      category: newItem.category,
-      description: newItem.description,
-      imageUrl: newItem.imageUrl,
-      tags: tags,
-      averageRating: 0,
-      reviewCount: 0,
-      viewCount: 0,
-      createdAt: new Date().toISOString()
-    };
-
-    setItems([item, ...items]);
-    setNextItemId(nextItemId + 1);
-    setNewItem({ name: '', category: categories[0] || '', description: '', imageUrl: '', tags: '' });
-    alert('Item added successfully!');
-  };
-
-  const handleDeleteItem = (itemId) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
-    
-    setItems(items.filter(item => item.id !== itemId));
-    setReviews(reviews.filter(review => review.itemId !== itemId));
-    alert('Item deleted successfully!');
-  };
-
-  const handleAddCategory = () => {
-    if (!newCategoryName.trim()) return;
-    
-    if (categories.includes(newCategoryName.trim())) {
-      alert('Category already exists!');
-      return;
+    try {
+      const tags = newItem.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      
+      if (editingItem) {
+        await updateDoc(doc(db, 'items', editingItem.id), {
+          name: newItem.name,
+          category: newItem.category,
+          description: newItem.description,
+          imageUrl: newItem.imageUrl,
+          tags: tags,
+          updatedAt: new Date()
+        });
+        setEditingItem(null);
+        alert('Item updated successfully!');
+      } else {
+        await addDoc(collection(db, 'items'), {
+          name: newItem.name,
+          category: newItem.category,
+          description: newItem.description,
+          imageUrl: newItem.imageUrl,
+          tags: tags,
+          averageRating: 0,
+          reviewCount: 0,
+          viewCount: 0,
+          createdAt: new Date()
+        });
+        alert('Item added successfully!');
+      }
+      
+      setNewItem({ name: '', category: '', description: '', imageUrl: '', tags: '' });
+      loadItems();
+    } catch (error) {
+      console.error('Error saving item:', error);
     }
-
-    setCategories([...categories, newCategoryName.trim()]);
-    setNewCategoryName('');
-    alert('Category added successfully!');
   };
 
-  const handleDeleteCategory = (categoryName) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) return;
-    
-    setCategories(categories.filter(cat => cat !== categoryName));
-    alert('Category deleted successfully!');
+  const handleDeleteItem = async (itemId, itemName) => {
+    if (!confirm(`Are you sure you want to delete "${itemName}"?`)) return;
+
+    try {
+      await deleteDoc(doc(db, 'items', itemId));
+      
+      const reviewsQuery = query(collection(db, 'reviews'), where('itemId', '==', itemId));
+      const reviewsSnapshot = await getDocs(reviewsQuery);
+      reviewsSnapshot.forEach(async (reviewDoc) => {
+        await deleteDoc(doc(db, 'reviews', reviewDoc.id));
+      });
+      
+      loadItems();
+      alert('Item deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
   };
 
-  const handleSubmitReview = () => {
+  const handleEditItem = (item) => {
+    setNewItem({
+      name: item.name,
+      category: item.category,
+      description: item.description,
+      imageUrl: item.imageUrl,
+      tags: item.tags?.join(', ') || ''
+    });
+    setEditingItem(item);
+    setAdminTab('items');
+    window.scrollTo(0, 0);
+  };
+
+  const handleSubmitReview = async () => {
     if (!user) {
       alert('Please login to submit a review!');
       return;
@@ -307,65 +457,62 @@ export default function OolidoPlatform() {
       return;
     }
 
-    const review = {
-      id: `review-${nextReviewId}`,
-      itemId: selectedItem.id,
-      itemName: selectedItem.name,
-      userId: user.id,
-      userName: user.displayName,
-      rating: newRating,
-      comment: newComment,
-      createdAt: new Date().toISOString()
-    };
+    try {
+      await addDoc(collection(db, 'reviews'), {
+        itemId: selectedItem.id,
+        itemName: selectedItem.name,
+        userId: user.uid,
+        userName: user.displayName || 'Anonymous User',
+        rating: newRating,
+        comment: newComment,
+        createdAt: new Date()
+      });
 
-    setReviews([review, ...reviews]);
-    setNextReviewId(nextReviewId + 1);
+      const itemRef = doc(db, 'items', selectedItem.id);
+      const itemDoc = await getDoc(itemRef);
+      const itemData = itemDoc.data();
+      const newReviewCount = (itemData.reviewCount || 0) + 1;
+      const newAverageRating = ((itemData.averageRating || 0) * (itemData.reviewCount || 0) + newRating) / newReviewCount;
 
-    // Update item stats
-    const updatedItems = items.map(item => {
-      if (item.id === selectedItem.id) {
-        const newReviewCount = item.reviewCount + 1;
-        const newAverageRating = ((item.averageRating * item.reviewCount) + newRating) / newReviewCount;
-        return {
-          ...item,
-          reviewCount: newReviewCount,
-          averageRating: newAverageRating
-        };
-      }
-      return item;
-    });
+      await updateDoc(itemRef, {
+        reviewCount: newReviewCount,
+        averageRating: newAverageRating
+      });
 
-    setItems(updatedItems);
-    setSelectedItem(updatedItems.find(item => item.id === selectedItem.id));
-    setNewRating(0);
-    setNewComment('');
-    alert('Review submitted successfully!');
+      setNewRating(0);
+      setNewComment('');
+      loadReviews(selectedItem.id);
+      loadItems();
+      loadUserReviews(user.uid);
+      alert('Your review has been added!');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    }
   };
 
-  const handleViewItem = (item) => {
-    const updatedItems = items.map(i => {
-      if (i.id === item.id) {
-        return { ...i, viewCount: (i.viewCount || 0) + 1 };
-      }
-      return i;
-    });
-    
-    setItems(updatedItems);
-    setSelectedItem(updatedItems.find(i => i.id === item.id));
+  const incrementViewCount = async (itemId) => {
+    try {
+      const itemRef = doc(db, 'items', itemId);
+      await updateDoc(itemRef, {
+        viewCount: (await getDoc(itemRef)).data().viewCount + 1 || 1
+      });
+      loadItems();
+    } catch (error) {
+      console.error('Error incrementing view count:', error);
+    }
   };
 
   const filteredItems = items.filter(item => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = item.name.toLowerCase().includes(searchLower) ||
-                         item.description.toLowerCase().includes(searchLower) ||
-                         item.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const trendingItems = [...items]
     .sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
-    .slice(0, 10);
+    .slice(0, 5);
 
   const relatedItems = selectedItem
     ? items.filter(item => 
@@ -375,11 +522,12 @@ export default function OolidoPlatform() {
       ).slice(0, 4)
     : [];
 
-  const userReviews = reviews.filter(review => review.userId === user?.id);
-
-  const itemReviews = selectedItem 
-    ? reviews.filter(review => review.itemId === selectedItem.id)
-    : [];
+  const stats = {
+    totalItems: items.length,
+    totalUsers: allUsers.length,
+    totalReviews: items.reduce((sum, item) => sum + (item.reviewCount || 0), 0),
+    totalViews: items.reduce((sum, item) => sum + (item.viewCount || 0), 0)
+  };
 
   if (!user) {
     return (
@@ -387,33 +535,80 @@ export default function OolidoPlatform() {
         <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl max-w-md w-full border border-white/20">
           <div className="text-center mb-8">
             <h1 className="text-5xl font-black text-white mb-2">Oolido</h1>
-            <p className="text-white/80 text-lg">Rate Everything</p>
+            <p className="text-white/80">Review Everything</p>
           </div>
           
           <div className="space-y-4">
-            <button
-              onClick={() => {
-                setAuthMode('login');
-                setShowAuthModal(true);
-              }}
-              className="w-full bg-white text-purple-600 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all transform hover:scale-105"
-            >
-              Login
-            </button>
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setAuthMode('login')}
+                className={`flex-1 py-2 rounded-lg font-medium transition-all ${
+                  authMode === 'login' ? 'bg-white text-purple-600' : 'bg-white/20 text-white'
+                }`}
+              >
+                Login
+              </button>
+              <button
+                onClick={() => setAuthMode('signup')}
+                className={`flex-1 py-2 rounded-lg font-medium transition-all ${
+                  authMode === 'signup' ? 'bg-white text-purple-600' : 'bg-white/20 text-white'
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+
+            {authMode === 'signup' && (
+              <input
+                type="text"
+                placeholder="Your Name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none"
+              />
+            )}
+            
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none"
+            />
+            
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleEmailAuth()}
+              className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none"
+            />
+
+            {authError && (
+              <p className="text-red-200 text-sm">{authError}</p>
+            )}
             
             <button
-              onClick={() => {
-                setAuthMode('signup');
-                setShowAuthModal(true);
-              }}
-              className="w-full bg-white/20 text-white py-4 rounded-xl font-semibold hover:bg-white/30 transition-all border border-white/30"
+              onClick={handleEmailAuth}
+              className="w-full bg-white text-purple-600 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
             >
-              Sign Up
+              <Mail className="w-5 h-5" />
+              {authMode === 'login' ? 'Login with Email' : 'Sign Up with Email'}
             </button>
 
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/30"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-transparent text-white/70">or</span>
+              </div>
+            </div>
+            
             <button
               onClick={handleGoogleLogin}
-              className="w-full bg-white text-gray-800 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
+              className="w-full bg-white text-gray-800 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -424,63 +619,11 @@ export default function OolidoPlatform() {
               Continue with Google
             </button>
           </div>
+
+          <p className="text-white/60 text-xs text-center mt-6">
+            Admin: username "admin" / password "321"
+          </p>
         </div>
-
-        {showAuthModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-bold">{authMode === 'login' ? 'Login' : 'Sign Up'}</h3>
-                <button onClick={() => setShowAuthModal(false)} className="text-gray-500 hover:text-gray-700">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              
-              {authMode === 'signup' && (
-                <input
-                  type="text"
-                  placeholder="Display Name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                />
-              )}
-              
-              <input
-                type="email"
-                placeholder="Email or Username (use 'admin' for admin)"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-              />
-              
-              <input
-                type="password"
-                placeholder="Password (use '321' for admin)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                onKeyPress={(e) => e.key === 'Enter' && (authMode === 'login' ? handleLogin() : handleSignup())}
-              />
-              
-              <button
-                onClick={authMode === 'login' ? handleLogin : handleSignup}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all mb-3"
-              >
-                {authMode === 'login' ? 'Login' : 'Sign Up'}
-              </button>
-
-              <div className="text-center">
-                <button
-                  onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-                  className="text-purple-600 hover:text-purple-700 text-sm font-medium"
-                >
-                  {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Login'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -490,23 +633,15 @@ export default function OolidoPlatform() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden text-gray-600 hover:text-purple-600"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-              <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Oolido
-              </h1>
-            </div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <h1 className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Oolido
+            </h1>
             
-            <nav className="flex gap-2 flex-wrap">
+            <nav className="flex flex-wrap gap-2 justify-center">
               <button
                 onClick={() => { setPage('home'); setSelectedItem(null); }}
-                className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm md:text-base ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                   page === 'home' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -515,7 +650,7 @@ export default function OolidoPlatform() {
               </button>
               <button
                 onClick={() => setPage('profile')}
-                className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm md:text-base ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                   page === 'profile' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -525,7 +660,7 @@ export default function OolidoPlatform() {
               {isAdmin && (
                 <button
                   onClick={() => setPage('admin')}
-                  className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm md:text-base ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                     page === 'admin' ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                   }`}
                 >
@@ -535,7 +670,7 @@ export default function OolidoPlatform() {
               )}
               <button
                 onClick={handleLogout}
-                className="px-3 md:px-4 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 transition-all flex items-center gap-2 text-sm md:text-base"
+                className="px-4 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 transition-all flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Logout</span>
@@ -545,143 +680,132 @@ export default function OolidoPlatform() {
         </div>
       </header>
 
-      <div className="flex">
-        {/* Sidebar - Trending */}
-        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:sticky top-16 left-0 h-[calc(100vh-4rem)] w-80 bg-white shadow-xl z-30 transition-transform duration-300 overflow-y-auto`}>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <TrendingUp className="w-6 h-6 text-orange-500" />
-                Trending
-              </h2>
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {trendingItems.map((item, index) => (
-                <div
-                  key={item.id}
-                  onClick={() => {
-                    handleViewItem(item);
-                    setPage('home');
-                    setSidebarOpen(false);
-                  }}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer transition-all group"
-                >
-                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-                    {index + 1}
-                  </div>
-                  <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden">
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate group-hover:text-purple-600">{item.name}</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <StarRating rating={Math.round(item.averageRating || 0)} readonly size="sm" />
-                      <span>({item.reviewCount || 0})</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600" />
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Home Page */}
+        {page === 'home' && !selectedItem && (
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Main Content */}
+            <div className="flex-1">
+              {/* Search and Filters */}
+              <div className="mb-8 space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search by name, description or tags..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl shadow-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-4 md:p-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Home Page */}
-            {page === 'home' && !selectedItem && (
-              <>
-                {/* Search and Filters */}
-                <div className="mb-8 space-y-4">
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      placeholder="Search by name, description, or tags..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl shadow-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                    />
-                  </div>
-                  
-                  <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                    <Filter className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                    {['All', ...categories].map(cat => (
-                      <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(cat)}
-                        className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all ${
-                          selectedCategory === cat
-                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                            : 'bg-white text-gray-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Items Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredItems.map(item => (
-                    <ItemCard
-                      key={item.id}
-                      item={item}
-                      showStats
-                      onClick={() => handleViewItem(item)}
-                    />
+                
+                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                  <Filter className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                  {['All', ...categories.map(c => c.name)].map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all ${
+                        selectedCategory === cat
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                          : 'bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {cat}
+                    </button>
                   ))}
                 </div>
+              </div>
 
-                {filteredItems.length === 0 && (
-                  <div className="text-center py-20">
-                    <p className="text-gray-500 text-lg">No results found</p>
-                  </div>
-                )}
-              </>
-            )}
+              {/* Items Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredItems.map(item => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => {
+                      setSelectedItem(item);
+                      loadReviews(item.id);
+                      incrementViewCount(item.id);
+                    }}
+                  />
+                ))}
+              </div>
 
-            {/* Item Detail */}
-            {page === 'home' && selectedItem && (
-              <div className="space-y-6">
-                <button
-                  onClick={() => setSelectedItem(null)}
-                  className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-2"
-                >
-                  ← Back
-                </button>
+              {filteredItems.length === 0 && (
+                <div className="text-center py-20">
+                  <p className="text-gray-500 text-lg">No results found</p>
+                </div>
+              )}
+            </div>
 
+            {/* Trending Sidebar */}
+            <div className="lg:w-80">
+              <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-24">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                  Trending
+                </h3>
+                <div className="space-y-3">
+                  {trendingItems.map((item, index) => (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        setSelectedItem(item);
+                        loadReviews(item.id);
+                        incrementViewCount(item.id);
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-all"
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {index + 1}
+                      </div>
+                      <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{item.name}</p>
+                        <p className="text-xs text-gray-500">{item.reviewCount || 0} reviews</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Item Detail */}
+        {page === 'home' && selectedItem && (
+          <div className="space-y-6">
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-2"
+            >
+              ← Back
+            </button>
+
+            <div className="flex flex-col lg:flex-row gap-6">
+              <div className="flex-1">
                 <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-                  <div className="relative h-64 md:h-96">
+                  <div className="relative h-96">
                     <img
                       src={selectedItem.imageUrl}
                       alt={selectedItem.name}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 text-white max-w-2xl">
+                    <div className="absolute bottom-8 left-8 text-white">
                       <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-3 inline-block">
                         {selectedItem.category}
                       </span>
-                      <h1 className="text-3xl md:text-5xl font-black mb-2">{selectedItem.name}</h1>
+                      <h1 className="text-5xl font-black mb-2">{selectedItem.name}</h1>
                       <div className="flex items-center gap-4">
-                        <StarRating rating={Math.round(selectedItem.averageRating || 0)} readonly />
+                        <StarRating rating={selectedItem.averageRating || 0} readonly />
                         <span className="text-lg">{selectedItem.reviewCount || 0} reviews</span>
-                        <span className="text-sm opacity-80">• {selectedItem.viewCount || 0} views</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 md:p-8">
+                  <div className="p-8">
                     <p className="text-gray-700 text-lg mb-6">{selectedItem.description}</p>
                     
                     <div className="flex flex-wrap gap-2 mb-8">
@@ -692,13 +816,24 @@ export default function OolidoPlatform() {
                       ))}
                     </div>
 
+                    <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl mb-8">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-purple-600">{selectedItem.viewCount || 0}</p>
+                        <p className="text-sm text-gray-600">Views</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-pink-600">{selectedItem.reviewCount || 0}</p>
+                        <p className="text-sm text-gray-600">Reviews</p>
+                      </div>
+                    </div>
+
                     {/* Review Form */}
                     <div className="border-t pt-6 mb-6">
                       <h3 className="text-2xl font-bold mb-4">Submit Your Review</h3>
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
-                          <StarRating rating={newRating} onRate={setNewRating} size="lg" />
+                          <StarRating rating={newRating} onRate={setNewRating} />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Your Comment</label>
@@ -721,250 +856,440 @@ export default function OolidoPlatform() {
 
                     {/* Reviews */}
                     <div className="border-t pt-6">
-                      <h3 className="text-2xl font-bold mb-4">Reviews ({itemReviews.length})</h3>
+                      <h3 className="text-2xl font-bold mb-4">Reviews ({reviews.length})</h3>
                       <div className="space-y-4">
-                        {itemReviews.map(review => (
+                        {reviews.map(review => (
                           <div key={review.id} className="bg-gray-50 rounded-xl p-4">
-                            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                            <div className="flex items-center justify-between mb-2">
                               <span className="font-semibold">{review.userName}</span>
-                              <StarRating rating={review.rating} readonly size="sm" />
+                              <StarRating rating={review.rating} readonly />
                             </div>
                             {review.comment && <p className="text-gray-700">{review.comment}</p>}
                             <p className="text-xs text-gray-500 mt-2">
-                              {new Date(review.createdAt).toLocaleDateString()}
+                              {review.createdAt?.toDate?.()?.toLocaleDateString() || 'Today'}
                             </p>
                           </div>
                         ))}
-                        {itemReviews.length === 0 && (
+                        {reviews.length === 0 && (
                           <p className="text-gray-500 text-center py-8">No reviews yet. Be the first!</p>
                         )}
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Sidebar */}
+              <div className="lg:w-80">
+                {/* Trending */}
+                <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 sticky top-24">
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                    Trending
+                  </h3>
+                  <div className="space-y-3">
+                    {trendingItems.filter(i => i.id !== selectedItem.id).slice(0, 4).map((item, index) => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          setSelectedItem(item);
+                          loadReviews(item.id);
+                          incrementViewCount(item.id);
+                          window.scrollTo(0, 0);
+                        }}
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-all"
+                      >
+                        <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-gray-500">{item.reviewCount || 0} reviews</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
                 {/* Related Items */}
                 {relatedItems.length > 0 && (
-                  <div>
-                    <h3 className="text-2xl font-bold mb-4">Related Items</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white rounded-2xl shadow-xl p-6">
+                    <h3 className="text-xl font-bold mb-4">Related Items</h3>
+                    <div className="space-y-3">
                       {relatedItems.map(item => (
-                        <ItemCard
+                        <div
                           key={item.id}
-                          item={item}
                           onClick={() => {
-                            handleViewItem(item);
+                            setSelectedItem(item);
+                            loadReviews(item.id);
+                            incrementViewCount(item.id);
                             window.scrollTo(0, 0);
                           }}
-                        />
+                          className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-all"
+                        >
+                          <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">{item.name}</p>
+                            <div className="flex items-center gap-1">
+                              <StarRating rating={item.averageRating || 0} readonly />
+                            </div>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
               </div>
-            )}
+            </div>
+          </div>
+        )}
 
-            {/* Profile Page */}
-            {page === 'profile' && (
-              <div className="max-w-4xl mx-auto">
-                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
-                  <div className="flex items-center gap-4 md:gap-6 mb-8 flex-wrap">
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-3xl md:text-4xl font-bold flex-shrink-0">
-                      {user.displayName?.[0]?.toUpperCase() || 'U'}
+        {/* Profile Page */}
+        {page === 'profile' && (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-xl p-8">
+              <div className="flex items-center gap-6 mb-8">
+                <div className="w-24 h-24 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-4xl font-bold">
+                  {user.displayName?.[0] || user.email?.[0] || 'A'}
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold">{user.displayName || 'Anonymous User'}</h2>
+                  <p className="text-gray-600">{user.email}</p>
+                  <p className="text-purple-600 font-medium mt-1">{userReviews.length} reviews</p>
+                </div>
+              </div>
+
+              <h3 className="text-2xl font-bold mb-4">Your Reviews</h3>
+              <div className="space-y-4">
+                {userReviews.map(review => (
+                  <div key={review.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-lg">{review.itemName}</span>
+                      <StarRating rating={review.rating} readonly />
                     </div>
+                    {review.comment && <p className="text-gray-700 mb-2">{review.comment}</p>}
+                    <p className="text-xs text-gray-500">
+                      {review.createdAt?.toDate?.()?.toLocaleDateString() || 'Today'}
+                    </p>
+                  </div>
+                ))}
+                {userReviews.length === 0 && (
+                  <p className="text-gray-500 text-center py-8">No reviews yet.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Panel */}
+        {page === 'admin' && isAdmin && (
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl shadow-xl p-8 text-white mb-6">
+              <h2 className="text-3xl font-bold flex items-center gap-2">
+                <Shield className="w-8 h-8" />
+                Admin Panel
+              </h2>
+              <p className="mt-2">Manage items, categories, and users.</p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-white rounded-xl p-6 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">Total Items</p>
+                    <p className="text-3xl font-bold text-purple-600">{stats.totalItems}</p>
+                  </div>
+                  <BarChart3 className="w-10 h-10 text-purple-600" />
+                </div>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">Total Users</p>
+                    <p className="text-3xl font-bold text-blue-600">{stats.totalUsers}</p>
+                  </div>
+                  <Users className="w-10 h-10 text-blue-600" />
+                </div>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">Total Reviews</p>
+                    <p className="text-3xl font-bold text-pink-600">{stats.totalReviews}</p>
+                  </div>
+                  <Star className="w-10 h-10 text-pink-600" />
+                </div>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">Total Views</p>
+                    <p className="text-3xl font-bold text-green-600">{stats.totalViews}</p>
+                  </div>
+                  <TrendingUp className="w-10 h-10 text-green-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-2 mb-6 overflow-x-auto">
+              {['items', 'categories', 'users'].map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setAdminTab(tab)}
+                  className={`px-6 py-3 rounded-xl font-medium whitespace-nowrap transition-all ${
+                    adminTab === tab
+                      ? 'bg-white text-purple-600 shadow-lg'
+                      : 'bg-white/50 text-gray-600 hover:bg-white'
+                  }`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {/* Items Tab */}
+            {adminTab === 'items' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-3xl shadow-xl p-8">
+                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <Plus className="w-6 h-6" />
+                    {editingItem ? 'Edit Item' : 'Add New Item'}
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h2 className="text-2xl md:text-3xl font-bold">{user.displayName || 'User'}</h2>
-                      <p className="text-gray-600">{user.email}</p>
-                      <p className="text-purple-600 font-medium mt-1">{userReviews.length} reviews submitted</p>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                      <input
+                        type="text"
+                        value={newItem.name}
+                        onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                        placeholder="e.g., iPhone 15 Pro"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <select
+                        value={newItem.category}
+                        onChange={(e) => setNewItem({...newItem, category: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                      >
+                        <option value="">Select category</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.name}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                      <textarea
+                        value={newItem.description}
+                        onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                        rows="3"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                        placeholder="Write a brief description..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+                      <input
+                        type="text"
+                        value={newItem.imageUrl}
+                        onChange={(e) => setNewItem({...newItem, imageUrl: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma separated)</label>
+                      <input
+                        type="text"
+                        value={newItem.tags}
+                        onChange={(e) => setNewItem({...newItem, tags: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                        placeholder="technology, phone, apple"
+                      />
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-bold mb-4">Your Reviews</h3>
-                  <div className="space-y-4">
-                    {userReviews.map(review => (
-                      <div key={review.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
-                        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                          <span className="font-semibold text-lg">{review.itemName}</span>
-                          <StarRating rating={review.rating} readonly size="sm" />
-                        </div>
-                        {review.comment && <p className="text-gray-700 mb-2">{review.comment}</p>}
-                        <p className="text-xs text-gray-500">
-                          {new Date(review.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    ))}
-                    {userReviews.length === 0 && (
-                      <p className="text-gray-500 text-center py-8">You haven't submitted any reviews yet.</p>
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={handleAddItem}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-5 h-5" />
+                      {editingItem ? 'Update Item' : 'Add Item'}
+                    </button>
+                    {editingItem && (
+                      <button
+                        onClick={() => {
+                          setEditingItem(null);
+                          setNewItem({ name: '', category: '', description: '', imageUrl: '', tags: '' });
+                        }}
+                        className="px-6 py-4 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+                      >
+                        Cancel
+                      </button>
                     )}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-3xl shadow-xl p-8">
+                  <h3 className="text-2xl font-bold mb-4">All Items ({items.length})</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-4">Item</th>
+                          <th className="text-left p-4">Category</th>
+                          <th className="text-left p-4">Rating</th>
+                          <th className="text-left p-4">Reviews</th>
+                          <th className="text-left p-4">Views</th>
+                          <th className="text-right p-4">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {items.map(item => (
+                          <tr key={item.id} className="border-b hover:bg-gray-50">
+                            <td className="p-4">
+                              <div className="flex items-center gap-3">
+                                <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-cover rounded-lg" />
+                                <div>
+                                  <p className="font-semibold">{item.name}</p>
+                                  <p className="text-sm text-gray-600 line-clamp-1">{item.description}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4">{item.category}</td>
+                            <td className="p-4">
+                              <div className="flex items-center gap-1">
+                                <Star className="w-4 h-4 fill-yellow-400 stroke-yellow-400" />
+                                <span>{(item.averageRating || 0).toFixed(1)}</span>
+                              </div>
+                            </td>
+                            <td className="p-4">{item.reviewCount || 0}</td>
+                            <td className="p-4">{item.viewCount || 0}</td>
+                            <td className="p-4">
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => handleEditItem(item)}
+                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                >
+                                  <Edit className="w-5 h-5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteItem(item.id, item.name)}
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Admin Panel */}
-            {page === 'admin' && isAdmin && (
+            {/* Categories Tab */}
+            {adminTab === 'categories' && (
               <div className="space-y-6">
-                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl shadow-xl p-6 md:p-8 text-white">
-                  <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-                    <Shield className="w-6 md:w-8 h-6 md:h-8" />
-                    Admin Panel
-                  </h2>
-                  <p className="mt-2">Manage all content from here</p>
-                </div>
-
-                {/* Add Item */}
-                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+                <div className="bg-white rounded-3xl shadow-xl p-8">
                   <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                    <Plus className="w-6 h-6" />
-                    Add New Item
+                    <Settings className="w-6 h-6" />
+                    Add New Category
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex gap-3">
                     <input
                       type="text"
-                      placeholder="Name"
-                      value={newItem.name}
-                      onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                    />
-                    
-                    <select
-                      value={newItem.category}
-                      onChange={(e) => setNewItem({...newItem, category: e.target.value})}
-                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                    
-                    <input
-                      type="text"
-                      placeholder="Image URL"
-                      value={newItem.imageUrl}
-                      onChange={(e) => setNewItem({...newItem, imageUrl: e.target.value})}
-                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none md:col-span-2"
-                    />
-                    
-                    <textarea
-                      placeholder="Description"
-                      value={newItem.description}
-                      onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                      rows="3"
-                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none md:col-span-2"
-                    />
-                    
-                    <input
-                      type="text"
-                      placeholder="Tags (comma separated)"
-                      value={newItem.tags}
-                      onChange={(e) => setNewItem({...newItem, tags: e.target.value})}
-                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none md:col-span-2"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleAddItem}
-                    className="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    <Plus className="w-5 h-5" />
-                    Add Item
-                  </button>
-                </div>
-
-                {/* Manage Categories */}
-                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
-                  <h3 className="text-2xl font-bold mb-6">Manage Categories</h3>
-                  
-                  <div className="flex gap-2 mb-4">
-                    <input
-                      type="text"
-                      placeholder="New category name"
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      placeholder="Category name"
                       className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
                     />
                     <button
                       onClick={handleAddCategory}
-                      className="bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-600 transition-all"
+                      className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
                     >
+                      <Plus className="w-5 h-5" />
                       Add
                     </button>
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                <div className="bg-white rounded-3xl shadow-xl p-8">
+                  <h3 className="text-2xl font-bold mb-4">All Categories ({categories.length})</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {categories.map(cat => (
-                      <div key={cat} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span className="font-medium text-sm">{cat}</span>
+                      <div key={cat.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50">
+                        <span className="font-semibold">{cat.name}</span>
                         <button
-                          onClick={() => handleDeleteCategory(cat)}
-                          className="text-red-500 hover:text-red-700"
+                          onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* All Items */}
-                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
-                  <h3 className="text-2xl font-bold mb-4">All Items ({items.length})</h3>
-                  <div className="space-y-2">
-                    {items.map(item => (
-                      <div key={item.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50">
-                        <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">{item.name}</p>
-                          <p className="text-sm text-gray-600">{item.category}</p>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <div className="hidden md:flex items-center gap-1">
-                            <StarRating rating={Math.round(item.averageRating || 0)} readonly size="sm" />
-                            <span className="text-sm text-gray-600">({item.reviewCount || 0})</span>
-                          </div>
-                          <button
-                            onClick={() => handleDeleteItem(item.id)}
-                            className="text-red-500 hover:text-red-700 p-2"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* All Users */}
-                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
-                  <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                    <Users className="w-6 h-6" />
-                    All Users ({allUsers.length})
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {allUsers.map(u => (
-                      <div key={u.id} className="p-4 border border-gray-200 rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                            {u.displayName?.[0]?.toUpperCase() || u.email?.[0]?.toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold truncate">{u.displayName || 'User'}</p>
-                            <p className="text-sm text-gray-600 truncate">{u.email}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {allUsers.length === 0 && (
-                      <p className="text-gray-500 col-span-full text-center py-8">No registered users yet.</p>
-                    )}
-                  </div>
+            {/* Users Tab */}
+            {adminTab === 'users' && (
+              <div className="bg-white rounded-3xl shadow-xl p-8">
+                <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                  <Users className="w-6 h-6" />
+                  All Users ({allUsers.length})
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-4">User</th>
+                        <th className="text-left p-4">Email</th>
+                        <th className="text-left p-4">Joined</th>
+                        <th className="text-left p-4">Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allUsers.map(u => (
+                        <tr key={u.id} className="border-b hover:bg-gray-50">
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold">
+                                {u.displayName?.[0] || u.email?.[0] || 'A'}
+                              </div>
+                              <span className="font-semibold">{u.displayName || 'Anonymous'}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">{u.email}</td>
+                          <td className="p-4">{u.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}</td>
+                          <td className="p-4">
+                            {u.isAdmin && (
+                              <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                                Admin
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
           </div>
-        </main>
+        )}
       </div>
     </div>
   );
