@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Star, Search, TrendingUp, User, LogOut, Shield, Plus, Home, Filter, X, Edit, Trash2, Users, BarChart3, Settings, Mail } from 'lucide-react';
 
 const INITIAL_CATEGORIES = [
@@ -14,9 +14,9 @@ const INITIAL_ITEMS = [
     description: 'Leading technology brand, icon of innovation and design',
     imageUrl: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400',
     tags: ['technology', 'phone', 'computer', 'innovation'],
-    averageRating: 0,
-    reviewCount: 0,
-    viewCount: 0
+    averageRating: 4.5,
+    reviewCount: 12,
+    viewCount: 150
   },
   {
     id: '2',
@@ -25,20 +25,31 @@ const INITIAL_ITEMS = [
     description: 'Electric vehicle revolution leader, sustainable energy company',
     imageUrl: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400',
     tags: ['electric vehicle', 'technology', 'sustainability', 'autonomous'],
-    averageRating: 0,
-    reviewCount: 0,
-    viewCount: 0
+    averageRating: 4.7,
+    reviewCount: 8,
+    viewCount: 120
   },
   {
     id: '3',
     name: 'MrBeast',
     category: 'YouTube Channels',
-    description: 'One of the world\'s most subscribed YouTube channels',
+    description: 'One of the worlds most subscribed YouTube channels',
     imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400',
     tags: ['youtube', 'content', 'entertainment', 'philanthropy'],
-    averageRating: 0,
-    reviewCount: 0,
-    viewCount: 0
+    averageRating: 4.9,
+    reviewCount: 25,
+    viewCount: 200
+  },
+  {
+    id: '4',
+    name: 'Netflix',
+    category: 'Companies',
+    description: 'Global streaming entertainment service with diverse content',
+    imageUrl: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=400',
+    tags: ['streaming', 'entertainment', 'movies', 'series'],
+    averageRating: 4.2,
+    reviewCount: 15,
+    viewCount: 180
   }
 ];
 
@@ -114,13 +125,11 @@ export default function OolidoPlatform() {
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState('');
   
-  // Auth States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [authError, setAuthError] = useState('');
   
-  // Admin Panel States
   const [newItem, setNewItem] = useState({
     name: '',
     category: '',
@@ -138,7 +147,6 @@ export default function OolidoPlatform() {
     try {
       setAuthError('');
       
-      // Admin login
       if (email === 'admin' && password === '321') {
         const adminUser = {
           id: 'admin-001',
@@ -150,7 +158,6 @@ export default function OolidoPlatform() {
         setUser(adminUser);
         setIsAdmin(true);
         
-        // Add admin to users if not exists
         if (!users.find(u => u.id === 'admin-001')) {
           setUsers(prev => [...prev, adminUser]);
         }
@@ -170,7 +177,6 @@ export default function OolidoPlatform() {
           return;
         }
         
-        // Check if user exists
         if (users.find(u => u.email === email)) {
           setAuthError('User already exists');
           return;
@@ -190,7 +196,6 @@ export default function OolidoPlatform() {
         setPassword('');
         setDisplayName('');
       } else {
-        // Login
         const foundUser = users.find(u => u.email === email);
         if (!foundUser) {
           setAuthError('User not found');
@@ -222,6 +227,7 @@ export default function OolidoPlatform() {
     setUser(null);
     setIsAdmin(false);
     setPage('home');
+    setSelectedItem(null);
   };
 
   const handleAddCategory = () => {
@@ -242,7 +248,7 @@ export default function OolidoPlatform() {
   };
 
   const handleDeleteCategory = (categoryId, categoryName) => {
-    if (!confirm(`Are you sure you want to delete "${categoryName}"?`)) return;
+    if (!window.confirm(`Are you sure you want to delete "${categoryName}"?`)) return;
     setCategories(prev => prev.filter(c => c.id !== categoryId));
     alert('Category deleted successfully!');
   };
@@ -293,7 +299,7 @@ export default function OolidoPlatform() {
   };
 
   const handleDeleteItem = (itemId, itemName) => {
-    if (!confirm(`Are you sure you want to delete "${itemName}"?`)) return;
+    if (!window.confirm(`Are you sure you want to delete "${itemName}"?`)) return;
     
     setItems(prev => prev.filter(i => i.id !== itemId));
     setReviews(prev => prev.filter(r => r.itemId !== itemId));
@@ -337,16 +343,17 @@ export default function OolidoPlatform() {
 
     setReviews(prev => [review, ...prev]);
 
-    // Update item stats
     setItems(prev => prev.map(item => {
       if (item.id === selectedItem.id) {
         const newReviewCount = (item.reviewCount || 0) + 1;
         const newAverageRating = ((item.averageRating || 0) * (item.reviewCount || 0) + newRating) / newReviewCount;
-        return {
+        const updated = {
           ...item,
           reviewCount: newReviewCount,
           averageRating: newAverageRating
         };
+        setSelectedItem(updated);
+        return updated;
       }
       return item;
     }));
@@ -434,7 +441,7 @@ export default function OolidoPlatform() {
                 placeholder="Your Name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none text-gray-800"
               />
             )}
             
@@ -443,7 +450,7 @@ export default function OolidoPlatform() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none"
+              className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none text-gray-800"
             />
             
             <input
@@ -452,7 +459,7 @@ export default function OolidoPlatform() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
-              className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none"
+              className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none text-gray-800"
             />
 
             {authError && (
@@ -491,7 +498,7 @@ export default function OolidoPlatform() {
           </div>
 
           <p className="text-white/60 text-xs text-center mt-6">
-            Admin: username "admin" / password "321"
+            Admin: username &quot;admin&quot; / password &quot;321&quot;
           </p>
         </div>
       </div>
@@ -500,7 +507,6 @@ export default function OolidoPlatform() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
       <header className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -551,12 +557,9 @@ export default function OolidoPlatform() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Home Page */}
         {page === 'home' && !selectedItem && (
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Main Content */}
             <div className="flex-1">
-              {/* Search and Filters */}
               <div className="mb-8 space-y-4">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -587,7 +590,6 @@ export default function OolidoPlatform() {
                 </div>
               </div>
 
-              {/* Items Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredItems.map(item => (
                   <ItemCard
@@ -608,7 +610,6 @@ export default function OolidoPlatform() {
               )}
             </div>
 
-            {/* Trending Sidebar */}
             <div className="lg:w-80">
               <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-24">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -641,7 +642,6 @@ export default function OolidoPlatform() {
           </div>
         )}
 
-        {/* Item Detail */}
         {page === 'home' && selectedItem && (
           <div className="space-y-6">
             <button
@@ -695,7 +695,6 @@ export default function OolidoPlatform() {
                       </div>
                     </div>
 
-                    {/* Review Form */}
                     <div className="border-t pt-6 mb-6">
                       <h3 className="text-2xl font-bold mb-4">Submit Your Review</h3>
                       <div className="space-y-4">
@@ -722,7 +721,6 @@ export default function OolidoPlatform() {
                       </div>
                     </div>
 
-                    {/* Reviews */}
                     <div className="border-t pt-6">
                       <h3 className="text-2xl font-bold mb-4">Reviews ({itemReviews.length})</h3>
                       <div className="space-y-4">
@@ -747,16 +745,14 @@ export default function OolidoPlatform() {
                 </div>
               </div>
 
-              {/* Sidebar */}
-              <div className="lg:w-80">
-                {/* Trending */}
-                <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 sticky top-24">
+              <div className="lg:w-80 space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-24">
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <TrendingUp className="w-6 h-6 text-purple-600" />
                     Trending
                   </h3>
                   <div className="space-y-3">
-                    {trendingItems.filter(i => i.id !== selectedItem.id).slice(0, 4).map((item, index) => (
+                    {trendingItems.filter(i => i.id !== selectedItem.id).slice(0, 4).map((item) => (
                       <div
                         key={item.id}
                         onClick={() => {
@@ -776,7 +772,6 @@ export default function OolidoPlatform() {
                   </div>
                 </div>
 
-                {/* Related Items */}
                 {relatedItems.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-xl p-6">
                     <h3 className="text-xl font-bold mb-4">Related Items</h3>
@@ -809,7 +804,6 @@ export default function OolidoPlatform() {
           </div>
         )}
 
-        {/* Profile Page */}
         {page === 'profile' && (
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -846,7 +840,6 @@ export default function OolidoPlatform() {
           </div>
         )}
 
-        {/* Admin Panel */}
         {page === 'admin' && isAdmin && (
           <div className="max-w-6xl mx-auto">
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl shadow-xl p-8 text-white mb-6">
@@ -857,7 +850,6 @@ export default function OolidoPlatform() {
               <p className="mt-2">Manage items, categories, and users.</p>
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div className="bg-white rounded-xl p-6 shadow-lg">
                 <div className="flex items-center justify-between">
@@ -897,7 +889,6 @@ export default function OolidoPlatform() {
               </div>
             </div>
 
-            {/* Tabs */}
             <div className="flex gap-2 mb-6 overflow-x-auto">
               {['items', 'categories', 'users'].map(tab => (
                 <button
@@ -914,7 +905,6 @@ export default function OolidoPlatform() {
               ))}
             </div>
 
-            {/* Items Tab */}
             {adminTab === 'items' && (
               <div className="space-y-6">
                 <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -1065,7 +1055,6 @@ export default function OolidoPlatform() {
               </div>
             )}
 
-            {/* Categories Tab */}
             {adminTab === 'categories' && (
               <div className="space-y-6">
                 <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -1111,7 +1100,6 @@ export default function OolidoPlatform() {
               </div>
             )}
 
-            {/* Users Tab */}
             {adminTab === 'users' && (
               <div className="bg-white rounded-3xl shadow-xl p-8">
                 <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
