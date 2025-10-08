@@ -1,23 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js';
-import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, limit, updateDoc, doc, deleteDoc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
 import { Star, Search, TrendingUp, User, LogOut, Shield, Plus, Home, Filter, X, Edit, Trash2, Users, BarChart3, Settings, Mail } from 'lucide-react';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAh6JbnjsZtD-d0g3iSb2maSerPntUP6To",
-  authDomain: "macbot-b7b45.firebaseapp.com",
-  databaseURL: "https://macbot-b7b45-default-rtdb.firebaseio.com",
-  projectId: "macbot-b7b45",
-  storageBucket: "macbot-b7b45.firebasestorage.app",
-  messagingSenderId: "88494187419",
-  appId: "1:88494187419:web:9e0fd1a37e51332203373e",
-  measurementId: "G-SVG851WK7Y"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 const INITIAL_CATEGORIES = [
   'Celebrities', 'Brands', 'Companies', 'Stocks/Funds', 'Sports Clubs',
@@ -26,25 +8,37 @@ const INITIAL_CATEGORIES = [
 
 const INITIAL_ITEMS = [
   {
+    id: '1',
     name: 'Apple',
     category: 'Brands',
     description: 'Leading technology brand, icon of innovation and design',
     imageUrl: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400',
-    tags: ['technology', 'phone', 'computer', 'innovation']
+    tags: ['technology', 'phone', 'computer', 'innovation'],
+    averageRating: 0,
+    reviewCount: 0,
+    viewCount: 0
   },
   {
+    id: '2',
     name: 'Tesla',
     category: 'Companies',
     description: 'Electric vehicle revolution leader, sustainable energy company',
     imageUrl: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400',
-    tags: ['electric vehicle', 'technology', 'sustainability', 'autonomous']
+    tags: ['electric vehicle', 'technology', 'sustainability', 'autonomous'],
+    averageRating: 0,
+    reviewCount: 0,
+    viewCount: 0
   },
   {
+    id: '3',
     name: 'MrBeast',
     category: 'YouTube Channels',
     description: 'One of the world\'s most subscribed YouTube channels',
     imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400',
-    tags: ['youtube', 'content', 'entertainment', 'philanthropy']
+    tags: ['youtube', 'content', 'entertainment', 'philanthropy'],
+    averageRating: 0,
+    reviewCount: 0,
+    viewCount: 0
   }
 ];
 
@@ -110,12 +104,11 @@ export default function OolidoPlatform() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [page, setPage] = useState('home');
   const [authMode, setAuthMode] = useState('login');
-  const [items, setItems] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [categories, setCategories] = useState(INITIAL_CATEGORIES.map((name, i) => ({ id: String(i + 1), name })));
+  const [users, setUsers] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [userReviews, setUserReviews] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [newRating, setNewRating] = useState(0);
@@ -139,171 +132,32 @@ export default function OolidoPlatform() {
   const [adminTab, setAdminTab] = useState('items');
   const [editingItem, setEditingItem] = useState(null);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (userDoc.exists() && userDoc.data().isAdmin) {
-          setIsAdmin(true);
-        }
-        loadUserReviews(currentUser.uid);
-      } else {
-        setIsAdmin(false);
-      }
-    });
-    
-    initializeData();
-    loadItems();
-    loadCategories();
-    loadAllUsers();
-    
-    return () => unsubscribe();
-  }, []);
+  const generateId = () => Date.now().toString() + Math.random().toString(36).substr(2, 9);
 
-  const initializeData = async () => {
-    try {
-      const catQuery = query(collection(db, 'categories'), limit(1));
-      const catSnapshot = await getDocs(catQuery);
-      
-      if (catSnapshot.empty) {
-        for (const cat of INITIAL_CATEGORIES) {
-          await addDoc(collection(db, 'categories'), {
-            name: cat,
-            createdAt: new Date()
-          });
-        }
-      }
-
-      const itemQuery = query(collection(db, 'items'), limit(1));
-      const itemSnapshot = await getDocs(itemQuery);
-      
-      if (itemSnapshot.empty) {
-        const categoriesSnapshot = await getDocs(collection(db, 'categories'));
-        const firstCategory = categoriesSnapshot.docs[0]?.data()?.name || 'Brands';
-        
-        for (const item of INITIAL_ITEMS) {
-          await addDoc(collection(db, 'items'), {
-            ...item,
-            category: item.category || firstCategory,
-            averageRating: 0,
-            reviewCount: 0,
-            viewCount: 0,
-            createdAt: new Date()
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error initializing data:', error);
-    }
-  };
-
-  const loadCategories = async () => {
-    try {
-      const q = query(collection(db, 'categories'), orderBy('name', 'asc'));
-      const snapshot = await getDocs(q);
-      const categoriesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error('Error loading categories:', error);
-    }
-  };
-
-  const loadItems = async () => {
-    try {
-      const q = query(collection(db, 'items'), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
-      const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setItems(itemsData);
-    } catch (error) {
-      console.error('Error loading items:', error);
-    }
-  };
-
-  const loadReviews = async (itemId) => {
-    try {
-      const q = query(
-        collection(db, 'reviews'),
-        where('itemId', '==', itemId),
-        orderBy('createdAt', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setReviews(reviewsData);
-    } catch (error) {
-      console.error('Error loading reviews:', error);
-    }
-  };
-
-  const loadUserReviews = async (userId) => {
-    try {
-      const q = query(
-        collection(db, 'reviews'),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUserReviews(reviewsData);
-    } catch (error) {
-      console.error('Error loading user reviews:', error);
-    }
-  };
-
-  const loadAllUsers = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, 'users'));
-      const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAllUsers(usersData);
-    } catch (error) {
-      console.error('Error loading users:', error);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      
-      await setDoc(doc(db, 'users', result.user.uid), {
-        email: result.user.email,
-        displayName: result.user.displayName,
-        photoURL: result.user.photoURL,
-        createdAt: new Date(),
-        isAdmin: false
-      }, { merge: true });
-      
-      loadAllUsers();
-    } catch (error) {
-      setAuthError(error.message);
-    }
-  };
-
-  const handleEmailAuth = async () => {
+  const handleAuth = () => {
     try {
       setAuthError('');
       
+      // Admin login
       if (email === 'admin' && password === '321') {
-        const adminResult = await signInWithEmailAndPassword(auth, 'admin@oolido.com', 'admin321');
-        await updateDoc(doc(db, 'users', adminResult.user.uid), {
-          isAdmin: true
-        });
+        const adminUser = {
+          id: 'admin-001',
+          email: 'admin@oolido.com',
+          displayName: 'Admin',
+          isAdmin: true,
+          createdAt: new Date()
+        };
+        setUser(adminUser);
         setIsAdmin(true);
-        return;
-      } catch (adminError) {
-        if (adminError.code === 'auth/user-not-found') {
-          const adminResult = await createUserWithEmailAndPassword(auth, 'admin@oolido.com', 'admin321');
-          await updateProfile(adminResult.user, { displayName: 'Admin' });
-          await setDoc(doc(db, 'users', adminResult.user.uid), {
-            email: 'admin@oolido.com',
-            displayName: 'Admin',
-            createdAt: new Date(),
-            isAdmin: true
-          });
-          setIsAdmin(true);
-          loadAllUsers();
-          return;
+        
+        // Add admin to users if not exists
+        if (!users.find(u => u.id === 'admin-001')) {
+          setUsers(prev => [...prev, adminUser]);
         }
+        
+        setEmail('');
+        setPassword('');
+        return;
       }
       
       if (authMode === 'signup') {
@@ -311,126 +165,139 @@ export default function OolidoPlatform() {
           setAuthError('Please enter your name');
           return;
         }
-        const result = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(result.user, { displayName: displayName });
+        if (!email || !password) {
+          setAuthError('Please fill all fields');
+          return;
+        }
         
-        await setDoc(doc(db, 'users', result.user.uid), {
-          email: email,
-          displayName: displayName,
-          createdAt: new Date(),
-          isAdmin: false
-        });
+        // Check if user exists
+        if (users.find(u => u.email === email)) {
+          setAuthError('User already exists');
+          return;
+        }
         
-        loadAllUsers();
+        const newUser = {
+          id: generateId(),
+          email,
+          displayName,
+          isAdmin: false,
+          createdAt: new Date()
+        };
+        
+        setUsers(prev => [...prev, newUser]);
+        setUser(newUser);
+        setEmail('');
+        setPassword('');
+        setDisplayName('');
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        // Login
+        const foundUser = users.find(u => u.email === email);
+        if (!foundUser) {
+          setAuthError('User not found');
+          return;
+        }
+        setUser(foundUser);
+        setIsAdmin(foundUser.isAdmin || false);
+        setEmail('');
+        setPassword('');
       }
-      
-      setEmail('');
-      setPassword('');
-      setDisplayName('');
     } catch (error) {
       setAuthError(error.message);
     }
   };
 
-  const handleLogout = async () => {
-    await signOut(auth);
+  const handleGoogleLogin = () => {
+    const googleUser = {
+      id: generateId(),
+      email: 'user@gmail.com',
+      displayName: 'Google User',
+      isAdmin: false,
+      createdAt: new Date()
+    };
+    setUsers(prev => [...prev, googleUser]);
+    setUser(googleUser);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
     setIsAdmin(false);
     setPage('home');
   };
 
-  const handleAddCategory = async () => {
+  const handleAddCategory = () => {
     if (!newCategory.trim()) {
       alert('Please enter a category name');
       return;
     }
 
-    try {
-      await addDoc(collection(db, 'categories'), {
-        name: newCategory,
-        createdAt: new Date()
-      });
-      
-      setNewCategory('');
-      loadCategories();
-      alert('Category added successfully!');
-    } catch (error) {
-      console.error('Error adding category:', error);
-    }
+    const category = {
+      id: generateId(),
+      name: newCategory,
+      createdAt: new Date()
+    };
+    
+    setCategories(prev => [...prev, category]);
+    setNewCategory('');
+    alert('Category added successfully!');
   };
 
-  const handleDeleteCategory = async (categoryId, categoryName) => {
+  const handleDeleteCategory = (categoryId, categoryName) => {
     if (!confirm(`Are you sure you want to delete "${categoryName}"?`)) return;
-
-    try {
-      await deleteDoc(doc(db, 'categories', categoryId));
-      loadCategories();
-      alert('Category deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting category:', error);
-    }
+    setCategories(prev => prev.filter(c => c.id !== categoryId));
+    alert('Category deleted successfully!');
   };
 
-  const handleAddItem = async () => {
+  const handleAddItem = () => {
     if (!newItem.name || !newItem.description || !newItem.imageUrl || !newItem.category) {
       alert('Please fill all fields!');
       return;
     }
 
-    try {
-      const tags = newItem.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    const tags = newItem.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    
+    if (editingItem) {
+      setItems(prev => prev.map(item => 
+        item.id === editingItem.id
+          ? {
+              ...item,
+              name: newItem.name,
+              category: newItem.category,
+              description: newItem.description,
+              imageUrl: newItem.imageUrl,
+              tags: tags,
+              updatedAt: new Date()
+            }
+          : item
+      ));
+      setEditingItem(null);
+      alert('Item updated successfully!');
+    } else {
+      const item = {
+        id: generateId(),
+        name: newItem.name,
+        category: newItem.category,
+        description: newItem.description,
+        imageUrl: newItem.imageUrl,
+        tags: tags,
+        averageRating: 0,
+        reviewCount: 0,
+        viewCount: 0,
+        createdAt: new Date()
+      };
       
-      if (editingItem) {
-        await updateDoc(doc(db, 'items', editingItem.id), {
-          name: newItem.name,
-          category: newItem.category,
-          description: newItem.description,
-          imageUrl: newItem.imageUrl,
-          tags: tags,
-          updatedAt: new Date()
-        });
-        setEditingItem(null);
-        alert('Item updated successfully!');
-      } else {
-        await addDoc(collection(db, 'items'), {
-          name: newItem.name,
-          category: newItem.category,
-          description: newItem.description,
-          imageUrl: newItem.imageUrl,
-          tags: tags,
-          averageRating: 0,
-          reviewCount: 0,
-          viewCount: 0,
-          createdAt: new Date()
-        });
-        alert('Item added successfully!');
-      }
-      
-      setNewItem({ name: '', category: '', description: '', imageUrl: '', tags: '' });
-      loadItems();
-    } catch (error) {
-      console.error('Error saving item:', error);
+      setItems(prev => [item, ...prev]);
+      alert('Item added successfully!');
     }
+    
+    setNewItem({ name: '', category: '', description: '', imageUrl: '', tags: '' });
   };
 
-  const handleDeleteItem = async (itemId, itemName) => {
+  const handleDeleteItem = (itemId, itemName) => {
     if (!confirm(`Are you sure you want to delete "${itemName}"?`)) return;
-
-    try {
-      await deleteDoc(doc(db, 'items', itemId));
-      
-      const reviewsQuery = query(collection(db, 'reviews'), where('itemId', '==', itemId));
-      const reviewsSnapshot = await getDocs(reviewsQuery);
-      reviewsSnapshot.forEach(async (reviewDoc) => {
-        await deleteDoc(doc(db, 'reviews', reviewDoc.id));
-      });
-      
-      loadItems();
-      alert('Item deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting item:', error);
-    }
+    
+    setItems(prev => prev.filter(i => i.id !== itemId));
+    setReviews(prev => prev.filter(r => r.itemId !== itemId));
+    alert('Item deleted successfully!');
   };
 
   const handleEditItem = (item) => {
@@ -446,7 +313,7 @@ export default function OolidoPlatform() {
     window.scrollTo(0, 0);
   };
 
-  const handleSubmitReview = async () => {
+  const handleSubmitReview = () => {
     if (!user) {
       alert('Please login to submit a review!');
       return;
@@ -457,49 +324,44 @@ export default function OolidoPlatform() {
       return;
     }
 
-    try {
-      await addDoc(collection(db, 'reviews'), {
-        itemId: selectedItem.id,
-        itemName: selectedItem.name,
-        userId: user.uid,
-        userName: user.displayName || 'Anonymous User',
-        rating: newRating,
-        comment: newComment,
-        createdAt: new Date()
-      });
+    const review = {
+      id: generateId(),
+      itemId: selectedItem.id,
+      itemName: selectedItem.name,
+      userId: user.id,
+      userName: user.displayName,
+      rating: newRating,
+      comment: newComment,
+      createdAt: new Date()
+    };
 
-      const itemRef = doc(db, 'items', selectedItem.id);
-      const itemDoc = await getDoc(itemRef);
-      const itemData = itemDoc.data();
-      const newReviewCount = (itemData.reviewCount || 0) + 1;
-      const newAverageRating = ((itemData.averageRating || 0) * (itemData.reviewCount || 0) + newRating) / newReviewCount;
+    setReviews(prev => [review, ...prev]);
 
-      await updateDoc(itemRef, {
-        reviewCount: newReviewCount,
-        averageRating: newAverageRating
-      });
+    // Update item stats
+    setItems(prev => prev.map(item => {
+      if (item.id === selectedItem.id) {
+        const newReviewCount = (item.reviewCount || 0) + 1;
+        const newAverageRating = ((item.averageRating || 0) * (item.reviewCount || 0) + newRating) / newReviewCount;
+        return {
+          ...item,
+          reviewCount: newReviewCount,
+          averageRating: newAverageRating
+        };
+      }
+      return item;
+    }));
 
-      setNewRating(0);
-      setNewComment('');
-      loadReviews(selectedItem.id);
-      loadItems();
-      loadUserReviews(user.uid);
-      alert('Your review has been added!');
-    } catch (error) {
-      console.error('Error submitting review:', error);
-    }
+    setNewRating(0);
+    setNewComment('');
+    alert('Your review has been added!');
   };
 
-  const incrementViewCount = async (itemId) => {
-    try {
-      const itemRef = doc(db, 'items', itemId);
-      await updateDoc(itemRef, {
-        viewCount: (await getDoc(itemRef)).data().viewCount + 1 || 1
-      });
-      loadItems();
-    } catch (error) {
-      console.error('Error incrementing view count:', error);
-    }
+  const incrementViewCount = (itemId) => {
+    setItems(prev => prev.map(item =>
+      item.id === itemId
+        ? { ...item, viewCount: (item.viewCount || 0) + 1 }
+        : item
+    ));
   };
 
   const filteredItems = items.filter(item => {
@@ -522,10 +384,18 @@ export default function OolidoPlatform() {
       ).slice(0, 4)
     : [];
 
+  const itemReviews = selectedItem 
+    ? reviews.filter(r => r.itemId === selectedItem.id)
+    : [];
+
+  const userReviews = user
+    ? reviews.filter(r => r.userId === user.id)
+    : [];
+
   const stats = {
     totalItems: items.length,
-    totalUsers: allUsers.length,
-    totalReviews: items.reduce((sum, item) => sum + (item.reviewCount || 0), 0),
+    totalUsers: users.length,
+    totalReviews: reviews.length,
     totalViews: items.reduce((sum, item) => sum + (item.viewCount || 0), 0)
   };
 
@@ -581,7 +451,7 @@ export default function OolidoPlatform() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleEmailAuth()}
+              onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
               className="w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-white outline-none"
             />
 
@@ -590,7 +460,7 @@ export default function OolidoPlatform() {
             )}
             
             <button
-              onClick={handleEmailAuth}
+              onClick={handleAuth}
               className="w-full bg-white text-purple-600 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
             >
               <Mail className="w-5 h-5" />
@@ -725,7 +595,6 @@ export default function OolidoPlatform() {
                     item={item}
                     onClick={() => {
                       setSelectedItem(item);
-                      loadReviews(item.id);
                       incrementViewCount(item.id);
                     }}
                   />
@@ -752,7 +621,6 @@ export default function OolidoPlatform() {
                       key={item.id}
                       onClick={() => {
                         setSelectedItem(item);
-                        loadReviews(item.id);
                         incrementViewCount(item.id);
                       }}
                       className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-all"
@@ -856,9 +724,9 @@ export default function OolidoPlatform() {
 
                     {/* Reviews */}
                     <div className="border-t pt-6">
-                      <h3 className="text-2xl font-bold mb-4">Reviews ({reviews.length})</h3>
+                      <h3 className="text-2xl font-bold mb-4">Reviews ({itemReviews.length})</h3>
                       <div className="space-y-4">
-                        {reviews.map(review => (
+                        {itemReviews.map(review => (
                           <div key={review.id} className="bg-gray-50 rounded-xl p-4">
                             <div className="flex items-center justify-between mb-2">
                               <span className="font-semibold">{review.userName}</span>
@@ -866,11 +734,11 @@ export default function OolidoPlatform() {
                             </div>
                             {review.comment && <p className="text-gray-700">{review.comment}</p>}
                             <p className="text-xs text-gray-500 mt-2">
-                              {review.createdAt?.toDate?.()?.toLocaleDateString() || 'Today'}
+                              {review.createdAt.toLocaleDateString()}
                             </p>
                           </div>
                         ))}
-                        {reviews.length === 0 && (
+                        {itemReviews.length === 0 && (
                           <p className="text-gray-500 text-center py-8">No reviews yet. Be the first!</p>
                         )}
                       </div>
@@ -893,7 +761,6 @@ export default function OolidoPlatform() {
                         key={item.id}
                         onClick={() => {
                           setSelectedItem(item);
-                          loadReviews(item.id);
                           incrementViewCount(item.id);
                           window.scrollTo(0, 0);
                         }}
@@ -919,7 +786,6 @@ export default function OolidoPlatform() {
                           key={item.id}
                           onClick={() => {
                             setSelectedItem(item);
-                            loadReviews(item.id);
                             incrementViewCount(item.id);
                             window.scrollTo(0, 0);
                           }}
@@ -929,7 +795,8 @@ export default function OolidoPlatform() {
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm truncate">{item.name}</p>
                             <div className="flex items-center gap-1">
-                              <StarRating rating={item.averageRating || 0} readonly />
+                              <Star className="w-3 h-3 fill-yellow-400 stroke-yellow-400" />
+                              <span className="text-xs text-gray-600">{(item.averageRating || 0).toFixed(1)}</span>
                             </div>
                           </div>
                         </div>
@@ -948,10 +815,10 @@ export default function OolidoPlatform() {
             <div className="bg-white rounded-3xl shadow-xl p-8">
               <div className="flex items-center gap-6 mb-8">
                 <div className="w-24 h-24 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-4xl font-bold">
-                  {user.displayName?.[0] || user.email?.[0] || 'A'}
+                  {user.displayName?.[0] || 'A'}
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold">{user.displayName || 'Anonymous User'}</h2>
+                  <h2 className="text-3xl font-bold">{user.displayName}</h2>
                   <p className="text-gray-600">{user.email}</p>
                   <p className="text-purple-600 font-medium mt-1">{userReviews.length} reviews</p>
                 </div>
@@ -967,7 +834,7 @@ export default function OolidoPlatform() {
                     </div>
                     {review.comment && <p className="text-gray-700 mb-2">{review.comment}</p>}
                     <p className="text-xs text-gray-500">
-                      {review.createdAt?.toDate?.()?.toLocaleDateString() || 'Today'}
+                      {review.createdAt.toLocaleDateString()}
                     </p>
                   </div>
                 ))}
@@ -1249,7 +1116,7 @@ export default function OolidoPlatform() {
               <div className="bg-white rounded-3xl shadow-xl p-8">
                 <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
                   <Users className="w-6 h-6" />
-                  All Users ({allUsers.length})
+                  All Users ({users.length})
                 </h3>
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -1262,18 +1129,18 @@ export default function OolidoPlatform() {
                       </tr>
                     </thead>
                     <tbody>
-                      {allUsers.map(u => (
+                      {users.map(u => (
                         <tr key={u.id} className="border-b hover:bg-gray-50">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold">
-                                {u.displayName?.[0] || u.email?.[0] || 'A'}
+                                {u.displayName?.[0] || 'A'}
                               </div>
-                              <span className="font-semibold">{u.displayName || 'Anonymous'}</span>
+                              <span className="font-semibold">{u.displayName}</span>
                             </div>
                           </td>
                           <td className="p-4">{u.email}</td>
-                          <td className="p-4">{u.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}</td>
+                          <td className="p-4">{u.createdAt.toLocaleDateString()}</td>
                           <td className="p-4">
                             {u.isAdmin && (
                               <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
