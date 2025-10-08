@@ -1,78 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js';
-import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, limit, updateDoc, doc, increment, arrayUnion, getDoc } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
-import { Star, Search, TrendingUp, User, LogOut, Shield, Plus, Home, Filter, X } from 'lucide-react';
+import { Star, Search, TrendingUp, User, LogOut, Shield, Plus, Home, Filter, X, Trash2, Users, Menu, ChevronRight, Eye } from 'lucide-react';
 
-// Firebase yapılandırması
-const firebaseConfig = {
-  apiKey: "AIzaSyAh6JbnjsZtD-d0g3iSb2maSerPntUP6To",
-  authDomain: "macbot-b7b45.firebaseapp.com",
-  databaseURL: "https://macbot-b7b45-default-rtdb.firebaseio.com",
-  projectId: "macbot-b7b45",
-  storageBucket: "macbot-b7b45.firebasestorage.app",
-  messagingSenderId: "88494187419",
-  appId: "1:88494187419:web:9e0fd1a37e51332203373e",
-  measurementId: "G-SVG851WK7Y"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const CATEGORIES = [
-  'Ünlüler', 'Markalar', 'Şirketler', 'Hisseler/Fonlar', 'Spor Kulüpleri',
-  'Siyasiler', 'YouTube Kanalları', 'Filmler/Diziler', 'Müzik', 'Teknoloji'
+const DEFAULT_CATEGORIES = [
+  'Celebrities', 'Brands', 'Companies', 'Stocks/Funds', 'Sports Clubs',
+  'Politicians', 'YouTube Channels', 'Movies/TV Shows', 'Music', 'Technology'
 ];
 
-// Başlangıç içerikleri
 const INITIAL_ITEMS = [
   {
+    id: '1',
     name: 'Tarkan',
-    category: 'Ünlüler',
-    description: 'Türk pop müziğinin efsanevi ismi, dünya çapında tanınan sanatçı',
+    category: 'Celebrities',
+    description: 'Legendary Turkish pop music icon, globally recognized artist',
     imageUrl: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400',
-    tags: ['müzik', 'pop', 'sanatçı', 'türk']
+    tags: ['music', 'pop', 'artist', 'turkish'],
+    averageRating: 0,
+    reviewCount: 0,
+    viewCount: 0
   },
   {
+    id: '2',
     name: 'Apple',
-    category: 'Markalar',
-    description: 'Teknoloji dünyasının öncü markası, inovasyon ve tasarım ikonu',
+    category: 'Brands',
+    description: 'Leading technology brand, innovation and design icon',
     imageUrl: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400',
-    tags: ['teknoloji', 'telefon', 'bilgisayar', 'inovasyon']
+    tags: ['technology', 'phone', 'computer', 'innovation'],
+    averageRating: 0,
+    reviewCount: 0,
+    viewCount: 0
   },
   {
+    id: '3',
     name: 'Galatasaray',
-    category: 'Spor Kulüpleri',
-    description: 'Türkiye\'nin en köklü spor kulüplerinden biri, UEFA Kupası şampiyonu',
+    category: 'Sports Clubs',
+    description: 'One of Turkey\'s most prestigious sports clubs, UEFA Cup champion',
     imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400',
-    tags: ['futbol', 'spor', 'türkiye', 'sarı-kırmızı']
+    tags: ['football', 'sports', 'turkey', 'yellow-red'],
+    averageRating: 0,
+    reviewCount: 0,
+    viewCount: 0
   },
   {
+    id: '4',
     name: 'Tesla',
-    category: 'Şirketler',
-    description: 'Elektrikli araç devrimini başlatan, sürdürülebilir enerji şirketi',
+    category: 'Companies',
+    description: 'Revolutionary electric vehicle company, sustainable energy leader',
     imageUrl: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400',
-    tags: ['elektrikli araç', 'teknoloji', 'sürdürülebilirlik', 'otonom']
+    tags: ['electric vehicle', 'technology', 'sustainability', 'autonomous'],
+    averageRating: 0,
+    reviewCount: 0,
+    viewCount: 0
   },
   {
+    id: '5',
     name: 'MrBeast',
-    category: 'YouTube Kanalları',
-    description: 'Dünyanın en çok abone sayısına sahip YouTube kanallarından biri',
+    category: 'YouTube Channels',
+    description: 'One of the world\'s most subscribed YouTube channels',
     imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400',
-    tags: ['youtube', 'içerik', 'eğlence', 'hayırseverlik']
+    tags: ['youtube', 'content', 'entertainment', 'philanthropy'],
+    averageRating: 0,
+    reviewCount: 0,
+    viewCount: 0
   }
 ];
 
-function StarRating({ rating, onRate, readonly = false }) {
+function StarRating({ rating, onRate, readonly = false, size = 'md' }) {
   const [hover, setHover] = useState(0);
+  const sizeClasses = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-8 h-8' : 'w-6 h-6';
   
   return (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
-          className={`w-6 h-6 ${readonly ? '' : 'cursor-pointer'} transition-all`}
+          className={`${sizeClasses} ${readonly ? '' : 'cursor-pointer'} transition-all`}
           fill={star <= (hover || rating) ? '#fbbf24' : 'none'}
           stroke={star <= (hover || rating) ? '#fbbf24' : '#9ca3af'}
           onMouseEnter={() => !readonly && setHover(star)}
@@ -84,7 +85,7 @@ function StarRating({ rating, onRate, readonly = false }) {
   );
 }
 
-function ItemCard({ item, onClick }) {
+function ItemCard({ item, onClick, showStats = false }) {
   return (
     <div
       onClick={onClick}
@@ -99,17 +100,23 @@ function ItemCard({ item, onClick }) {
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-purple-600">
           {item.category}
         </div>
+        {showStats && (
+          <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-white flex items-center gap-1">
+            <Eye className="w-4 h-4" />
+            {item.viewCount || 0}
+          </div>
+        )}
       </div>
       <div className="p-5">
-        <h3 className="text-xl font-bold text-gray-800 mb-2">{item.name}</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-1">{item.name}</h3>
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
-        <div className="flex items-center justify-between">
-          <StarRating rating={item.averageRating || 0} readonly />
+        <div className="flex items-center justify-between mb-3">
+          <StarRating rating={Math.round(item.averageRating || 0)} readonly size="sm" />
           <span className="text-sm text-gray-500">
-            {item.reviewCount || 0} değerlendirme
+            {item.reviewCount || 0} reviews
           </span>
         </div>
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="flex flex-wrap gap-2">
           {item.tags?.slice(0, 3).map((tag, i) => (
             <span key={i} className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full">
               #{tag}
@@ -125,212 +132,234 @@ export default function OolidoPlatform() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [page, setPage] = useState('home');
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [selectedItem, setSelectedItem] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [userReviews, setUserReviews] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Tümü');
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [adminUsername, setAdminUsername] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [nextUserId, setNextUserId] = useState(1);
+  const [nextItemId, setNextItemId] = useState(6);
+  const [nextReviewId, setNextReviewId] = useState(1);
   
-  // Admin Panel States
   const [newItem, setNewItem] = useState({
     name: '',
-    category: CATEGORIES[0],
+    category: '',
     description: '',
     imageUrl: '',
     tags: ''
   });
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        loadUserReviews(currentUser.uid);
-      }
-    });
-    
-    initializeItems();
-    loadItems();
-    
-    return () => unsubscribe();
-  }, []);
-
-  const initializeItems = async () => {
-    try {
-      const q = query(collection(db, 'items'), limit(1));
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) {
-        for (const item of INITIAL_ITEMS) {
-          await addDoc(collection(db, 'items'), {
-            ...item,
-            averageRating: 0,
-            reviewCount: 0,
-            createdAt: new Date()
-          });
-        }
-      }
-    } catch (error) {
-      console.error('İçerikler yüklenirken hata:', error);
-    }
-  };
-
-  const loadItems = async () => {
-    try {
-      const q = query(collection(db, 'items'), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
-      const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setItems(itemsData);
-    } catch (error) {
-      console.error('İçerikler yüklenirken hata:', error);
-    }
-  };
-
-  const loadReviews = async (itemId) => {
-    try {
-      const q = query(
-        collection(db, 'reviews'),
-        where('itemId', '==', itemId),
-        orderBy('createdAt', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setReviews(reviewsData);
-    } catch (error) {
-      console.error('Yorumlar yüklenirken hata:', error);
-    }
-  };
-
-  const loadUserReviews = async (userId) => {
-    try {
-      const q = query(
-        collection(db, 'reviews'),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUserReviews(reviewsData);
-    } catch (error) {
-      console.error('Kullanıcı yorumları yüklenirken hata:', error);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error('Google girişi hatası:', error);
-    }
-  };
-
-  const handleAnonymousLogin = async () => {
-    try {
-      await signInAnonymously(auth);
-    } catch (error) {
-      console.error('Anonim giriş hatası:', error);
-    }
-  };
-
-  const handleAdminLogin = () => {
-    if (adminUsername === 'admin' && adminPassword === '123') {
+  const handleLogin = () => {
+    // Admin login check
+    if (email === 'admin' && password === '321') {
+      const adminUser = {
+        id: 'admin',
+        email: 'admin@oolido.com',
+        displayName: 'Administrator',
+        isAdmin: true
+      };
+      setUser(adminUser);
       setIsAdmin(true);
-      setShowAdminLogin(false);
+      setShowAuthModal(false);
       setPage('admin');
-      setAdminUsername('');
-      setAdminPassword('');
-    } else {
-      alert('Hatalı kullanıcı adı veya şifre!');
-    }
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    setIsAdmin(false);
-    setPage('home');
-  };
-
-  const handleAddItem = async () => {
-    if (!newItem.name || !newItem.description || !newItem.imageUrl) {
-      alert('Lütfen tüm alanları doldurun!');
+      setEmail('');
+      setPassword('');
       return;
     }
 
-    try {
-      const tags = newItem.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-      await addDoc(collection(db, 'items'), {
-        name: newItem.name,
-        category: newItem.category,
-        description: newItem.description,
-        imageUrl: newItem.imageUrl,
-        tags: tags,
-        averageRating: 0,
-        reviewCount: 0,
-        createdAt: new Date()
-      });
-      
-      setNewItem({ name: '', category: CATEGORIES[0], description: '', imageUrl: '', tags: '' });
-      loadItems();
-      alert('İçerik başarıyla eklendi!');
-    } catch (error) {
-      console.error('İçerik eklenirken hata:', error);
+    // Regular user login
+    const existingUser = allUsers.find(u => u.email === email);
+    if (existingUser && existingUser.password === password) {
+      setUser(existingUser);
+      setShowAuthModal(false);
+      setEmail('');
+      setPassword('');
+    } else {
+      alert('Invalid email or password!');
     }
   };
 
-  const handleSubmitReview = async () => {
+  const handleSignup = () => {
+    if (!email || !password || !displayName) {
+      alert('Please fill all fields!');
+      return;
+    }
+
+    const existingUser = allUsers.find(u => u.email === email);
+    if (existingUser) {
+      alert('Email already registered!');
+      return;
+    }
+
+    const newUser = {
+      id: `user-${nextUserId}`,
+      email,
+      password,
+      displayName,
+      createdAt: new Date().toISOString()
+    };
+
+    setAllUsers([...allUsers, newUser]);
+    setNextUserId(nextUserId + 1);
+    setUser(newUser);
+    setShowAuthModal(false);
+    setEmail('');
+    setPassword('');
+    setDisplayName('');
+  };
+
+  const handleGoogleLogin = () => {
+    // Simulate Google login
+    const googleUser = {
+      id: `google-${nextUserId}`,
+      email: `user${nextUserId}@gmail.com`,
+      displayName: `Google User ${nextUserId}`,
+      photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+      createdAt: new Date().toISOString()
+    };
+
+    setAllUsers([...allUsers, googleUser]);
+    setNextUserId(nextUserId + 1);
+    setUser(googleUser);
+    setShowAuthModal(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setIsAdmin(false);
+    setPage('home');
+    setSelectedItem(null);
+  };
+
+  const handleAddItem = () => {
+    if (!newItem.name || !newItem.description || !newItem.imageUrl || !newItem.category) {
+      alert('Please fill all fields!');
+      return;
+    }
+
+    const tags = newItem.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    const item = {
+      id: `item-${nextItemId}`,
+      name: newItem.name,
+      category: newItem.category,
+      description: newItem.description,
+      imageUrl: newItem.imageUrl,
+      tags: tags,
+      averageRating: 0,
+      reviewCount: 0,
+      viewCount: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    setItems([item, ...items]);
+    setNextItemId(nextItemId + 1);
+    setNewItem({ name: '', category: categories[0] || '', description: '', imageUrl: '', tags: '' });
+    alert('Item added successfully!');
+  };
+
+  const handleDeleteItem = (itemId) => {
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    
+    setItems(items.filter(item => item.id !== itemId));
+    setReviews(reviews.filter(review => review.itemId !== itemId));
+    alert('Item deleted successfully!');
+  };
+
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) return;
+    
+    if (categories.includes(newCategoryName.trim())) {
+      alert('Category already exists!');
+      return;
+    }
+
+    setCategories([...categories, newCategoryName.trim()]);
+    setNewCategoryName('');
+    alert('Category added successfully!');
+  };
+
+  const handleDeleteCategory = (categoryName) => {
+    if (!window.confirm('Are you sure you want to delete this category?')) return;
+    
+    setCategories(categories.filter(cat => cat !== categoryName));
+    alert('Category deleted successfully!');
+  };
+
+  const handleSubmitReview = () => {
     if (!user) {
-      alert('Yorum yapmak için giriş yapmalısınız!');
+      alert('Please login to submit a review!');
       return;
     }
     
     if (newRating === 0) {
-      alert('Lütfen yıldız verin!');
+      alert('Please give a rating!');
       return;
     }
 
-    try {
-      await addDoc(collection(db, 'reviews'), {
-        itemId: selectedItem.id,
-        itemName: selectedItem.name,
-        userId: user.uid,
-        userName: user.displayName || 'Anonim Kullanıcı',
-        rating: newRating,
-        comment: newComment,
-        createdAt: new Date()
-      });
+    const review = {
+      id: `review-${nextReviewId}`,
+      itemId: selectedItem.id,
+      itemName: selectedItem.name,
+      userId: user.id,
+      userName: user.displayName,
+      rating: newRating,
+      comment: newComment,
+      createdAt: new Date().toISOString()
+    };
 
-      const itemRef = doc(db, 'items', selectedItem.id);
-      const itemDoc = await getDoc(itemRef);
-      const itemData = itemDoc.data();
-      const newReviewCount = (itemData.reviewCount || 0) + 1;
-      const newAverageRating = ((itemData.averageRating || 0) * (itemData.reviewCount || 0) + newRating) / newReviewCount;
+    setReviews([review, ...reviews]);
+    setNextReviewId(nextReviewId + 1);
 
-      await updateDoc(itemRef, {
-        reviewCount: newReviewCount,
-        averageRating: newAverageRating
-      });
+    // Update item stats
+    const updatedItems = items.map(item => {
+      if (item.id === selectedItem.id) {
+        const newReviewCount = item.reviewCount + 1;
+        const newAverageRating = ((item.averageRating * item.reviewCount) + newRating) / newReviewCount;
+        return {
+          ...item,
+          reviewCount: newReviewCount,
+          averageRating: newAverageRating
+        };
+      }
+      return item;
+    });
 
-      setNewRating(0);
-      setNewComment('');
-      loadReviews(selectedItem.id);
-      loadItems();
-      alert('Değerlendirmeniz eklendi!');
-    } catch (error) {
-      console.error('Yorum eklenirken hata:', error);
-    }
+    setItems(updatedItems);
+    setSelectedItem(updatedItems.find(item => item.id === selectedItem.id));
+    setNewRating(0);
+    setNewComment('');
+    alert('Review submitted successfully!');
+  };
+
+  const handleViewItem = (item) => {
+    const updatedItems = items.map(i => {
+      if (i.id === item.id) {
+        return { ...i, viewCount: (i.viewCount || 0) + 1 };
+      }
+      return i;
+    });
+    
+    setItems(updatedItems);
+    setSelectedItem(updatedItems.find(i => i.id === item.id));
   };
 
   const filteredItems = items.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === 'Tümü' || item.category === selectedCategory;
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = item.name.toLowerCase().includes(searchLower) ||
+                         item.description.toLowerCase().includes(searchLower) ||
+                         item.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -346,19 +375,45 @@ export default function OolidoPlatform() {
       ).slice(0, 4)
     : [];
 
+  const userReviews = reviews.filter(review => review.userId === user?.id);
+
+  const itemReviews = selectedItem 
+    ? reviews.filter(review => review.itemId === selectedItem.id)
+    : [];
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center p-4">
         <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl max-w-md w-full border border-white/20">
           <div className="text-center mb-8">
             <h1 className="text-5xl font-black text-white mb-2">Oolido</h1>
-            <p className="text-white/80">Her Şeyi Değerlendir</p>
+            <p className="text-white/80 text-lg">Rate Everything</p>
           </div>
           
           <div className="space-y-4">
             <button
+              onClick={() => {
+                setAuthMode('login');
+                setShowAuthModal(true);
+              }}
+              className="w-full bg-white text-purple-600 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all transform hover:scale-105"
+            >
+              Login
+            </button>
+            
+            <button
+              onClick={() => {
+                setAuthMode('signup');
+                setShowAuthModal(true);
+              }}
+              className="w-full bg-white/20 text-white py-4 rounded-xl font-semibold hover:bg-white/30 transition-all border border-white/30"
+            >
+              Sign Up
+            </button>
+
+            <button
               onClick={handleGoogleLogin}
-              className="w-full bg-white text-gray-800 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+              className="w-full bg-white text-gray-800 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -366,56 +421,63 @@ export default function OolidoPlatform() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              Google ile Giriş Yap
-            </button>
-            
-            <button
-              onClick={handleAnonymousLogin}
-              className="w-full bg-white/20 text-white py-4 rounded-xl font-semibold hover:bg-white/30 transition-all border border-white/30"
-            >
-              Anonim Devam Et
-            </button>
-
-            <button
-              onClick={() => setShowAdminLogin(true)}
-              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-            >
-              <Shield className="w-5 h-5" />
-              Admin Girişi
+              Continue with Google
             </button>
           </div>
         </div>
 
-        {showAdminLogin && (
+        {showAuthModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-2xl p-6 max-w-md w-full">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">Admin Girişi</h3>
-                <button onClick={() => setShowAdminLogin(false)} className="text-gray-500 hover:text-gray-700">
+                <h3 className="text-2xl font-bold">{authMode === 'login' ? 'Login' : 'Sign Up'}</h3>
+                <button onClick={() => setShowAuthModal(false)} className="text-gray-500 hover:text-gray-700">
                   <X className="w-6 h-6" />
                 </button>
               </div>
+              
+              {authMode === 'signup' && (
+                <input
+                  type="text"
+                  placeholder="Display Name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                />
+              )}
+              
               <input
-                type="text"
-                placeholder="Kullanıcı Adı"
-                value={adminUsername}
-                onChange={(e) => setAdminUsername(e.target.value)}
+                type="email"
+                placeholder="Email or Username (use 'admin' for admin)"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
               />
+              
               <input
                 type="password"
-                placeholder="Şifre"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="Password (use '321' for admin)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                onKeyPress={(e) => e.key === 'Enter' && (authMode === 'login' ? handleLogin() : handleSignup())}
               />
+              
               <button
-                onClick={handleAdminLogin}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
+                onClick={authMode === 'login' ? handleLogin : handleSignup}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all mb-3"
               >
-                Giriş Yap
+                {authMode === 'login' ? 'Login' : 'Sign Up'}
               </button>
+
+              <div className="text-center">
+                <button
+                  onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+                  className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+                >
+                  {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Login'}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -428,404 +490,481 @@ export default function OolidoPlatform() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Oolido
-            </h1>
-            
-            <nav className="flex gap-2">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
               <button
-                onClick={() => setPage('home')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden text-gray-600 hover:text-purple-600"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+              <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Oolido
+              </h1>
+            </div>
+            
+            <nav className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => { setPage('home'); setSelectedItem(null); }}
+                className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm md:text-base ${
                   page === 'home' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 <Home className="w-4 h-4" />
-                Ana Sayfa
-              </button>
-              <button
-                onClick={() => setPage('trending')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                  page === 'trending' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <TrendingUp className="w-4 h-4" />
-                Gündem
+                <span className="hidden sm:inline">Home</span>
               </button>
               <button
                 onClick={() => setPage('profile')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm md:text-base ${
                   page === 'profile' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 <User className="w-4 h-4" />
-                Profil
+                <span className="hidden sm:inline">Profile</span>
               </button>
               {isAdmin && (
                 <button
                   onClick={() => setPage('admin')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm md:text-base ${
                     page === 'admin' ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                   }`}
                 >
                   <Shield className="w-4 h-4" />
-                  Admin
+                  <span className="hidden sm:inline">Admin</span>
                 </button>
               )}
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 transition-all flex items-center gap-2"
+                className="px-3 md:px-4 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 transition-all flex items-center gap-2 text-sm md:text-base"
               >
                 <LogOut className="w-4 h-4" />
-                Çıkış
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </nav>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Ana Sayfa */}
-        {page === 'home' && !selectedItem && (
-          <>
-            {/* Arama ve Filtreler */}
-            <div className="mb-8 space-y-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="İsim, açıklama veya etiket ile ara..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl shadow-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                />
-              </div>
-              
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                <Filter className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                {['Tümü', ...CATEGORIES].map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all ${
-                      selectedCategory === cat
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+      <div className="flex">
+        {/* Sidebar - Trending */}
+        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:sticky top-16 left-0 h-[calc(100vh-4rem)] w-80 bg-white shadow-xl z-30 transition-transform duration-300 overflow-y-auto`}>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-orange-500" />
+                Trending
+              </h2>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-
-            {/* İçerikler Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredItems.map(item => (
-                <ItemCard
+            
+            <div className="space-y-3">
+              {trendingItems.map((item, index) => (
+                <div
                   key={item.id}
-                  item={item}
                   onClick={() => {
-                    setSelectedItem(item);
-                    loadReviews(item.id);
+                    handleViewItem(item);
+                    setPage('home');
+                    setSidebarOpen(false);
                   }}
-                />
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer transition-all group"
+                >
+                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                    {index + 1}
+                  </div>
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden">
+                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate group-hover:text-purple-600">{item.name}</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <StarRating rating={Math.round(item.averageRating || 0)} readonly size="sm" />
+                      <span>({item.reviewCount || 0})</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600" />
+                </div>
               ))}
             </div>
+          </div>
+        </aside>
 
-            {filteredItems.length === 0 && (
-              <div className="text-center py-20">
-                <p className="text-gray-500 text-lg">Sonuç bulunamadı</p>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* İçerik Detay */}
-        {page === 'home' && selectedItem && (
-          <div className="space-y-6">
-            <button
-              onClick={() => setSelectedItem(null)}
-              className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-2"
-            >
-              ← Geri Dön
-            </button>
-
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-              <div className="relative h-96">
-                <img
-                  src={selectedItem.imageUrl}
-                  alt={selectedItem.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-8 left-8 text-white">
-                  <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-3 inline-block">
-                    {selectedItem.category}
-                  </span>
-                  <h1 className="text-5xl font-black mb-2">{selectedItem.name}</h1>
-                  <div className="flex items-center gap-4">
-                    <StarRating rating={selectedItem.averageRating || 0} readonly />
-                    <span className="text-lg">{selectedItem.reviewCount || 0} değerlendirme</span>
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Home Page */}
+            {page === 'home' && !selectedItem && (
+              <>
+                {/* Search and Filters */}
+                <div className="mb-8 space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Search by name, description, or tags..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl shadow-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                    <Filter className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                    {['All', ...categories].map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all ${
+                          selectedCategory === cat
+                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="p-8">
-                <p className="text-gray-700 text-lg mb-6">{selectedItem.description}</p>
-                
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {selectedItem.tags?.map((tag, i) => (
-                    <span key={i} className="px-4 py-2 bg-purple-100 text-purple-600 rounded-full font-medium">
-                      #{tag}
-                    </span>
+                {/* Items Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredItems.map(item => (
+                    <ItemCard
+                      key={item.id}
+                      item={item}
+                      showStats
+                      onClick={() => handleViewItem(item)}
+                    />
                   ))}
                 </div>
 
-                {/* Değerlendirme Formu */}
-                <div className="border-t pt-6 mb-6">
-                  <h3 className="text-2xl font-bold mb-4">Değerlendirmenizi Yapın</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Puanınız</label>
-                      <StarRating rating={newRating} onRate={setNewRating} />
+                {filteredItems.length === 0 && (
+                  <div className="text-center py-20">
+                    <p className="text-gray-500 text-lg">No results found</p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Item Detail */}
+            {page === 'home' && selectedItem && (
+              <div className="space-y-6">
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-2"
+                >
+                  ← Back
+                </button>
+
+                <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+                  <div className="relative h-64 md:h-96">
+                    <img
+                      src={selectedItem.imageUrl}
+                      alt={selectedItem.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 text-white max-w-2xl">
+                      <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-3 inline-block">
+                        {selectedItem.category}
+                      </span>
+                      <h1 className="text-3xl md:text-5xl font-black mb-2">{selectedItem.name}</h1>
+                      <div className="flex items-center gap-4">
+                        <StarRating rating={Math.round(selectedItem.averageRating || 0)} readonly />
+                        <span className="text-lg">{selectedItem.reviewCount || 0} reviews</span>
+                        <span className="text-sm opacity-80">• {selectedItem.viewCount || 0} views</span>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Yorumunuz</label>
-                      <textarea
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Düşüncelerinizi paylaşın..."
-                        rows="4"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                      />
+                  </div>
+
+                  <div className="p-4 md:p-8">
+                    <p className="text-gray-700 text-lg mb-6">{selectedItem.description}</p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      {selectedItem.tags?.map((tag, i) => (
+                        <span key={i} className="px-4 py-2 bg-purple-100 text-purple-600 rounded-full font-medium">
+                          #{tag}
+                        </span>
+                      ))}
                     </div>
-                    <button
-                      onClick={handleSubmitReview}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
-                    >
-                      Değerlendirmeyi Gönder
-                    </button>
+
+                    {/* Review Form */}
+                    <div className="border-t pt-6 mb-6">
+                      <h3 className="text-2xl font-bold mb-4">Submit Your Review</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
+                          <StarRating rating={newRating} onRate={setNewRating} size="lg" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Your Comment</label>
+                          <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Share your thoughts..."
+                            rows="4"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                          />
+                        </div>
+                        <button
+                          onClick={handleSubmitReview}
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+                        >
+                          Submit Review
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Reviews */}
+                    <div className="border-t pt-6">
+                      <h3 className="text-2xl font-bold mb-4">Reviews ({itemReviews.length})</h3>
+                      <div className="space-y-4">
+                        {itemReviews.map(review => (
+                          <div key={review.id} className="bg-gray-50 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                              <span className="font-semibold">{review.userName}</span>
+                              <StarRating rating={review.rating} readonly size="sm" />
+                            </div>
+                            {review.comment && <p className="text-gray-700">{review.comment}</p>}
+                            <p className="text-xs text-gray-500 mt-2">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        ))}
+                        {itemReviews.length === 0 && (
+                          <p className="text-gray-500 text-center py-8">No reviews yet. Be the first!</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Yorumlar */}
-                <div className="border-t pt-6">
-                  <h3 className="text-2xl font-bold mb-4">Değerlendirmeler ({reviews.length})</h3>
+                {/* Related Items */}
+                {relatedItems.length > 0 && (
+                  <div>
+                    <h3 className="text-2xl font-bold mb-4">Related Items</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {relatedItems.map(item => (
+                        <ItemCard
+                          key={item.id}
+                          item={item}
+                          onClick={() => {
+                            handleViewItem(item);
+                            window.scrollTo(0, 0);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Profile Page */}
+            {page === 'profile' && (
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+                  <div className="flex items-center gap-4 md:gap-6 mb-8 flex-wrap">
+                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-3xl md:text-4xl font-bold flex-shrink-0">
+                      {user.displayName?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl md:text-3xl font-bold">{user.displayName || 'User'}</h2>
+                      <p className="text-gray-600">{user.email}</p>
+                      <p className="text-purple-600 font-medium mt-1">{userReviews.length} reviews submitted</p>
+                    </div>
+                  </div>
+
+                  <h3 className="text-2xl font-bold mb-4">Your Reviews</h3>
                   <div className="space-y-4">
-                    {reviews.map(review => (
-                      <div key={review.id} className="bg-gray-50 rounded-xl p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold">{review.userName}</span>
-                          <StarRating rating={review.rating} readonly />
+                    {userReviews.map(review => (
+                      <div key={review.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
+                        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                          <span className="font-semibold text-lg">{review.itemName}</span>
+                          <StarRating rating={review.rating} readonly size="sm" />
                         </div>
-                        {review.comment && <p className="text-gray-700">{review.comment}</p>}
-                        <p className="text-xs text-gray-500 mt-2">
-                          {review.createdAt?.toDate?.()?.toLocaleDateString('tr-TR') || 'Bugün'}
+                        {review.comment && <p className="text-gray-700 mb-2">{review.comment}</p>}
+                        <p className="text-xs text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     ))}
-                    {reviews.length === 0 && (
-                      <p className="text-gray-500 text-center py-8">Henüz değerlendirme yok. İlk siz yapın!</p>
+                    {userReviews.length === 0 && (
+                      <p className="text-gray-500 text-center py-8">You haven't submitted any reviews yet.</p>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* İlgili İçerikler */}
-            {relatedItems.length > 0 && (
-              <div>
-                <h3 className="text-2xl font-bold mb-4">Benzer İçerikler</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {relatedItems.map(item => (
-                    <ItemCard
-                      key={item.id}
-                      item={item}
-                      onClick={() => {
-                        setSelectedItem(item);
-                        loadReviews(item.id);
-                        window.scrollTo(0, 0);
-                      }}
+            {/* Admin Panel */}
+            {page === 'admin' && isAdmin && (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl shadow-xl p-6 md:p-8 text-white">
+                  <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+                    <Shield className="w-6 md:w-8 h-6 md:h-8" />
+                    Admin Panel
+                  </h2>
+                  <p className="mt-2">Manage all content from here</p>
+                </div>
+
+                {/* Add Item */}
+                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <Plus className="w-6 h-6" />
+                    Add New Item
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={newItem.name}
+                      onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
                     />
-                  ))}
+                    
+                    <select
+                      value={newItem.category}
+                      onChange={(e) => setNewItem({...newItem, category: e.target.value})}
+                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                    
+                    <input
+                      type="text"
+                      placeholder="Image URL"
+                      value={newItem.imageUrl}
+                      onChange={(e) => setNewItem({...newItem, imageUrl: e.target.value})}
+                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none md:col-span-2"
+                    />
+                    
+                    <textarea
+                      placeholder="Description"
+                      value={newItem.description}
+                      onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                      rows="3"
+                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none md:col-span-2"
+                    />
+                    
+                    <input
+                      type="text"
+                      placeholder="Tags (comma separated)"
+                      value={newItem.tags}
+                      onChange={(e) => setNewItem({...newItem, tags: e.target.value})}
+                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none md:col-span-2"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleAddItem}
+                    className="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Add Item
+                  </button>
+                </div>
+
+                {/* Manage Categories */}
+                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+                  <h3 className="text-2xl font-bold mb-6">Manage Categories</h3>
+                  
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      placeholder="New category name"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                    />
+                    <button
+                      onClick={handleAddCategory}
+                      className="bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-600 transition-all"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {categories.map(cat => (
+                      <div key={cat} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="font-medium text-sm">{cat}</span>
+                        <button
+                          onClick={() => handleDeleteCategory(cat)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* All Items */}
+                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+                  <h3 className="text-2xl font-bold mb-4">All Items ({items.length})</h3>
+                  <div className="space-y-2">
+                    {items.map(item => (
+                      <div key={item.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50">
+                        <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold truncate">{item.name}</p>
+                          <p className="text-sm text-gray-600">{item.category}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="hidden md:flex items-center gap-1">
+                            <StarRating rating={Math.round(item.averageRating || 0)} readonly size="sm" />
+                            <span className="text-sm text-gray-600">({item.reviewCount || 0})</span>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-red-500 hover:text-red-700 p-2"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* All Users */}
+                <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+                  <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <Users className="w-6 h-6" />
+                    All Users ({allUsers.length})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {allUsers.map(u => (
+                      <div key={u.id} className="p-4 border border-gray-200 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                            {u.displayName?.[0]?.toUpperCase() || u.email?.[0]?.toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold truncate">{u.displayName || 'User'}</p>
+                            <p className="text-sm text-gray-600 truncate">{u.email}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {allUsers.length === 0 && (
+                      <p className="text-gray-500 col-span-full text-center py-8">No registered users yet.</p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
           </div>
-        )}
-
-        {/* Gündem Sayfası */}
-        {page === 'trending' && (
-          <div>
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-              Gündem - En Aktif İçerikler
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trendingItems.map((item, index) => (
-                <div key={item.id} className="relative">
-                  <div className="absolute -top-3 -left-3 w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg z-10">
-                    {index + 1}
-                  </div>
-                  <ItemCard
-                    item={item}
-                    onClick={() => {
-                      setSelectedItem(item);
-                      loadReviews(item.id);
-                      setPage('home');
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Profil Sayfası */}
-        {page === 'profile' && (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-xl p-8">
-              <div className="flex items-center gap-6 mb-8">
-                <div className="w-24 h-24 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-4xl font-bold">
-                  {user.displayName?.[0] || user.email?.[0] || 'A'}
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold">{user.displayName || 'Anonim Kullanıcı'}</h2>
-                  <p className="text-gray-600">{user.email || 'Anonim giriş yapıldı'}</p>
-                  <p className="text-purple-600 font-medium mt-1">{userReviews.length} değerlendirme</p>
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-bold mb-4">Değerlendirmeleriniz</h3>
-              <div className="space-y-4">
-                {userReviews.map(review => (
-                  <div key={review.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-lg">{review.itemName}</span>
-                      <StarRating rating={review.rating} readonly />
-                    </div>
-                    {review.comment && <p className="text-gray-700 mb-2">{review.comment}</p>}
-                    <p className="text-xs text-gray-500">
-                      {review.createdAt?.toDate?.()?.toLocaleDateString('tr-TR') || 'Bugün'}
-                    </p>
-                  </div>
-                ))}
-                {userReviews.length === 0 && (
-                  <p className="text-gray-500 text-center py-8">Henüz değerlendirme yapmadınız.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Admin Panel */}
-        {page === 'admin' && isAdmin && (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl shadow-xl p-8 text-white mb-6">
-              <h2 className="text-3xl font-bold flex items-center gap-2">
-                <Shield className="w-8 h-8" />
-                Admin Paneli
-              </h2>
-              <p className="mt-2">İçerikleri buradan ekleyip yönetebilirsiniz.</p>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-xl p-8">
-              <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <Plus className="w-6 h-6" />
-                Yeni İçerik Ekle
-              </h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">İsim</label>
-                  <input
-                    type="text"
-                    value={newItem.name}
-                    onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                    placeholder="Örn: iPhone 15 Pro"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
-                  <select
-                    value={newItem.category}
-                    onChange={(e) => setNewItem({...newItem, category: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                  >
-                    {CATEGORIES.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
-                  <textarea
-                    value={newItem.description}
-                    onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                    rows="3"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                    placeholder="İçerik hakkında kısa bir açıklama yazın..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Fotoğraf URL</label>
-                  <input
-                    type="text"
-                    value={newItem.imageUrl}
-                    onChange={(e) => setNewItem({...newItem, imageUrl: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Etiketler (virgülle ayırın)</label>
-                  <input
-                    type="text"
-                    value={newItem.tags}
-                    onChange={(e) => setNewItem({...newItem, tags: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                    placeholder="teknoloji, telefon, apple"
-                  />
-                </div>
-
-                <button
-                  onClick={handleAddItem}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  İçeriği Ekle
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-xl p-8 mt-6">
-              <h3 className="text-2xl font-bold mb-4">Tüm İçerikler ({items.length})</h3>
-              <div className="space-y-2">
-                {items.map(item => (
-                  <div key={item.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50">
-                    <div className="flex items-center gap-4">
-                      <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
-                      <div>
-                        <p className="font-semibold">{item.name}</p>
-                        <p className="text-sm text-gray-600">{item.category}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StarRating rating={item.averageRating || 0} readonly />
-                      <span className="text-sm text-gray-600">({item.reviewCount || 0})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        </main>
       </div>
     </div>
   );
