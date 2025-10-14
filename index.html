@@ -1,1005 +1,770 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>İçerik Yönetim Sistemi</title>
+import React, { useState, useEffect } from 'react';
+import { Heart, Plus, List, Settings, LogOut, LogIn, Shuffle, Grid, Trash2, Edit2, X, Check, FolderPlus, Move } from 'lucide-react';
+
+const App = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState('discover');
+  const [currentContent, setCurrentContent] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const [userLists, setUserLists] = useState([]);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCreateListModal, setShowCreateListModal] = useState(false);
+  const [showMoveModal, setShowMoveModal] = useState(false);
+  const [selectedFavorite, setSelectedFavorite] = useState(null);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [newListName, setNewListName] = useState('');
   
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box;
+  const [categories, setCategories] = useState([
+    { id: 1, name: 'Web Siteleri', color: '#FF6B6B' },
+    { id: 2, name: 'YouTube Kanalları', color: '#4ECDC4' },
+    { id: 3, name: 'Mobil Uygulamalar', color: '#FFE66D' },
+    { id: 4, name: 'Oyunlar', color: '#95E1D3' },
+    { id: 5, name: 'Araçlar', color: '#F38181' },
+    { id: 6, name: 'Sanat & Tasarım', color: '#AA96DA' }
+  ]);
+
+  const [tags, setTags] = useState([
+    'Üretkenlik', 'Eğlence', 'Öğrenme', 'Yaratıcılık', 'Müzik', 'Teknoloji',
+    'Sanat', 'Oyun', 'Video', 'Sosyal', 'Araç', 'İlham Verici'
+  ]);
+
+  const [contents, setContents] = useState([
+    {
+      id: 1,
+      title: 'Poolside.fm',
+      description: 'Retro müzik istasyonu ile zamanın durduğu bir yaz havuzu başı deneyimi',
+      image: 'https://images.unsplash.com/photo-1527199768775-8e6d5b92e536?w=600',
+      link: 'https://poolside.fm',
+      category: 1,
+      tags: ['Müzik', 'Eğlence']
+    },
+    {
+      id: 2,
+      title: 'Fireship',
+      description: 'Hızlı ve eğlenceli teknoloji tutorialları ile dolu YouTube kanalı',
+      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600',
+      link: 'https://youtube.com/@fireship',
+      category: 2,
+      tags: ['Teknoloji', 'Öğrenme']
+    },
+    {
+      id: 3,
+      title: 'Notion',
+      description: 'Her şey için kullanabileceğin all-in-one çalışma alanı',
+      image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600',
+      link: 'https://notion.so',
+      category: 3,
+      tags: ['Üretkenlik', 'Araç']
+    },
+    {
+      id: 4,
+      title: 'Stardew Valley',
+      description: 'Huzur dolu bir çiftlik simülasyonu ve RPG karışımı',
+      image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600',
+      link: 'https://www.stardewvalley.net',
+      category: 4,
+      tags: ['Oyun', 'Eğlence']
+    },
+    {
+      id: 5,
+      title: 'Coolors.co',
+      description: 'Saniyeler içinde mükemmel renk paletleri oluştur',
+      image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600',
+      link: 'https://coolors.co',
+      category: 5,
+      tags: ['Tasarım', 'Araç', 'Yaratıcılık']
+    },
+    {
+      id: 6,
+      title: 'The Useless Web',
+      description: 'Seni tamamen rastgele ve anlamsız web sitelerine götürür',
+      image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600',
+      link: 'https://theuselessweb.com',
+      category: 1,
+      tags: ['Eğlence']
+    },
+    {
+      id: 7,
+      title: 'Kurzgesagt',
+      description: 'Bilim ve felsefe konularını harika animasyonlarla anlatan kanal',
+      image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600',
+      link: 'https://youtube.com/@kurzgesagt',
+      category: 2,
+      tags: ['Öğrenme', 'Bilim']
+    },
+    {
+      id: 8,
+      title: 'Forest',
+      description: 'Odaklanırken dijital ağaç yetiştir, gerçek ağaç dik',
+      image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=600',
+      link: 'https://www.forestapp.cc',
+      category: 3,
+      tags: ['Üretkenlik', 'Motivasyon']
+    },
+    {
+      id: 9,
+      title: 'Hades',
+      description: 'Yunan mitolojisi temalı bağımlılık yaratan roguelike oyun',
+      image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600',
+      link: 'https://www.supergiantgames.com/games/hades',
+      category: 4,
+      tags: ['Oyun', 'Aksiyon']
+    },
+    {
+      id: 10,
+      title: 'Remove.bg',
+      description: 'Fotoğraflardan arka planı otomatik olarak kaldır',
+      image: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=600',
+      link: 'https://remove.bg',
+      category: 5,
+      tags: ['Araç', 'Tasarım']
+    },
+    {
+      id: 11,
+      title: 'Radio Garden',
+      description: 'Dünyanın her yerinden canlı radyo istasyonlarını dinle',
+      image: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=600',
+      link: 'http://radio.garden',
+      category: 1,
+      tags: ['Müzik', 'Keşif']
+    },
+    {
+      id: 12,
+      title: 'Veritasium',
+      description: 'Bilimi eğlenceli deneylere ve açıklamalara dönüştüren kanal',
+      image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600',
+      link: 'https://youtube.com/@veritasium',
+      category: 2,
+      tags: ['Bilim', 'Öğrenme']
+    },
+    {
+      id: 13,
+      title: 'Headspace',
+      description: 'Meditasyon ve mindfulness için rehberli uygulamalar',
+      image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600',
+      link: 'https://www.headspace.com',
+      category: 3,
+      tags: ['Sağlık', 'Motivasyon']
+    },
+    {
+      id: 14,
+      title: 'Monument Valley',
+      description: 'Optik illüzyonlarla dolu sanatsal mobil puzzle oyunu',
+      image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600',
+      link: 'https://www.monumentvalleygame.com',
+      category: 4,
+      tags: ['Oyun', 'Sanat', 'Puzzle']
+    },
+    {
+      id: 15,
+      title: 'Figma',
+      description: 'Gerçek zamanlı işbirlikli tasarım aracı',
+      image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600',
+      link: 'https://figma.com',
+      category: 5,
+      tags: ['Tasarım', 'Araç', 'İşbirliği']
+    },
+    {
+      id: 16,
+      title: 'Little Alchemy',
+      description: 'Elementleri birleştirerek yeni şeyler keşfet',
+      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600',
+      link: 'https://littlealchemy.com',
+      category: 1,
+      tags: ['Oyun', 'Eğlence', 'Keşif']
+    },
+    {
+      id: 17,
+      title: 'Vsauce',
+      description: 'Aklını uçuracak sorular ve cevaplar',
+      image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600',
+      link: 'https://youtube.com/@vsauce',
+      category: 2,
+      tags: ['Bilim', 'Felsefe', 'Öğrenme']
+    },
+    {
+      id: 18,
+      title: 'Duolingo',
+      description: 'Oyun gibi dil öğrenme deneyimi',
+      image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600',
+      link: 'https://duolingo.com',
+      category: 3,
+      tags: ['Öğrenme', 'Dil', 'Eğitim']
+    },
+    {
+      id: 19,
+      title: 'Celeste',
+      description: 'Duygusal hikayesi olan zorlayıcı platform oyunu',
+      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600',
+      link: 'http://www.celestegame.com',
+      category: 4,
+      tags: ['Oyun', 'Platform', 'Hikaye']
+    },
+    {
+      id: 20,
+      title: 'Canva',
+      description: 'Herkes için tasarım: kolayca profesyonel görseller oluştur',
+      image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=600',
+      link: 'https://canva.com',
+      category: 5,
+      tags: ['Tasarım', 'Araç', 'Yaratıcılık']
+    },
+    {
+      id: 21,
+      title: 'A Soft Murmur',
+      description: 'Kendi ortam sesini oluştur: yağmur, gök gürültüsü, dalga...',
+      image: 'https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=600',
+      link: 'https://asoftmurmur.com',
+      category: 1,
+      tags: ['Müzik', 'Rahatlama']
+    },
+    {
+      id: 22,
+      title: 'Mark Rober',
+      description: 'Eski NASA mühendisinin çılgın bilim deneyleri',
+      image: 'https://images.unsplash.com/photo-1530811761207-8d9d22f0a141?w=600',
+      link: 'https://youtube.com/@MarkRober',
+      category: 2,
+      tags: ['Bilim', 'Eğlence', 'Mühendislik']
+    },
+    {
+      id: 23,
+      title: 'Calm',
+      description: 'Uyku, meditasyon ve rahatlama için sesler',
+      image: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=600',
+      link: 'https://www.calm.com',
+      category: 3,
+      tags: ['Sağlık', 'Rahatlama', 'Uyku']
+    },
+    {
+      id: 24,
+      title: 'Among Us',
+      description: 'Arkadaşlarınla oynayabileceğin sosyal dedüksiyon oyunu',
+      image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=600',
+      link: 'https://www.innersloth.com/games/among-us',
+      category: 4,
+      tags: ['Oyun', 'Sosyal', 'Multiplayer']
+    },
+    {
+      id: 25,
+      title: 'Photopea',
+      description: 'Tarayıcıda çalışan ücretsiz Photoshop alternatifi',
+      image: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600',
+      link: 'https://www.photopea.com',
+      category: 5,
+      tags: ['Tasarım', 'Araç', 'Ücretsiz']
+    },
+    {
+      id: 26,
+      title: 'Geoguessr',
+      description: 'Dünya coğrafyasını keşfet ve konumları tahmin et',
+      image: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600',
+      link: 'https://www.geoguessr.com',
+      category: 1,
+      tags: ['Oyun', 'Öğrenme', 'Coğrafya']
+    },
+    {
+      id: 27,
+      title: 'Corridor Crew',
+      description: 'Film efektlerinin arkasındaki sırları öğren',
+      image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600',
+      link: 'https://youtube.com/@corridorcrew',
+      category: 2,
+      tags: ['Film', 'VFX', 'Öğrenme']
+    },
+    {
+      id: 28,
+      title: 'Habitica',
+      description: 'Hayatını bir RPG oyununa dönüştür',
+      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600',
+      link: 'https://habitica.com',
+      category: 3,
+      tags: ['Üretkenlik', 'Oyun', 'Motivasyon']
+    },
+    {
+      id: 29,
+      title: 'Hollow Knight',
+      description: 'Derin ve atmosferik metroidvania başyapıtı',
+      image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600',
+      link: 'https://www.hollowknight.com',
+      category: 4,
+      tags: ['Oyun', 'Macera', 'Sanat']
+    },
+    {
+      id: 30,
+      title: 'Unsplash',
+      description: 'İnternet\'in en cömert ücretsiz fotoğraf koleksiyonu',
+      image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600',
+      link: 'https://unsplash.com',
+      category: 5,
+      tags: ['Fotoğraf', 'Ücretsiz', 'Tasarım']
     }
-    
-    body { 
-      font-family: 'Poppins', sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      overflow-x: hidden;
+  ]);
+
+  const [adminForm, setAdminForm] = useState({
+    title: '',
+    description: '',
+    image: '',
+    link: '',
+    category: 1,
+    tags: []
+  });
+
+  const [newCategory, setNewCategory] = useState({ name: '', color: '#FF6B6B' });
+  const [newTag, setNewTag] = useState('');
+
+  useEffect(() => {
+    getRandomContent();
+  }, []);
+
+  const getRandomContent = () => {
+    const randomIndex = Math.floor(Math.random() * contents.length);
+    setCurrentContent(contents[randomIndex]);
+  };
+
+  const handleLogin = () => {
+    if (loginForm.username === 'admin' && loginForm.password === '123') {
+      setCurrentUser({ username: 'admin', isAdmin: true });
+      setShowLoginModal(false);
+      setCurrentPage('admin');
+    } else {
+      alert('Hatalı kullanıcı adı veya şifre!');
     }
-    
-    /* Animated Background */
-    .bg-animated {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      z-index: 0;
-      opacity: 0.1;
+    setLoginForm({ username: '', password: '' });
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setCurrentPage('discover');
+  };
+
+  const addToFavorites = (content) => {
+    if (!favorites.find(f => f.id === content.id)) {
+      setFavorites([...favorites, content]);
     }
-    
-    .floating-circle {
-      position: absolute;
-      border-radius: 50%;
-      background: white;
-      animation: float 20s infinite ease-in-out;
+  };
+
+  const removeFromFavorites = (id) => {
+    setFavorites(favorites.filter(f => f.id !== id));
+  };
+
+  const createList = () => {
+    if (newListName.trim()) {
+      setUserLists([...userLists, { id: Date.now(), name: newListName, items: [] }]);
+      setNewListName('');
+      setShowCreateListModal(false);
     }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0) translateX(0); }
-      25% { transform: translateY(-50px) translateX(30px); }
-      50% { transform: translateY(-100px) translateX(-30px); }
-      75% { transform: translateY(-50px) translateX(30px); }
-    }
-    
-    /* Glass Morphism */
-    .glass {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-    
-    .glass-dark {
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-    
-    /* Buttons */
-    .btn {
-      padding: 0.75rem 2rem;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: none;
-      outline: none;
-    }
-    
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
-    
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-    }
-    
-    .btn-google {
-      background: white;
-      color: #333;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    .btn-google:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .btn-danger {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      color: white;
-    }
-    
-    .btn-success {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      color: white;
-    }
-    
-    /* Input */
-    .input-glass {
-      background: rgba(255, 255, 255, 0.9);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 12px;
-      padding: 0.75rem 1rem;
-      width: 100%;
-      outline: none;
-      transition: all 0.3s ease;
-      font-size: 1rem;
-    }
-    
-    .input-glass:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
-    }
-    
-    /* Card */
-    .content-card {
-      background: white;
-      border-radius: 16px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    .content-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    }
-    
-    .content-card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-    }
-    
-    /* Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(5px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      animation: fadeIn 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    .modal-content {
-      animation: slideUp 0.3s ease;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    
-    @keyframes slideUp {
-      from { 
-        opacity: 0; 
-        transform: translateY(50px); 
+  };
+
+  const addToList = (listId, contentId) => {
+    setUserLists(userLists.map(list => {
+      if (list.id === listId && !list.items.includes(contentId)) {
+        return { ...list, items: [...list.items, contentId] };
       }
-      to { 
-        opacity: 1; 
-        transform: translateY(0); 
-      }
-    }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 10px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #667eea, #764ba2);
-      border-radius: 5px;
-    }
-    
-    .hidden { display: none !important; }
-    
-    /* Loading */
-    .spinner {
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top: 3px solid white;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
+      return list;
+    }));
+    setShowMoveModal(false);
+    setSelectedFavorite(null);
+  };
 
-<!-- Animated Background -->
-<div class="bg-animated">
-  <div class="floating-circle" style="width: 300px; height: 300px; top: 10%; left: 10%; animation-delay: 0s;"></div>
-  <div class="floating-circle" style="width: 200px; height: 200px; top: 60%; left: 70%; animation-delay: 2s;"></div>
-  <div class="floating-circle" style="width: 150px; height: 150px; top: 30%; left: 80%; animation-delay: 4s;"></div>
-</div>
+  const deleteList = (listId) => {
+    setUserLists(userLists.filter(list => list.id !== listId));
+  };
 
-<!-- ============================================ -->
-<!-- LOGIN VIEW -->
-<!-- ============================================ -->
-<div id="loginView" class="relative z-10 min-h-screen flex items-center justify-center p-4">
-  <div class="glass rounded-3xl p-8 md:p-12 max-w-md w-full">
-    <div class="text-center mb-8">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">📚</h1>
-      <h2 class="text-3xl font-bold text-white mb-2">İçerik Yönetimi</h2>
-      <p class="text-white opacity-80">Hoş Geldiniz</p>
-    </div>
-    
-    <div class="space-y-4">
-      <button id="googleLoginBtn" class="btn btn-google w-full">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Google ile Giriş Yap
-      </button>
-      
-      <button id="anonymousLoginBtn" class="btn btn-primary w-full">
-        🎭 Anonim Giriş
-      </button>
-      
-      <div class="relative my-6">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-white opacity-30"></div>
-        </div>
-        <div class="relative flex justify-center text-sm">
-          <span class="px-4 bg-transparent text-white font-semibold">Admin Girişi</span>
-        </div>
-      </div>
-      
-      <input 
-        id="adminUsername" 
-        type="text" 
-        placeholder="Kullanıcı Adı"
-        class="input-glass"
-      />
-      
-      <input 
-        id="adminPassword" 
-        type="password" 
-        placeholder="Şifre"
-        class="input-glass"
-      />
-      
-      <button id="adminLoginBtn" class="btn btn-danger w-full">
-        🔐 Admin Paneline Giriş
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================ -->
-<!-- MAIN CONTENT VIEW -->
-<!-- ============================================ -->
-<div id="mainView" class="hidden relative z-10 min-h-screen p-4 md:p-8">
-  <div class="max-w-7xl mx-auto">
-    <!-- Header -->
-    <div class="glass-dark rounded-2xl p-6 mb-8 flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold text-white mb-1">📚 İçerik Galerisi</h1>
-        <p class="text-white opacity-70" id="userInfo">Hoş geldiniz</p>
-      </div>
-      
-      <div class="flex gap-3">
-        <button id="adminPanelBtn" class="btn btn-danger hidden">
-          ⚙️ Admin Panel
-        </button>
-        <button id="logoutBtn" class="btn btn-primary">
-          🚪 Çıkış
-        </button>
-      </div>
-    </div>
-    
-    <!-- Search & Filter -->
-    <div class="glass-dark rounded-2xl p-6 mb-8">
-      <input 
-        id="searchInput" 
-        type="text" 
-        placeholder="🔍 İçerik ara..."
-        class="input-glass"
-      />
-    </div>
-    
-    <!-- Content Grid -->
-    <div id="contentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <!-- Dynamic content cards -->
-    </div>
-    
-    <!-- Loading -->
-    <div id="loadingSpinner" class="flex justify-center items-center py-20">
-      <div class="spinner"></div>
-    </div>
-    
-    <!-- Empty State -->
-    <div id="emptyState" class="hidden text-center py-20">
-      <p class="text-white text-xl opacity-70">Henüz içerik eklenmemiş</p>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================ -->
-<!-- ADMIN PANEL -->
-<!-- ============================================ -->
-<div id="adminView" class="hidden relative z-10 min-h-screen p-4 md:p-8">
-  <div class="max-w-6xl mx-auto">
-    <!-- Header -->
-    <div class="glass-dark rounded-2xl p-6 mb-8 flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold text-white mb-1">⚙️ Admin Paneli</h1>
-        <p class="text-white opacity-70">İçerik Yönetimi</p>
-      </div>
-      
-      <button id="backToMainBtn" class="btn btn-primary">
-        ← Ana Sayfaya Dön
-      </button>
-    </div>
-    
-    <!-- Bulk Add -->
-    <div class="glass-dark rounded-2xl p-6 mb-8">
-      <h3 class="text-2xl font-bold text-white mb-4">📦 Toplu İçerik Ekleme</h3>
-      <p class="text-white opacity-80 mb-4">
-        JSON formatında içerik ekleyin. Format: <code class="bg-black bg-opacity-30 px-2 py-1 rounded">[{"name":"...","description":"...","imageUrl":"..."}]</code>
-      </p>
-      
-      <textarea 
-        id="bulkContentInput" 
-        class="input-glass min-h-[200px] font-mono text-sm"
-        placeholder='[
-  {
-    "name": "Galatasaray",
-    "description": "İstanbul merkezli futbol kulübü. 1905 yılında kuruldu.",
-    "imageUrl": "https://example.com/gs.jpg"
-  },
-  {
-    "name": "Fenerbahçe",
-    "description": "İstanbul merkezli spor kulübü. 1907 yılında kuruldu.",
-    "imageUrl": "https://example.com/fb.jpg"
-  }
-]'
-      ></textarea>
-      
-      <button id="bulkAddBtn" class="btn btn-success w-full mt-4">
-        ➕ Toplu Ekle
-      </button>
-    </div>
-    
-    <!-- Single Add -->
-    <div class="glass-dark rounded-2xl p-6 mb-8">
-      <h3 class="text-2xl font-bold text-white mb-4">➕ Tekli İçerik Ekleme</h3>
-      
-      <div class="space-y-4">
-        <input 
-          id="singleName" 
-          type="text" 
-          placeholder="İsim"
-          class="input-glass"
-        />
-        
-        <textarea 
-          id="singleDescription" 
-          placeholder="Açıklama"
-          class="input-glass min-h-[100px]"
-        ></textarea>
-        
-        <input 
-          id="singleImageUrl" 
-          type="url" 
-          placeholder="Görsel URL"
-          class="input-glass"
-        />
-        
-        <button id="singleAddBtn" class="btn btn-success w-full">
-          ✓ İçerik Ekle
-        </button>
-      </div>
-    </div>
-    
-    <!-- Content Management -->
-    <div class="glass-dark rounded-2xl p-6">
-      <h3 class="text-2xl font-bold text-white mb-4">📋 Mevcut İçerikler</h3>
-      
-      <div id="adminContentList" class="space-y-3">
-        <!-- Dynamic list -->
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================ -->
-<!-- DETAIL MODAL -->
-<!-- ============================================ -->
-<div id="detailModal" class="hidden modal-overlay">
-  <div class="modal-content glass rounded-3xl p-8 max-w-2xl w-full mx-4">
-    <img id="modalImage" src="" alt="" class="w-full h-64 object-cover rounded-2xl mb-6">
-    <h2 id="modalTitle" class="text-3xl font-bold text-white mb-4"></h2>
-    <p id="modalDescription" class="text-white opacity-90 text-lg mb-6"></p>
-    <button id="closeModalBtn" class="btn btn-primary w-full">
-      Kapat
-    </button>
-  </div>
-</div>
-
-<!-- ============================================ -->
-<!-- SCRIPTS -->
-<!-- ============================================ -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-// Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAh6JbnjsZtD-d0g3iSb2maSerPntUP6To",
-  authDomain: "macbot-b7b45.firebaseapp.com",
-  databaseURL: "https://macbot-b7b45-default-rtdb.firebaseio.com",
-  projectId: "macbot-b7b45",
-  storageBucket: "macbot-b7b45.firebasestorage.app",
-  messagingSenderId: "88494187419",
-  appId: "1:88494187419:web:9e0fd1a37e51332203373e",
-  measurementId: "G-SVG851WK7Y"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-
-// State
-let currentUser = null;
-let isAdmin = false;
-let allContents = [];
-
-// ============================================
-// AUTH
-// ============================================
-onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  
-  if (user) {
-    loadMainView();
-  } else {
-    showView('login');
-  }
-});
-
-document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (error) {
-    alert('Google girişi başarısız: ' + error.message);
-  }
-});
-
-document.getElementById('anonymousLoginBtn').addEventListener('click', async () => {
-  try {
-    await signInAnonymously(auth);
-  } catch (error) {
-    alert('Anonim giriş başarısız: ' + error.message);
-  }
-});
-
-document.getElementById('adminLoginBtn').addEventListener('click', () => {
-  const username = document.getElementById('adminUsername').value;
-  const password = document.getElementById('adminPassword').value;
-  
-  if (username === 'admin' && password === '123') {
-    isAdmin = true;
-    signInAnonymously(auth).then(() => {
-      showView('admin');
-    });
-  } else {
-    alert('❌ Hatalı kullanıcı adı veya şifre!');
-  }
-});
-
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  isAdmin = false;
-  await signOut(auth);
-});
-
-// ============================================
-// VIEWS
-// ============================================
-function showView(view) {
-  document.getElementById('loginView').classList.add('hidden');
-  document.getElementById('mainView').classList.add('hidden');
-  document.getElementById('adminView').classList.add('hidden');
-  
-  if (view === 'login') {
-    document.getElementById('loginView').classList.remove('hidden');
-  } else if (view === 'main') {
-    document.getElementById('mainView').classList.remove('hidden');
-  } else if (view === 'admin') {
-    document.getElementById('adminView').classList.remove('hidden');
-  }
-}
-
-async function loadMainView() {
-  showView('main');
-  
-  if (currentUser) {
-    const displayName = currentUser.displayName || currentUser.email || 'Anonim Kullanıcı';
-    document.getElementById('userInfo').textContent = `Hoş geldiniz, ${displayName}`;
-    
-    if (isAdmin) {
-      document.getElementById('adminPanelBtn').classList.remove('hidden');
-    }
-  }
-  
-  await loadContents();
-}
-
-document.getElementById('adminPanelBtn').addEventListener('click', () => {
-  showView('admin');
-  loadAdminContents();
-});
-
-document.getElementById('backToMainBtn').addEventListener('click', () => {
-  loadMainView();
-});
-
-// ============================================
-// CONTENT MANAGEMENT
-// ============================================
-async function loadContents() {
-  document.getElementById('loadingSpinner').classList.remove('hidden');
-  document.getElementById('contentGrid').innerHTML = '';
-  
-  try {
-    const q = query(collection(db, 'contents'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    
-    allContents = [];
-    querySnapshot.forEach((doc) => {
-      allContents.push({ id: doc.id, ...doc.data() });
-    });
-    
-    renderContents(allContents);
-  } catch (error) {
-    console.error('İçerikler yüklenemedi:', error);
-  }
-  
-  document.getElementById('loadingSpinner').classList.add('hidden');
-}
-
-function renderContents(contents) {
-  const grid = document.getElementById('contentGrid');
-  const emptyState = document.getElementById('emptyState');
-  
-  if (contents.length === 0) {
-    grid.innerHTML = '';
-    emptyState.classList.remove('hidden');
-    return;
-  }
-  
-  emptyState.classList.add('hidden');
-  grid.innerHTML = contents.map(content => `
-    <div class="content-card" onclick="showDetail('${content.id}')">
-      <img src="${content.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image'}" 
-           alt="${content.name}"
-           onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
-      <div class="p-5">
-        <h3 class="text-xl font-bold text-gray-800 mb-2">${content.name}</h3>
-        <p class="text-gray-600 text-sm line-clamp-3">${content.description}</p>
-      </div>
-    </div>
-  `).join('');
-}
-
-window.showDetail = function(id) {
-  const content = allContents.find(c => c.id === id);
-  if (!content) return;
-  
-  document.getElementById('modalImage').src = content.imageUrl || 'https://via.placeholder.com/800x400?text=No+Image';
-  document.getElementById('modalTitle').textContent = content.name;
-  document.getElementById('modalDescription').textContent = content.description;
-  document.getElementById('detailModal').classList.remove('hidden');
-};
-
-document.getElementById('closeModalBtn').addEventListener('click', () => {
-  document.getElementById('detailModal').classList.add('hidden');
-});
-
-// Search
-document.getElementById('searchInput').addEventListener('input', (e) => {
-  const searchTerm = e.target.value.toLowerCase();
-  const filtered = allContents.filter(content => 
-    content.name.toLowerCase().includes(searchTerm) ||
-    content.description.toLowerCase().includes(searchTerm)
-  );
-  renderContents(filtered);
-});
-
-// ============================================
-// ADMIN - BULK ADD
-// ============================================
-document.getElementById('bulkAddBtn').addEventListener('click', async () => {
-  const input = document.getElementById('bulkContentInput').value.trim();
-  
-  if (!input) {
-    alert('❌ Lütfen içerik girin!');
-    return;
-  }
-  
-  try {
-    const contents = JSON.parse(input);
-    
-    if (!Array.isArray(contents)) {
-      alert('❌ Geçerli bir JSON dizisi girin!');
+  const addContent = () => {
+    if (!adminForm.title || !adminForm.description || !adminForm.image || !adminForm.link) {
+      alert('Lütfen tüm alanları doldurun!');
       return;
     }
-    
-    let successCount = 0;
-    
-    for (const content of contents) {
-      if (!content.name || !content.description) {
-        console.warn('Eksik alan:', content);
-        continue;
-      }
-      
-      await addDoc(collection(db, 'contents'), {
-        name: content.name,
-        description: content.description,
-        imageUrl: content.imageUrl || '',
-        createdAt: Date.now()
-      });
-      
-      successCount++;
-    }
-    
-    alert(`✅ ${successCount} içerik başarıyla eklendi!`);
-    document.getElementById('bulkContentInput').value = '';
-    await loadAdminContents();
-    
-  } catch (error) {
-    alert('❌ Hata: ' + error.message);
-  }
-});
-
-// ============================================
-// ADMIN - SINGLE ADD
-// ============================================
-document.getElementById('singleAddBtn').addEventListener('click', async () => {
-  const name = document.getElementById('singleName').value.trim();
-  const description = document.getElementById('singleDescription').value.trim();
-  const imageUrl = document.getElementById('singleImageUrl').value.trim();
-  
-  if (!name || !description) {
-    alert('❌ İsim ve açıklama zorunludur!');
-    return;
-  }
-  
-  try {
-    await addDoc(collection(db, 'contents'), {
-      name,
-      description,
-      imageUrl: imageUrl || '',
-      createdAt: Date.now()
+    const newContent = {
+      id: Date.now(),
+      ...adminForm
+    };
+    setContents([...contents, newContent]);
+    setAdminForm({
+      title: '',
+      description: '',
+      image: '',
+      link: '',
+      category: 1,
+      tags: []
     });
-    
-    alert('✅ İçerik eklendi!');
-    document.getElementById('singleName').value = '';
-    document.getElementById('singleDescription').value = '';
-    document.getElementById('singleImageUrl').value = '';
-    
-    await loadAdminContents();
-  } catch (error) {
-    alert('❌ Hata: ' + error.message);
-  }
-});
+  };
 
-// ============================================
-// ADMIN - CONTENT LIST
-// ============================================
-async function loadAdminContents() {
-  const list = document.getElementById('adminContentList');
-  list.innerHTML = '<div class="text-white text-center py-4">Yükleniyor...</div>';
-  
-  try {
-    const q = query(collection(db, 'contents'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-      list.innerHTML = '<div class="text-white opacity-70 text-center py-4">Henüz içerik yok</div>';
-      return;
+  const addCategory = () => {
+    if (newCategory.name.trim()) {
+      setCategories([...categories, { id: Date.now(), ...newCategory }]);
+      setNewCategory({ name: '', color: '#FF6B6B' });
     }
-    
-    list.innerHTML = '';
-    querySnapshot.forEach((document) => {
-      const data = document.data();
-      const div = window.document.createElement('div');
-      div.className = 'glass rounded-xl p-4 flex items-center justify-between gap-4';
-      div.innerHTML = `
-        <div class="flex items-center gap-4 flex-1 min-w-0">
-          <img src="${data.imageUrl || 'https://via.placeholder.com/60'}" 
-               class="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-               onerror="this.src='https://via.placeholder.com/60'">
-          <div class="min-w-0 flex-1">
-            <h4 class="font-bold text-white truncate">${data.name}</h4>
-            <p class="text-sm text-white opacity-70 truncate">${data.description}</p>
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
+    }
+  };
+
+  const getCategoryById = (id) => categories.find(c => c.id === id);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      {/* Navigation */}
+      <nav className="backdrop-blur-lg bg-white/10 border-b border-white/20 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-8">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-400 to-yellow-400 bg-clip-text text-transparent cursor-pointer"
+                  onClick={() => setCurrentPage('discover')}>
+                Shaplat
+              </h1>
+              <div className="hidden md:flex space-x-4">
+                <button onClick={() => setCurrentPage('discover')}
+                        className={`px-4 py-2 rounded-lg transition-all ${currentPage === 'discover' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white'}`}>
+                  <Shuffle className="inline mr-2 w-4 h-4" />
+                  Keşfet
+                </button>
+                <button onClick={() => setCurrentPage('favorites')}
+                        className={`px-4 py-2 rounded-lg transition-all ${currentPage === 'favorites' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white'}`}>
+                  <Heart className="inline mr-2 w-4 h-4" />
+                  Favoriler
+                </button>
+                <button onClick={() => setCurrentPage('lists')}
+                        className={`px-4 py-2 rounded-lg transition-all ${currentPage === 'lists' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white'}`}>
+                  <List className="inline mr-2 w-4 h-4" />
+                  Listeler
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              {currentUser ? (
+                <>
+                  {currentUser.isAdmin && (
+                    <button onClick={() => setCurrentPage('admin')}
+                            className="px-4 py-2 bg-yellow-500/20 text-yellow-300 rounded-lg hover:bg-yellow-500/30 transition-all">
+                      <Settings className="inline mr-2 w-4 h-4" />
+                      Admin
+                    </button>
+                  )}
+                  <button onClick={handleLogout}
+                          className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-all">
+                    <LogOut className="inline mr-2 w-4 h-4" />
+                    Çıkış
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => setShowLoginModal(true)}
+                        className="px-4 py-2 bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition-all">
+                  <LogIn className="inline mr-2 w-4 h-4" />
+                  Giriş Yap
+                </button>
+              )}
+            </div>
           </div>
         </div>
-        <button class="btn btn-danger px-4 py-2 text-sm flex-shrink-0" onclick="deleteContent('${document.id}')">
-          🗑️
-        </button>
-      `;
-      list.appendChild(div);
-    });
-  } catch (error) {
-    list.innerHTML = '<div class="text-red-400 text-center py-4">Yükleme hatası</div>';
-  }
-}
+      </nav>
 
-window.deleteContent = async function(id) {
-  if (!confirm('Bu içeriği silmek istediğinize emin misiniz?')) return;
-  
-  try {
-    await deleteDoc(doc(db, 'contents', id));
-    alert('✅ İçerik silindi!');
-    await loadAdminContents();
-  } catch (error) {
-    alert('❌ Silme hatası: ' + error.message);
-  }
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {currentPage === 'discover' && currentContent && (
+          <div className="flex justify-center items-center min-h-[80vh]">
+            <div className="w-full max-w-2xl">
+              <div className="backdrop-blur-xl bg-white/10 rounded-3xl overflow-hidden shadow-2xl border border-white/20 transform hover:scale-[1.02] transition-all duration-300">
+                <div className="relative h-80 overflow-hidden">
+                  <img src={currentContent.image} alt={currentContent.title}
+                       className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute top-4 right-4 flex gap-2">
+                    {currentContent.tags.map(tag => (
+                      <span key={tag} className="px-3 py-1 bg-white/20 backdrop-blur-lg rounded-full text-white text-sm">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-3xl font-bold text-white">{currentContent.title}</h2>
+                    <span className="px-4 py-2 rounded-full text-sm font-semibold"
+                          style={{ backgroundColor: getCategoryById(currentContent.category)?.color + '40', color: getCategoryById(currentContent.category)?.color }}>
+                      {getCategoryById(currentContent.category)?.name}
+                    </span>
+                  </div>
+                  <p className="text-white/80 text-lg mb-6">{currentContent.description}</p>
+                  <div className="flex gap-4">
+                    <button onClick={getRandomContent}
+                            className="flex-1 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all transform hover:scale-105 font-semibold shadow-lg">
+                      <Shuffle className="inline mr-2 w-5 h-5" />
+                      Yeni Keşif
+                    </button>
+                    <button onClick={() => addToFavorites(currentContent)}
+                            className="px-6 py-3 bg-white/20 backdrop-blur-lg text-white rounded-xl hover:bg-white/30 transition-all">
+                      <Heart className="w-5 h-5" />
+                    </button>
+                    <a href={currentContent.link} target="_blank" rel="noopener noreferrer"
+                       className="px-6 py-3 bg-blue-500/20 text-blue-300 rounded-xl hover:bg-blue-500/30 transition-all font-semibold">
+                      Ziyaret Et →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'favorites' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-4xl font-bold text-white">Favorilerim</h2>
+              <button onClick={() => setShowCreateListModal(true)}
+                      className="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 transition-all font-semibold shadow-lg">
+                <FolderPlus className="inline mr-2 w-5 h-5" />
+                Yeni Liste
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {favorites.map(fav => (
+                <div key={fav.id} className="backdrop-blur-xl bg-white/10 rounded-2xl overflow-hidden shadow-xl border border-white/20 hover:shadow-2xl transition-all">
+                  <img src={fav.image} alt={fav.title} className="w-full h-48 object-cover" />
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-white mb-2">{fav.title}</h3>
+                    <p className="text-white/70 text-sm mb-4">{fav.description}</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setSelectedFavorite(fav); setShowMoveModal(true); }}
+                              className="flex-1 px-4 py-2 bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition-all text-sm">
+                        <Move className="inline mr-1 w-4 h-4" />
+                        Taşı
+                      </button>
+                      <button onClick={() => removeFromFavorites(fav.id)}
+                              className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-all">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {favorites.length === 0 && (
+              <div className="text-center py-20">
+                <Heart className="w-20 h-20 mx-auto text-white/20 mb-4" />
+                <p className="text-white/50 text-xl">Henüz favori eklemedin</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {currentPage === 'lists' && (
+          <div>
+            <h2 className="text-4xl font-bold text-white mb-8">Listelerim</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userLists.map(list => (
+                <div key={list.id} className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 shadow-xl border border-white/20">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">{list.name}</h3>
+                      <p className="text-white/50 text-sm">{list.items.length} öğe</p>
+                    </div>
+                    <button onClick={() => deleteList(list.id)}
+                            className="p-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-all">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {list.items.map(itemId => {
+                      const content = contents.find(c => c.id === itemId);
+                      return content ? (
+                        <div key={itemId} className="flex items-center space-x-3 p-2 bg-white/5 rounded-lg">
+                          <img src={content.image} alt={content.title} className="w-12 h-12 object-cover rounded" />
+                          <div className="flex-1">
+                            <p className="text-white font-medium text-sm">{content.title}</p>
+                          </div>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {userLists.length === 0 && (
+              <div className="text-center py-20">
+                <List className="w-20 h-20 mx-auto text-white/20 mb-4" />
+                <p className="text-white/50 text-xl">Henüz liste oluşturmadın</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {currentPage === 'admin' && currentUser?.isAdmin && (
+          <div className="space-y-8">
+            <h2 className="text-4xl font-bold text-white">Admin Paneli</h2>
+            
+            {/* Add Content */}
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 shadow-xl border border-white/20">
+              <h3 className="text-2xl font-bold text-white mb-6">İçerik Ekle</h3>
+              <div className="space-y-4">
+                <input type="text" placeholder="Başlık" value={adminForm.title}
+                       onChange={(e) => setAdminForm({...adminForm, title: e.target.value})}
+                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                <textarea placeholder="Açıklama" value={adminForm.description}
+                          onChange={(e) => setAdminForm({...adminForm, description: e.target.value})}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 h-24" />
+                <input type="url" placeholder="Görsel URL" value={adminForm.image}
+                       onChange={(e) => setAdminForm({...adminForm, image: e.target.value})}
+                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                <input type="url" placeholder="Link" value={adminForm.link}
+                       onChange={(e) => setAdminForm({...adminForm, link: e.target.value})}
+                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                <select value={adminForm.category}
+                        onChange={(e) => setAdminForm({...adminForm, category: Number(e.target.value)})}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id} className="bg-gray-900">{cat.name}</option>
+                  ))}
+                </select>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map(tag => (
+                    <button key={tag} type="button"
+                            onClick={() => {
+                              if (adminForm.tags.includes(tag)) {
+                                setAdminForm({...adminForm, tags: adminForm.tags.filter(t => t !== tag)});
+                              } else {
+                                setAdminForm({...adminForm, tags: [...adminForm.tags, tag]});
+                              }
+                            }}
+                            className={`px-4 py-2 rounded-lg transition-all ${
+                              adminForm.tags.includes(tag) 
+                                ? 'bg-purple-500 text-white' 
+                                : 'bg-white/10 text-white/70 hover:bg-white/20'
+                            }`}>
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={addContent}
+                        className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 transition-all font-semibold shadow-lg">
+                  <Plus className="inline mr-2 w-5 h-5" />
+                  İçerik Ekle
+                </button>
+              </div>
+            </div>
+
+            {/* Add Category */}
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 shadow-xl border border-white/20">
+              <h3 className="text-2xl font-bold text-white mb-6">Kategori Ekle</h3>
+              <div className="flex gap-4">
+                <input type="text" placeholder="Kategori Adı" value={newCategory.name}
+                       onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                       className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                <input type="color" value={newCategory.color}
+                       onChange={(e) => setNewCategory({...newCategory, color: e.target.value})}
+                       className="w-16 h-12 bg-white/10 border border-white/20 rounded-xl cursor-pointer" />
+                <button onClick={addCategory}
+                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all font-semibold">
+                  Ekle
+                </button>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {categories.map(cat => (
+                  <span key={cat.id} className="px-4 py-2 rounded-full text-white font-semibold"
+                        style={{ backgroundColor: cat.color }}>
+                    {cat.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Add Tag */}
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 shadow-xl border border-white/20">
+              <h3 className="text-2xl font-bold text-white mb-6">Etiket Ekle</h3>
+              <div className="flex gap-4">
+                <input type="text" placeholder="Etiket Adı" value={newTag}
+                       onChange={(e) => setNewTag(e.target.value)}
+                       className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                <button onClick={addTag}
+                        className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all font-semibold">
+                  Ekle
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 w-full max-w-md border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-white">Giriş Yap</h3>
+              <button onClick={() => setShowLoginModal(false)} className="text-white/70 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <input type="text" placeholder="Kullanıcı Adı" value={loginForm.username}
+                     onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              <input type="password" placeholder="Şifre" value={loginForm.password}
+                     onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              <button onClick={handleLogin}
+                      className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 transition-all font-semibold shadow-lg">
+                Giriş Yap
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create List Modal */}
+      {showCreateListModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 w-full max-w-md border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-white">Yeni Liste Oluştur</h3>
+              <button onClick={() => setShowCreateListModal(false)} className="text-white/70 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <input type="text" placeholder="Liste Adı" value={newListName}
+                   onChange={(e) => setNewListName(e.target.value)}
+                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4" />
+            <button onClick={createList}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 transition-all font-semibold shadow-lg">
+              Oluştur
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Move to List Modal */}
+      {showMoveModal && selectedFavorite && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 w-full max-w-md border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-white">Listeye Taşı</h3>
+              <button onClick={() => { setShowMoveModal(false); setSelectedFavorite(null); }} 
+                      className="text-white/70 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {userLists.map(list => (
+                <button key={list.id}
+                        onClick={() => addToList(list.id, selectedFavorite.id)}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 transition-all text-left">
+                  {list.name} ({list.items.length})
+                </button>
+              ))}
+            </div>
+            {userLists.length === 0 && (
+              <p className="text-white/50 text-center py-4">Henüz liste oluşturmadınız</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
-// ============================================
-// INITIAL DEFAULT CONTENTS
-// ============================================
-async function addDefaultContents() {
-  const querySnapshot = await getDocs(collection(db, 'contents'));
-  if (!querySnapshot.empty) return; // Already has content
-  
-  const defaultContents = [
-    {
-      name: "Galatasaray",
-      description: "1905 yılında İstanbul'da kurulmuş, Türkiye'nin en köklü ve başarılı spor kulüplerinden biri. UEFA Kupası ve Süper Kupa şampiyonu.",
-      imageUrl: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=500"
-    },
-    {
-      name: "Fenerbahçe",
-      description: "1907 yılında kurulmuş, çok sayıda şampiyonluk kazanmış İstanbul merkezli köklü spor kulübü. Sarı-lacivert renkleriyle tanınır.",
-      imageUrl: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500"
-    },
-    {
-      name: "Beşiktaş",
-      description: "1903 yılında kurulan, Türkiye'nin en eski spor kulüplerinden. Siyah-beyaz renkleri ve Kartal sembolüyle ünlüdür.",
-      imageUrl: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=500"
-    },
-    {
-      name: "Trabzonspor",
-      description: "1967'de kurulan, Karadeniz'in ve Anadolu'nun ilk şampiyon takımı. Bordo-mavi renkleriyle bilinir.",
-      imageUrl: "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=500"
-    },
-    {
-      name: "Barcelona",
-      description: "1899 yılında kurulan İspanyol futbol devi. Messi, Ronaldinho, Xavi gibi efsane oyuncular yetiştirmiştir.",
-      imageUrl: "https://images.unsplash.com/photo-1522778526097-83a97dc85be8?w=500"
-    },
-    {
-      name: "Real Madrid",
-      description: "1902'de kurulan, tarihin en başarılı futbol kulübü. 14 Şampiyonlar Ligi kupası kazanmıştır.",
-      imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500"
-    },
-    {
-      name: "Manchester United",
-      description: "1878'de kurulan İngiliz futbol kulübü. Sir Alex Ferguson döneminde altın çağını yaşamıştır.",
-      imageUrl: "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=500"
-    },
-    {
-      name: "Liverpool",
-      description: "1892'de kurulan, İngiltere'nin en köklü kulüplerinden. 'You'll Never Walk Alone' marşıyla tanınır.",
-      imageUrl: "https://images.unsplash.com/photo-1522778034537-20bbef0ab4e8?w=500"
-    },
-    {
-      name: "Bayern Munich",
-      description: "1900 yılında kurulan Alman devi. Bundesliga'nın en başarılı takımıdır.",
-      imageUrl: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=500"
-    },
-    {
-      name: "Juventus",
-      description: "1897'de kurulan İtalyan kulübü. Zebra formalarıyla ünlü, Serie A'nın en çok şampiyonluk kazanan takımı.",
-      imageUrl: "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=500"
-    },
-    {
-      name: "AC Milan",
-      description: "1899'da kurulan İtalyan devi. Kırmızı-siyah renkleri ve zengin tarihi ile tanınır.",
-      imageUrl: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=500"
-    },
-    {
-      name: "Inter Milan",
-      description: "1908'de kurulan İtalyan kulübü. Mavi-siyah renkleriyle Serie A'nın güçlü takımlarındandır.",
-      imageUrl: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=500"
-    },
-    {
-      name: "Paris Saint-Germain",
-      description: "1970'te kurulan Fransız kulübü. Son yıllarda Avrupa'nın en güçlü takımlarından biri haline geldi.",
-      imageUrl: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=500"
-    },
-    {
-      name: "Chelsea",
-      description: "1905'te kurulan Londra merkezli kulüp. Roman Abramovich döneminde büyük başarılar elde etti.",
-      imageUrl: "https://images.unsplash.com/photo-1577471488278-16eec37ffcc2?w=500"
-    },
-    {
-      name: "Arsenal",
-      description: "1886'da kurulan İngiliz kulübü. Arsene Wenger döneminde 'Invincibles' takma adını aldı.",
-      imageUrl: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=500"
-    },
-    {
-      name: "Atletico Madrid",
-      description: "1903'te kurulan İspanyol kulübü. Kırmızı-beyaz çizgili formalarıyla tanınır.",
-      imageUrl: "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=500"
-    },
-    {
-      name: "Borussia Dortmund",
-      description: "1909'da kurulan Alman kulübü. Sarı duvarı ve tutkulu taraftarlarıyla ünlüdür.",
-      imageUrl: "https://images.unsplash.com/photo-1516307365426-bea591f05011?w=500"
-    },
-    {
-      name: "Manchester City",
-      description: "1880'de kurulan İngiliz kulübü. 2008'den beri büyük yatırımlar ile yükselişe geçti.",
-      imageUrl: "https://images.unsplash.com/photo-1522778034537-20bbef0ab4e8?w=500"
-    },
-    {
-      name: "Tottenham",
-      description: "1882'de kurulan Londra kulübü. White Hart Lane stadyumu ve horoz sembolüyle bilinir.",
-      imageUrl: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=500"
-    },
-    {
-      name: "Ajax",
-      description: "1900'de kurulan Hollanda kulübü. Genç yetenekleri yetiştirmesiyle ünlüdür.",
-      imageUrl: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500"
-    },
-    {
-      name: "Porto",
-      description: "1893'te kurulan Portekiz kulübü. Mavi-beyaz renkleriyle Şampiyonlar Ligi başarıları vardır.",
-      imageUrl: "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=500"
-    },
-    {
-      name: "Benfica",
-      description: "1904'te kurulan Portekiz devi. Kırmızı renkleriyle Avrupa'nın köklü kulüplerindendir.",
-      imageUrl: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=500"
-    },
-    {
-      name: "Celtic",
-      description: "1887'de kurulan İskoç kulübü. Yeşil-beyaz renkleri ve Celtic Park stadyumuyla tanınır.",
-      imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500"
-    },
-    {
-      name: "Rangers",
-      description: "1872'de kurulan İskoçya'nın en eski kulübü. Mavi renkleriyle Celtic'in ezeli rakibidir.",
-      imageUrl: "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=500"
-    },
-    {
-      name: "Roma",
-      description: "1927'de kurulan İtalyan kulübü. Kırmızı-sarı renkleri ve Olimpico stadyumuyla bilinir.",
-      imageUrl: "https://images.unsplash.com/photo-1522778034537-20bbef0ab4e8?w=500"
-    },
-    {
-      name: "Napoli",
-      description: "1926'da kurulan İtalyan kulübü. Diego Maradona'nın efsane dönemine ev sahipliği yaptı.",
-      imageUrl: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=500"
-    },
-    {
-      name: "Sevilla",
-      description: "1890'da kurulan İspanyol kulübü. UEFA Avrupa Ligi'nde rekor şampiyonlukları vardır.",
-      imageUrl: "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=500"
-    },
-    {
-      name: "Valencia",
-      description: "1919'da kurulan İspanyol kulübü. Turuncu-siyah renkleriyle La Liga'nın güçlü ekiplerinden.",
-      imageUrl: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=500"
-    },
-    {
-      name: "Olympique Lyon",
-      description: "1950'de kurulan Fransız kulübü. 2000'li yıllarda Fransa'ya egemen oldu.",
-      imageUrl: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=500"
-    },
-    {
-      name: "Marseille",
-      description: "1899'da kurulan Fransa'nın en köklü kulübü. Beyaz-mavi renkleriyle tanınır.",
-      imageUrl: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=500"
-    },
-    {
-      name: "Monaco",
-      description: "1924'te kurulan Fransız-Monaco kulübü. Kırmızı-beyaz renkleriyle genç yeteneklere ev sahipliği yapar.",
-      imageUrl: "https://images.unsplash.com/photo-1577471488278-16eec37ffcc2?w=500"
-    },
-    {
-      name: "Bayer Leverkusen",
-      description: "1904'te kurulan Alman kulübü. Kırmızı-siyah formalarıyla Bundesliga'da mücadele eder.",
-      imageUrl: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=500"
-    },
-    {
-      name: "RB Leipzig",
-      description: "2009'da kurulan genç Alman kulübü. Hızlı yükselişiyle dikkat çeker.",
-      imageUrl: "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=500"
-    },
-    {
-      name: "Sporting CP",
-      description: "1906'da kurulan Portekiz kulübü. Yeşil-beyaz renkleriyle Cristiano Ronaldo'nun çıktığı takımdır.",
-      imageUrl: "https://images.unsplash.com/photo-1516307365426-bea591f05011?w=500"
-    },
-    {
-      name: "Lazio",
-      description: "1900'de kurulan İtalyan kulübü. Açık mavi-beyaz renkleriyle Roma'nın diğer büyük takımıdır.",
-      imageUrl: "https://images.unsplash.com/photo-1522778034537-20bbef0ab4e8?w=500"
-    },
-    {
-      name: "Fiorentina",
-      description: "1926'da kurulan İtalyan kulübü. Mor rengiyle Serie A'nın özgün takımlarındandır.",
-      imageUrl: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=500"
-    },
-    {
-      name: "West Ham",
-      description: "1895'te kurulan Londra kulübü. Claret ve mavi renkleriyle bilinir.",
-      imageUrl: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500"
-    },
-    {
-      name: "Everton",
-      description: "1878'de kurulan İngiliz kulübü. Mavi renkleri ve Liverpool ile Merseyside derbisiyle tanınır.",
-      imageUrl: "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=500"
-    },
-    {
-      name: "Newcastle",
-      description: "1892'de kurulan İngiliz kulübü. Siyah-beyaz çizgili formalarıyla St James' Park'ta oynar.",
-      imageUrl: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=500"
-    },
-    {
-      name: "Aston Villa",
-      description: "1874'te kurulan tarihi İngiliz kulübü. Bordo-mavi renkleriyle Premier League'in köklü takımlarından.",
-      imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500"
-    },
-    {
-      name: "Leicester City",
-      description: "1884'te kurulan İngiliz kulübü. 2016'da mucize şampiyonlukla tarihe geçti.",
-      imageUrl: "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=500"
-    },
-    {
-      name: "Real Sociedad",
-      description: "1909'da kurulan Bask bölgesi kulübü. Mavi-beyaz renkleriyle La Liga'da mücadele eder.",
-      imageUrl: "https://images.unsplash.com/photo-1522778034537-20bbef0ab4e8?w=500"
-    },
-    {
-      name: "Athletic Bilbao",
-      description: "1898'de kurulan Bask kulübü. Sadece Bask bölgesi oyuncularıyla oynar, kırmızı-beyaz renkleriyle bilinir.",
-      imageUrl: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=500"
-    },
-    {
-      name: "Villarreal",
-      description: "1923'te kurulan İspanyol kulübü. Sarı renkleri ve Denizaltı lakabıyla tanınır.",
-      imageUrl: "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=500"
-    },
-    {
-      name: "Schalke 04",
-      description: "1904'te kurulan Alman kulübü. Mavi-beyaz renkleri ve Ruhr bölgesi taraftarlarıyla ünlüdür.",
-      imageUrl: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=500"
-    }
-  ];
-  
-  for (const content of defaultContents) {
-    try {
-      await addDoc(collection(db, 'contents'), {
-        ...content,
-        createdAt: Date.now()
-      });
-    } catch (error) {
-      console.error('Varsayılan içerik eklenemedi:', error);
-    }
-  }
-}
-
-// Add default contents on first load
-setTimeout(addDefaultContents, 2000);
-</script>
-
-</body>
-</html>
+export default App;
