@@ -3,30 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaplat - Keşfet ve Sürprizlerle Dolu</title>
+    <title>Shaplat - Keşfet, Beğen, Listele</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+
         .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .gradient-bg {
+
+        .gradient-1 {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
+
+        .gradient-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
+
+        .gradient-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .gradient-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .gradient-5 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(120deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(236, 64, 122, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(56, 189, 248, 0.3), transparent 50%);
+            animation: gradient-shift 15s ease infinite;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-15px) rotate(1deg); }
+            66% { transform: translateY(-5px) rotate(-1deg); }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+
+        .animate-slide-in {
+            animation: slide-in 0.5s ease-out;
+        }
+
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tag-pill {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .tag-pill:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .modal-backdrop {
+            backdrop-filter: blur(10px);
+            animation: fade-in 0.3s ease;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .content-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.6);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .category-badge {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .category-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        scrollbar-width: thin;
+        scrollbar-color: rgba(102, 126, 234, 0.5) rgba(255, 255, 255, 0.1);
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 80%;
+        }
+
+        .discover-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .discover-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+            z-index: 1;
+        }
+
+        .favorite-heart {
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .favorite-heart:hover {
+            transform: scale(1.2);
+        }
+
+        .favorite-heart:active {
+            transform: scale(0.9);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(26, 26, 46, 0.95);
+                backdrop-filter: blur(20px);
+                padding: 15px 0;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                z-index: 100;
+            }
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .section-title {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, transparent);
+            border-radius: 2px;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen">
+<body class="gradient-bg min-h-screen text-white">
     <div id="app"></div>
 
     <script>
@@ -43,176 +339,50 @@
             loginForm: { username: '', password: '' },
             newListName: '',
             adminForm: { title: '', description: '', image: '', link: '', category: 1, tags: [] },
-            newCategory: { name: '', color: '#FF6B6B' },
+            newCategory: { name: '', color: '#667eea' },
             newTag: '',
             categories: [
-                { id: 1, name: 'Web Siteleri', color: '#FF6B6B' },
-                { id: 2, name: 'YouTube Kanalları', color: '#4ECDC4' },
-                { id: 3, name: 'Mobil Uygulamalar', color: '#FFE66D' },
-                { id: 4, name: 'Oyunlar', color: '#95E1D3' },
-                { id: 5, name: 'Araçlar', color: '#F38181' },
-                { id: 6, name: 'Sanat & Tasarım', color: '#AA96DA' }
+                { id: 1, name: '🌐 Web Siteleri', color: '#667eea' },
+                { id: 2, name: '🎬 YouTube', color: '#ff6b6b' },
+                { id: 3, name: '📱 Uygulamalar', color: '#4ecdc4' },
+                { id: 4, name: '🎮 Oyunlar', color: '#95e1d3' },
+                { id: 5, name: '🛠️ Araçlar', color: '#ffd93d' },
+                { id: 6, name: '🎨 Sanat', color: '#c44569' }
             ],
-            tags: ['Üretkenlik', 'Eğlence', 'Öğrenme', 'Yaratıcılık', 'Müzik', 'Teknoloji', 'Sanat', 'Oyun', 'Video', 'Sosyal', 'Araç', 'İlham Verici'],
+            tags: ['Üretkenlik', 'Eğlence', 'Öğrenme', 'Yaratıcılık', 'Müzik', 'Teknoloji', 'Sanat', 'Oyun', 'Video', 'Sosyal', 'Araç', 'İlham', 'Bilim', 'Tasarım', 'Motivasyon'],
             contents: [
-                { id: 1, title: 'Poolside.fm', description: 'Retro müzik istasyonu ile zamanın durduğu bir yaz havuzu başı deneyimi', image: 'https://images.unsplash.com/photo-1527199768775-8e6d5b92e536?w=600', link: 'https://poolside.fm', category: 1, tags: ['Müzik', 'Eğlence'] },
-                { id: 2, title: 'Fireship', description: 'Hızlı ve eğlenceli teknoloji tutorialları ile dolu YouTube kanalı', image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600', link: 'https://youtube.com/@fireship', category: 2, tags: ['Teknoloji', 'Öğrenme'] },
-                { id: 3, title: 'Notion', description: 'Her şey için kullanabileceğin all-in-one çalışma alanı', image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600', link: 'https://notion.so', category: 3, tags: ['Üretkenlik', 'Araç'] },
-                { id: 4, title: 'Stardew Valley', description: 'Huzur dolu bir çiftlik simülasyonu ve RPG karışımı', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600', link: 'https://www.stardewvalley.net', category: 4, tags: ['Oyun', 'Eğlence'] },
-                { id: 5, title: 'Coolors.co', description: 'Saniyeler içinde mükemmel renk paletleri oluştur', image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600', link: 'https://coolors.co', category: 5, tags: ['Tasarım', 'Araç', 'Yaratıcılık'] },
-                { id: 6, title: 'The Useless Web', description: 'Seni tamamen rastgele ve anlamsız web sitelerine götürür', image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600', link: 'https://theuselessweb.com', category: 1, tags: ['Eğlence'] },
-                { id: 7, title: 'Kurzgesagt', description: 'Bilim ve felsefe konularını harika animasyonlarla anlatan kanal', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600', link: 'https://youtube.com/@kurzgesagt', category: 2, tags: ['Öğrenme', 'Bilim'] },
-                { id: 8, title: 'Forest', description: 'Odaklanırken dijital ağaç yetiştir, gerçek ağaç dik', image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=600', link: 'https://www.forestapp.cc', category: 3, tags: ['Üretkenlik', 'Motivasyon'] },
-                { id: 9, title: 'Hades', description: 'Yunan mitolojisi temalı bağımlılık yaratan roguelike oyun', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600', link: 'https://www.supergiantgames.com/games/hades', category: 4, tags: ['Oyun', 'Aksiyon'] },
-                { id: 10, title: 'Remove.bg', description: 'Fotoğraflardan arka planı otomatik olarak kaldır', image: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=600', link: 'https://remove.bg', category: 5, tags: ['Araç', 'Tasarım'] },
-                { id: 11, title: 'Radio Garden', description: 'Dünyanın her yerinden canlı radyo istasyonlarını dinle', image: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=600', link: 'http://radio.garden', category: 1, tags: ['Müzik', 'Keşif'] },
-                { id: 12, title: 'Veritasium', description: 'Bilimi eğlenceli deneylere ve açıklamalara dönüştüren kanal', image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600', link: 'https://youtube.com/@veritasium', category: 2, tags: ['Bilim', 'Öğrenme'] },
-                { id: 13, title: 'Headspace', description: 'Meditasyon ve mindfulness için rehberli uygulamalar', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600', link: 'https://www.headspace.com', category: 3, tags: ['Sağlık', 'Motivasyon'] },
-                { id: 14, title: 'Monument Valley', description: 'Optik illüzyonlarla dolu sanatsal mobil puzzle oyunu', image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600', link: 'https://www.monumentvalleygame.com', category: 4, tags: ['Oyun', 'Sanat', 'Puzzle'] },
-                { id: 15, title: 'Figma', description: 'Gerçek zamanlı işbirlikli tasarım aracı', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600', link: 'https://figma.com', category: 5, tags: ['Tasarım', 'Araç', 'İşbirliği'] },
-                { id: 16, title: 'Little Alchemy', description: 'Elementleri birleştirerek yeni şeyler keşfet', image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600', link: 'https://littlealchemy.com', category: 1, tags: ['Oyun', 'Eğlence', 'Keşif'] },
-                { id: 17, title: 'Vsauce', description: 'Aklını uçuracak sorular ve cevaplar', image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600', link: 'https://youtube.com/@vsauce', category: 2, tags: ['Bilim', 'Felsefe', 'Öğrenme'] },
-                { id: 18, title: 'Duolingo', description: 'Oyun gibi dil öğrenme deneyimi', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600', link: 'https://duolingo.com', category: 3, tags: ['Öğrenme', 'Dil', 'Eğitim'] },
-                { id: 19, title: 'Celeste', description: 'Duygusal hikayesi olan zorlayıcı platform oyunu', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600', link: 'http://www.celestegame.com', category: 4, tags: ['Oyun', 'Platform', 'Hikaye'] },
-                { id: 20, title: 'Canva', description: 'Herkes için tasarım: kolayca profesyonel görseller oluştur', image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=600', link: 'https://canva.com', category: 5, tags: ['Tasarım', 'Araç', 'Yaratıcılık'] },
-                { id: 21, title: 'A Soft Murmur', description: 'Kendi ortam sesini oluştur: yağmur, gök gürültüsü, dalga...', image: 'https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=600', link: 'https://asoftmurmur.com', category: 1, tags: ['Müzik', 'Rahatlama'] },
-                { id: 22, title: 'Mark Rober', description: 'Eski NASA mühendisinin çılgın bilim deneyleri', image: 'https://images.unsplash.com/photo-1530811761207-8d9d22f0a141?w=600', link: 'https://youtube.com/@MarkRober', category: 2, tags: ['Bilim', 'Eğlence', 'Mühendislik'] },
-                { id: 23, title: 'Calm', description: 'Uyku, meditasyon ve rahatlama için sesler', image: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=600', link: 'https://www.calm.com', category: 3, tags: ['Sağlık', 'Rahatlama', 'Uyku'] },
-                { id: 24, title: 'Among Us', description: 'Arkadaşlarınla oynayabileceğin sosyal dedüksiyon oyunu', image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=600', link: 'https://www.innersloth.com/games/among-us', category: 4, tags: ['Oyun', 'Sosyal', 'Multiplayer'] },
-                { id: 25, title: 'Photopea', description: 'Tarayıcıda çalışan ücretsiz Photoshop alternatifi', image: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600', link: 'https://www.photopea.com', category: 5, tags: ['Tasarım', 'Araç', 'Ücretsiz'] },
-                { id: 26, title: 'Geoguessr', description: 'Dünya coğrafyasını keşfet ve konumları tahmin et', image: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600', link: 'https://www.geoguessr.com', category: 1, tags: ['Oyun', 'Öğrenme', 'Coğrafya'] },
-                { id: 27, title: 'Corridor Crew', description: 'Film efektlerinin arkasındaki sırları öğren', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600', link: 'https://youtube.com/@corridorcrew', category: 2, tags: ['Film', 'VFX', 'Öğrenme'] },
-                { id: 28, title: 'Habitica', description: 'Hayatını bir RPG oyununa dönüştür', image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600', link: 'https://habitica.com', category: 3, tags: ['Üretkenlik', 'Oyun', 'Motivasyon'] },
-                { id: 29, title: 'Hollow Knight', description: 'Derin ve atmosferik metroidvania başyapıtı', image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600', link: 'https://www.hollowknight.com', category: 4, tags: ['Oyun', 'Macera', 'Sanat'] },
-                { id: 30, title: 'Unsplash', description: 'İnternet\'in en cömert ücretsiz fotoğraf koleksiyonu', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600', link: 'https://unsplash.com', category: 5, tags: ['Fotoğraf', 'Ücretsiz', 'Tasarım'] },
-                { id: 31, title: 'Noclip', description: 'Video oyunlarının yapım süreçlerini belgeleyen kanal', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600', link: 'https://youtube.com/@noclip', category: 2, tags: ['Oyun', 'Belgesel', 'Öğrenme'] },
-                { id: 32, title: 'Brain.fm', description: 'Odaklanma, rahatlama ve uyku için bilimsel müzik', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600', link: 'https://www.brain.fm', category: 1, tags: ['Müzik', 'Üretkenlik', 'Bilim'] },
-                { id: 33, title: 'Incredibox', description: 'Beatbox ekibi yöneterek müzik yap', image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=600', link: 'https://www.incredibox.com', category: 1, tags: ['Müzik', 'Yaratıcılık', 'Eğlence'] },
-                { id: 34, title: 'Obsidian', description: 'İkinci beynin için güçlü not alma uygulaması', image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=600', link: 'https://obsidian.md', category: 3, tags: ['Üretkenlik', 'Araç', 'Öğrenme'] },
-                { id: 35, title: 'The Witness', description: 'Gizemli bir adada puzzle çözme macerası', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600', link: 'http://the-witness.net', category: 4, tags: ['Oyun', 'Puzzle', 'Sanat'] },
-                { id: 36, title: 'Witeboard', description: 'Anında işbirlikçi beyaz tahta, hesap gerektirmez', image: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=600', link: 'https://witeboard.com', category: 5, tags: ['Araç', 'İşbirliği', 'Basit'] },
-                { id: 37, title: 'Internet Archive', description: 'Dijital kütüphane: kitaplar, filmler, müzik, web arşivi', image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=600', link: 'https://archive.org', category: 1, tags: ['Öğrenme', 'Tarih', 'Keşif'] },
-                { id: 38, title: 'Primitive Technology', description: 'Doğada ilkel araçlarla yapı yapımı', image: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600', link: 'https://youtube.com/@primitivetechnology9550', category: 2, tags: ['Doğa', 'Öğrenme', 'Rahatlama'] },
-                { id: 39, title: 'Notion Calendar', description: 'Notion\'la entegre güçlü takvim uygulaması', image: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600', link: 'https://www.notion.so/product/calendar', category: 3, tags: ['Üretkenlik', 'Araç', 'Organizasyon'] },
-                { id: 40, title: 'Ori and the Blind Forest', description: 'Göz alıcı sanat ve müzikle dolu platform macerası', image: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=600', link: 'https://www.orithegame.com', category: 4, tags: ['Oyun', 'Sanat', 'Macera'] },
-                { id: 41, title: 'Excalidraw', description: 'El çizimi hissi veren dijital beyaz tahta', image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600', link: 'https://excalidraw.com', category: 5, tags: ['Araç', 'Tasarım', 'İşbirliği'] },
-                { id: 42, title: 'This Person Does Not Exist', description: 'AI tarafından oluşturulan gerçek olmayan yüzler', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600', link: 'https://thispersondoesnotexist.com', category: 1, tags: ['Teknoloji', 'AI', 'Eğlence'] },
-                { id: 43, title: 'Tom Scott', description: 'İlginç yerler ve harika bilgiler', image: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600', link: 'https://youtube.com/@TomScottGo', category: 2, tags: ['Eğitim', 'Seyahat', 'Öğrenme'] },
-                { id: 44, title: 'Todoist', description: 'Görev yönetimini basitleştiren güçlü uygulama', image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600', link: 'https://todoist.com', category: 3, tags: ['Üretkenlik', 'Araç', 'Organizasyon'] },
-                { id: 45, title: 'Return of the Obra Dinn', description: 'Benzersiz detektiflik deneyimi', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600', link: 'https://obradinn.com', category: 4, tags: ['Oyun', 'Gizem', 'Sanat'] },
-                { id: 46, title: 'Shots.so', description: 'Ekran görüntüleri için güzel mockup\'lar oluştur', image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600', link: 'https://shots.so', category: 5, tags: ['Tasarım', 'Araç', 'Mockup'] },
-                { id: 47, title: 'Neal.fun', description: 'Eğlenceli ve eğitici interaktif web deneyleri', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600', link: 'https://neal.fun', category: 1, tags: ['Eğlence', 'Öğrenme', 'İnteraktif'] },
-                { id: 48, title: 'Lessons from the Screenplay', description: 'Film senaryolarının derinlikli analizi', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600', link: 'https://youtube.com/@LessonsfromtheScreenplay', category: 2, tags: ['Film', 'Öğrenme', 'Senaryo'] },
-                { id: 49, title: 'TickTick', description: 'Yapılacaklar listesi ve pomodoro tekniği', image: 'https://images.unsplash.com/photo-1493612276216-ee3925520721?w=600', link: 'https://ticktick.com', category: 3, tags: ['Üretkenlik', 'Araç', 'Zaman Yönetimi'] },
-                { id: 50, title: 'Journey', description: 'Kelimesiz bir duygusal yolculuk deneyimi', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600', link: 'https://thatgamecompany.com/journey', category: 4, tags: ['Oyun', 'Sanat', 'Duygusal'] }
-            ]
-        };
-
-        function getCategoryById(id) {
-            return state.categories.find(c => c.id === id);
-        }
-
-        function getRandomContent() {
-            const randomIndex = Math.floor(Math.random() * state.contents.length);
-            state.currentContent = state.contents[randomIndex];
-            render();
-        }
-
-        function handleLogin() {
-            if (state.loginForm.username === 'admin' && state.loginForm.password === '123') {
-                state.currentUser = { username: 'admin', isAdmin: true };
-                state.showLoginModal = false;
-                state.currentPage = 'admin';
-            } else {
-                alert('Hatalı kullanıcı adı veya şifre!');
-            }
-            state.loginForm = { username: '', password: '' };
-            render();
-        }
-
-        function addToFavorites(content) {
-            if (!state.favorites.find(f => f.id === content.id)) {
-                state.favorites.push(content);
-                render();
-            }
-        }
-
-        function removeFromFavorites(id) {
-            state.favorites = state.favorites.filter(f => f.id !== id);
-            render();
-        }
-
-        function createList() {
-            if (state.newListName.trim()) {
-                state.userLists.push({ id: Date.now(), name: state.newListName, items: [] });
-                state.newListName = '';
-                state.showCreateListModal = false;
-                render();
-            }
-        }
-
-        function addToList(listId, contentId) {
-            state.userLists = state.userLists.map(list => {
-                if (list.id === listId && !list.items.includes(contentId)) {
-                    return { ...list, items: [...list.items, contentId] };
-                }
-                return list;
-            });
-            state.showMoveModal = false;
-            state.selectedFavorite = null;
-            render();
-        }
-
-        function deleteList(listId) {
-            state.userLists = state.userLists.filter(list => list.id !== listId);
-            render();
-        }
-
-        function addContent() {
-            if (!state.adminForm.title || !state.adminForm.description || !state.adminForm.image || !state.adminForm.link) {
-                alert('Lütfen tüm alanları doldurun!');
-                return;
-            }
-            const newContent = {
-                id: Date.now(),
-                ...state.adminForm
-            };
-            state.contents.push(newContent);
-            state.adminForm = { title: '', description: '', image: '', link: '', category: 1, tags: [] };
-            render();
-        }
-
-        function addCategory() {
-            if (state.newCategory.name.trim()) {
-                state.categories.push({ id: Date.now(), ...state.newCategory });
-                state.newCategory = { name: '', color: '#FF6B6B' };
-                render();
-            }
-        }
-
-        function addTag() {
-            if (state.newTag.trim() && !state.tags.includes(state.newTag.trim())) {
-                state.tags.push(state.newTag.trim());
-                state.newTag = '';
-                render();
-            }
-        }
-
-        function toggleTagInAdminForm(tag) {
-            if (state.adminForm.tags.includes(tag)) {
-                state.adminForm.tags = state.adminForm.tags.filter(t => t !== tag);
-            } else {
-                state.adminForm.tags = [...state.adminForm.tags, tag];
-            }
-            render();
-        }
-
-        function render() {
-            const app = document.getElementById('app');
-            app.innerHTML = `
-                <!-- Navigation -->
-                <nav class="glass sticky top-0 z-50">
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div class="flex justify-between items-center h-16">
-                            <div class="flex items-center space-x-8">
-                                <h1 class="text-3
+                { id: 1, title: 'Poolside.fm', description: 'Retro müzik istasyonu ile zamanın durduğu bir yaz havuzu başı deneyimi', image: 'https://images.unsplash.com/photo-1527199768775-8e6d5b92e536?w=800&q=80', link: 'https://poolside.fm', category: 1, tags: ['Müzik', 'Eğlence'] },
+                { id: 2, title: 'Fireship', description: 'Hızlı ve eğlenceli teknoloji tutorialları ile dolu YouTube kanalı', image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80', link: 'https://youtube.com/@fireship', category: 2, tags: ['Teknoloji', 'Öğrenme'] },
+                { id: 3, title: 'Notion', description: 'Her şey için kullanabileceğin all-in-one çalışma alanı', image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=80', link: 'https://notion.so', category: 3, tags: ['Üretkenlik', 'Araç'] },
+                { id: 4, title: 'Stardew Valley', description: 'Huzur dolu bir çiftlik simülasyonu ve RPG karışımı', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80', link: 'https://www.stardewvalley.net', category: 4, tags: ['Oyun', 'Eğlence'] },
+                { id: 5, title: 'Coolors.co', description: 'Saniyeler içinde mükemmel renk paletleri oluştur', image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&q=80', link: 'https://coolors.co', category: 5, tags: ['Tasarım', 'Araç', 'Yaratıcılık'] },
+                { id: 6, title: 'The Useless Web', description: 'Seni tamamen rastgele ve anlamsız web sitelerine götürür', image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&q=80', link: 'https://theuselessweb.com', category: 1, tags: ['Eğlence'] },
+                { id: 7, title: 'Kurzgesagt', description: 'Bilim ve felsefe konularını harika animasyonlarla anlatan kanal', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80', link: 'https://youtube.com/@kurzgesagt', category: 2, tags: ['Öğrenme', 'Bilim'] },
+                { id: 8, title: 'Forest', description: 'Odaklanırken dijital ağaç yetiştir, gerçek ağaç dik', image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=800&q=80', link: 'https://www.forestapp.cc', category: 3, tags: ['Üretkenlik', 'Motivasyon'] },
+                { id: 9, title: 'Hades', description: 'Yunan mitolojisi temalı bağımlılık yaratan roguelike oyun', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80', link: 'https://www.supergiantgames.com/games/hades', category: 4, tags: ['Oyun'] },
+                { id: 10, title: 'Remove.bg', description: 'Fotoğraflardan arka planı otomatik olarak kaldır', image: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=800&q=80', link: 'https://remove.bg', category: 5, tags: ['Araç', 'Tasarım'] },
+                { id: 11, title: 'Radio Garden', description: 'Dünyanın her yerinden canlı radyo istasyonlarını dinle', image: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=800&q=80', link: 'http://radio.garden', category: 1, tags: ['Müzik'] },
+                { id: 12, title: 'Veritasium', description: 'Bilimi eğlenceli deneylere ve açıklamalara dönüştüren kanal', image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&q=80', link: 'https://youtube.com/@veritasium', category: 2, tags: ['Bilim', 'Öğrenme'] },
+                { id: 13, title: 'Headspace', description: 'Meditasyon ve mindfulness için rehberli uygulamalar', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', link: 'https://www.headspace.com', category: 3, tags: ['Motivasyon'] },
+                { id: 14, title: 'Monument Valley', description: 'Optik illüzyonlarla dolu sanatsal mobil puzzle oyunu', image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=800&q=80', link: 'https://www.monumentvalleygame.com', category: 4, tags: ['Oyun', 'Sanat'] },
+                { id: 15, title: 'Figma', description: 'Gerçek zamanlı işbirlikli tasarım aracı', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80', link: 'https://figma.com', category: 5, tags: ['Tasarım', 'Araç'] },
+                { id: 16, title: 'Little Alchemy', description: 'Elementleri birleştirerek yeni şeyler keşfet', image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80', link: 'https://littlealchemy.com', category: 1, tags: ['Oyun', 'Eğlence'] },
+                { id: 17, title: 'Vsauce', description: 'Aklını uçuracak sorular ve cevaplar', image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&q=80', link: 'https://youtube.com/@vsauce', category: 2, tags: ['Bilim', 'Öğrenme'] },
+                { id: 18, title: 'Duolingo', description: 'Oyun gibi dil öğrenme deneyimi', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800&q=80', link: 'https://duolingo.com', category: 3, tags: ['Öğrenme'] },
+                { id: 19, title: 'Celeste', description: 'Duygusal hikayesi olan zorlayıcı platform oyunu', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80', link: 'http://www.celestegame.com', category: 4, tags: ['Oyun'] },
+                { id: 20, title: 'Canva', description: 'Herkes için tasarım: kolayca profesyonel görseller oluştur', image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&q=80', link: 'https://canva.com', category: 5, tags: ['Tasarım', 'Araç', 'Yaratıcılık'] },
+                { id: 21, title: 'A Soft Murmur', description: 'Kendi ortam sesini oluştur: yağmur, gök gürültüsü, dalga...', image: 'https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=800&q=80', link: 'https://asoftmurmur.com', category: 1, tags: ['Müzik'] },
+                { id: 22, title: 'Mark Rober', description: 'Eski NASA mühendisinin çılgın bilim deneyleri', image: 'https://images.unsplash.com/photo-1530811761207-8d9d22f0a141?w=800&q=80', link: 'https://youtube.com/@MarkRober', category: 2, tags: ['Bilim', 'Eğlence'] },
+                { id: 23, title: 'Calm', description: 'Uyku, meditasyon ve rahatlama için sesler', image: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&q=80', link: 'https://www.calm.com', category: 3, tags: ['Motivasyon'] },
+                { id: 24, title: 'Among Us', description: 'Arkadaşlarınla oynayabileceğin sosyal dedüksiyon oyunu', image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800&q=80', link: 'https://www.innersloth.com/games/among-us', category: 4, tags: ['Oyun', 'Sosyal'] },
+                { id: 25, title: 'Photopea', description: 'Tarayıcıda çalışan ücretsiz Photoshop alternatifi', image: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=800&q=80', link: 'https://www.photopea.com', category: 5, tags: ['Tasarım', 'Araç'] },
+                { id: 26, title: 'Geoguessr', description: 'Dünya coğrafyasını keşfet ve konumları tahmin et', image: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800&q=80', link: 'https://www.geoguessr.com', category: 1, tags: ['Oyun', 'Öğrenme'] },
+                { id: 27, title: 'Corridor Crew', description: 'Film efektlerinin arkasındaki sırları öğren', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=80', link: 'https://youtube.com/@corridorcrew', category: 2, tags: ['Öğrenme'] },
+                { id: 28, title: 'Habitica', description: 'Hayatını bir RPG oyununa dönüştür', image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&q=80', link: 'https://habitica.com', category: 3, tags: ['Üretkenlik', 'Oyun', 'Motivasyon'] },
+                { id: 29, title: 'Hollow Knight', description: 'Derin ve atmosferik metroidvania başyapıtı', image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&q=80', link: 'https://www.hollowknight.com', category: 4, tags: ['Oyun', 'Sanat'] },
+                { id: 30, title: 'Unsplash', description: 'İnternet\'in en cömert ücretsiz fotoğraf koleksiyonu', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&q=80', link: 'https://unsplash.com', category: 5, tags: ['Tasarım'] },
+                { id: 31, title: 'Noclip', description: 'Video oyunlarının yapım süreçlerini belgeleyen kanal', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80', link: 'https://youtube.com/@noclip', category: 2, tags: ['Oyun', 'Öğrenme'] },
+                { id: 32, title: 'Brain.fm', description: 'Odaklanma, rahatlama ve uyku için bilimsel müzik', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80', link: 'https://www.brain.fm', category: 1, tags: ['Müzik', 'Üretkenlik', 'Bilim'] },
+                { id: 33, title: 'Incredibox', description: 'Beatbox ekibi yöneterek müzik yap', image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80', link: 'https://www.incredibox.com', category: 1, tags: ['Müzik', 'Yaratıcılık', 'Eğlence'] },
+                { id: 34, title: 'Obsidian', description: 'İkinci beynin için güçlü not alma uygulaması', image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80', link: 'https://obsidian.md', category: 3, tags: ['Üretkenlik', 'Araç', 'Öğrenme'] },
+                { id: 35, title: 'The Witness', description: 'Gizemli bir adada puzzle çözme macerası', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80', link: 'http://the-witness.net', category: 4,
