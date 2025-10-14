@@ -3,127 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaplat - Keşfet ve Beğen</title>
+    <title>Shaplat - Keşif Platformu</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-card: #151930;
+            --bg-card-hover: #1a1f3a;
+            --neon-green: #00ff88;
+            --neon-blue: #00d4ff;
+            --neon-purple: #b86aff;
+            --neon-orange: #ff6b35;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
             min-height: 100vh;
+            position: relative;
             overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
         }
 
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float-orb 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--neon-green);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: var(--neon-purple);
+            bottom: -150px;
+            right: -150px;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--neon-blue);
+            top: 50%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float-orb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-50px, 50px) scale(0.9); }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
         header {
+            padding: 60px 20px;
             text-align: center;
-            padding: 40px 20px;
-            color: white;
             position: relative;
         }
 
-        .logo {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: float 3s ease-in-out infinite;
-            cursor: pointer;
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .logo {
+            font-size: 4.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue), var(--neon-purple));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 5s ease infinite;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            letter-spacing: -2px;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .tagline {
-            font-size: 1.2rem;
-            opacity: 0.9;
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
+        /* Navigation */
         nav {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
+            gap: 10px;
+            margin: 40px 0;
             flex-wrap: wrap;
         }
 
         .nav-btn {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 50px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 14px 32px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
         }
 
         .nav-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-color: var(--neon-green);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
         }
 
         .nav-btn.active {
-            background: white;
-            color: #667eea;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            border-color: transparent;
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
         }
 
+        /* Content Sections */
         .content-section {
             display: none;
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .content-section.active {
             display: block;
-            animation: fadeIn 0.5s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        /* Anasayfa Grid */
+        /* Content Grid */
         .content-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 30px;
-            margin-top: 20px;
+            margin-top: 30px;
         }
 
         .content-card {
-            background: white;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
             cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
 
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue), var(--neon-purple));
+            transform: scaleX(0);
+            transition: transform 0.5s ease;
+        }
+
+        .content-card:hover::before {
+            transform: scaleX(1);
+        }
+
         .content-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            transform: translateY(-12px) scale(1.02);
+            border-color: var(--neon-green);
+            box-shadow: 0 25px 50px rgba(0, 255, 136, 0.2);
+            background: var(--bg-card-hover);
         }
 
         .card-image {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: transform 0.5s ease;
+        }
+
+        .content-card:hover .card-image {
+            transform: scale(1.1);
         }
 
         .card-body {
@@ -132,26 +272,31 @@
 
         .card-category {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 6px 15px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            margin-bottom: 10px;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--neon-green);
+            border: 1px solid rgba(0, 255, 136, 0.3);
         }
 
         .card-title {
-            font-size: 1.5rem;
-            color: #333;
-            margin: 10px 0;
-            font-weight: bold;
+            font-size: 1.6rem;
+            color: var(--text-primary);
+            margin: 12px 0;
+            font-weight: 700;
+            line-height: 1.3;
         }
 
         .card-description {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 0.95rem;
-            line-height: 1.6;
-            margin: 10px 0;
+            line-height: 1.7;
+            margin: 12px 0;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
@@ -162,286 +307,435 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 15px;
+            margin-top: 18px;
         }
 
         .tag {
-            background: #f0f0f0;
-            color: #667eea;
-            padding: 5px 12px;
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--neon-blue);
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
-        }
-
-        .card-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn-card {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
+            border: 1px solid rgba(0, 212, 255, 0.3);
             transition: all 0.3s ease;
         }
 
-        .btn-like-card {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
+        .tag:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: var(--neon-blue);
         }
 
-        .btn-visit-card {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            color: white;
-        }
-
-        /* İçerik Detay */
+        /* Detail Page */
         .detail-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 900px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 50px;
+            max-width: 1100px;
             margin: 0 auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .detail-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue), var(--neon-purple));
         }
 
         .detail-image {
             width: 100%;
-            height: 400px;
+            height: 450px;
             object-fit: cover;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            margin-bottom: 35px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .detail-title {
-            font-size: 2.5rem;
-            color: #333;
-            margin-bottom: 20px;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
         }
 
         .detail-description {
             font-size: 1.2rem;
-            color: #666;
-            line-height: 1.8;
-            margin-bottom: 20px;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 25px;
         }
 
         .detail-url {
-            color: #667eea;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--neon-blue);
             font-weight: 600;
             font-size: 1.1rem;
-            margin: 20px 0;
-            word-break: break-all;
+            margin: 25px 0;
+            padding: 12px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
+        /* Buttons */
         .action-buttons {
             display: flex;
             gap: 15px;
-            margin: 30px 0;
+            margin: 35px 0;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 15px 40px;
+            padding: 16px 40px;
             border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
         }
 
         .btn-back {
-            background: #666;
-            color: white;
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-back:hover {
+            border-color: var(--text-secondary);
+            transform: translateY(-3px);
         }
 
         .btn-like {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
             color: white;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-like:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5);
         }
 
         .btn-visit {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            color: white;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            color: var(--bg-dark);
+            font-weight: 700;
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
         }
 
-        .btn:hover {
+        .btn-visit:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.6);
         }
 
-        .similar-section {
-            margin-top: 50px;
-            padding-top: 30px;
-            border-top: 2px solid #eee;
-        }
-
-        .similar-section h3 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
-        }
-
-        /* Koleksiyonlar */
+        /* Collections */
         .collections-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
 
         .collection-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .collection-header h2 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
         }
 
         .add-collection-form {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 15px;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .add-collection-form input {
             flex: 1;
-            padding: 12px 20px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+            padding: 16px 24px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
             font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .add-collection-form input:focus {
+            outline: none;
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
         }
 
         .btn-add {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            color: var(--bg-dark);
+            padding: 16px 35px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
         }
 
         .collection-item {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .collection-item:hover {
+            border-color: var(--neon-purple);
+            box-shadow: 0 10px 30px rgba(184, 106, 255, 0.2);
         }
 
         .collection-title {
-            font-size: 1.5rem;
-            color: #333;
-            margin-bottom: 15px;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-weight: 700;
         }
 
         .collection-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
 
         .collection-card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .collection-card:hover {
+            border-color: var(--neon-blue);
+            transform: translateY(-5px);
         }
 
         .collection-card h4 {
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
         }
 
         .collection-card p {
-            color: #999;
+            color: var(--text-secondary);
             font-size: 0.85rem;
         }
 
         .btn-remove-small {
-            background: #f5576c;
+            background: #ff6b6b;
             color: white;
             border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
+            padding: 8px 18px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.85rem;
-            margin-top: 10px;
+            font-weight: 600;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove-small:hover {
+            background: #ee5a6f;
+            transform: scale(1.05);
         }
 
         .btn-delete-collection {
-            background: #f5576c;
+            background: #ff6b6b;
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: 10px 25px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* Hakkımızda & İletişim */
+        .btn-delete-collection:hover {
+            background: #ee5a6f;
+            transform: scale(1.05);
+        }
+
+        /* Info Pages */
         .info-container {
-            background: white;
-            border-radius: 20px;
-            padding: 50px;
-            max-width: 900px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 60px;
+            max-width: 1000px;
             margin: 0 auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
 
         .info-container h2 {
-            color: #333;
-            font-size: 2.5rem;
-            margin-bottom: 30px;
+            font-size: 3rem;
+            font-weight: 700;
             text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .info-container h3 {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin: 35px 0 20px;
+            font-weight: 700;
         }
 
         .info-container p {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 1.1rem;
-            line-height: 1.8;
+            line-height: 1.9;
+            margin-bottom: 25px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .feature-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            padding: 35px;
+            border-radius: 18px;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--neon-green);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 255, 136, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 3.5rem;
             margin-bottom: 20px;
         }
 
-        .contact-form {
-            margin-top: 40px;
+        .feature-card h3 {
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-size: 1.3rem;
         }
 
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* Forms */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .form-group label {
             display: block;
-            color: #333;
+            color: var(--text-primary);
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+            padding: 14px 20px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
             font-size: 1rem;
+            font-family: 'Space Grotesk', sans-serif;
             transition: all 0.3s ease;
         }
 
@@ -449,81 +743,127 @@
         .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
         }
 
         .form-group textarea {
-            min-height: 120px;
+            min-height: 140px;
             resize: vertical;
         }
 
         /* Admin Panel */
         .admin-panel {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
 
         .admin-tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #eee;
+            gap: 15px;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
             flex-wrap: wrap;
         }
 
         .admin-tab {
-            padding: 15px 30px;
+            padding: 18px 35px;
             background: transparent;
             border: none;
-            color: #666;
-            font-weight: 600;
+            color: var(--text-secondary);
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             border-bottom: 3px solid transparent;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .admin-tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: var(--neon-green);
+            border-bottom-color: var(--neon-green);
+        }
+
+        .admin-tab:hover {
+            color: var(--text-primary);
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            padding: 35px;
+            border-radius: 18px;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--bg-dark);
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--bg-dark);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
         }
 
         .item-list {
-            margin-top: 20px;
+            margin-top: 30px;
         }
 
         .item-row {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            background: var(--bg-dark);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
+        }
+
+        .item-row:hover {
+            border-color: var(--neon-green);
         }
 
         .item-info {
@@ -532,90 +872,90 @@
 
         .item-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .btn-small {
-            padding: 8px 15px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             transition: all 0.3s ease;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .btn-edit {
-            background: #667eea;
-            color: white;
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+        }
+
+        .btn-edit:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
         }
 
         .btn-delete {
-            background: #f5576c;
+            background: #ff6b6b;
             color: white;
+        }
+
+        .btn-delete:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
         .tags-input-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            padding: 8px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            min-height: 45px;
+            gap: 10px;
+            padding: 12px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            min-height: 55px;
+            transition: all 0.3s ease;
+        }
+
+        .tags-input-container:focus-within {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
         }
 
         .tag-item {
-            background: #667eea;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            color: var(--bg-dark);
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 0.85rem;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .tag-remove {
             cursor: pointer;
             font-weight: bold;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
         }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 1000;
-            animation: slideIn 0.5s ease;
+        .tag-remove:hover {
+            transform: scale(1.3);
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
+        /* Modal */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
             display: none;
             justify-content: center;
             align-items: center;
@@ -627,26 +967,93 @@
         }
 
         .modal-content {
-            background: white;
-            padding: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 40px;
             border-radius: 20px;
-            max-width: 500px;
+            max-width: 550px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
         }
 
+        .modal-content h3 {
+            color: var(--text-primary);
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            border: 2px solid var(--neon-green);
+            padding: 20px 35px;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.4);
+            z-index: 1000;
+            animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(500px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .similar-section {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .similar-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
             .logo {
-                font-size: 2.5rem;
+                font-size: 3rem;
             }
 
             .content-grid {
                 grid-template-columns: 1fr;
             }
 
+            .detail-container {
+                padding: 30px 20px;
+            }
+
             .detail-title {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
 
             .action-buttons {
@@ -659,45 +1066,59 @@
             }
 
             .info-container {
+                padding: 40px 25px;
+            }
+
+            .info-container h2 {
+                font-size: 2.2rem;
+            }
+
+            .collections-container {
+                padding: 30px 20px;
+            }
+
+            .collection-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-panel {
                 padding: 30px 20px;
             }
         }
 
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin: 40px 0;
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
         }
 
-        .feature-card {
-            text-align: center;
-            padding: 30px;
-            background: #f8f9fa;
-            border-radius: 15px;
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
         }
 
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            border-radius: 6px;
         }
 
-        .feature-card h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .feature-card p {
-            color: #666;
-            font-size: 0.95rem;
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
         }
     </style>
 </head>
 <body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+    </div>
+
     <div class="container">
         <header>
-            <div class="logo" onclick="showSection('home')">✨ Shaplat</div>
-            <div class="tagline">Keşfet, Beğen, Koleksiyonla</div>
+            <div class="logo-container">
+                <div class="logo" onclick="showSection('home')">SHAPLAT</div>
+            </div>
+            <div class="tagline">Keşfet • Beğen • Koleksiyonla</div>
         </header>
 
         <nav>
@@ -720,11 +1141,13 @@
         <!-- Koleksiyonlar -->
         <div id="collections" class="content-section">
             <div class="collections-container">
-                <h2 style="color: #333; text-align: center; margin-bottom: 30px;">📚 Koleksiyonlarım</h2>
+                <div class="collection-header">
+                    <h2>Koleksiyonlarım</h2>
+                </div>
                 
                 <div class="add-collection-form">
                     <input type="text" id="new-collection-name" placeholder="Yeni koleksiyon adı (örn: Eğlence, Çalışma...)">
-                    <button class="btn-add" onclick="createCollection()">➕ Ekle</button>
+                    <button class="btn-add" onclick="createCollection()">Ekle</button>
                 </div>
 
                 <div id="collections-list"></div>
@@ -734,7 +1157,7 @@
         <!-- Hakkımızda -->
         <div id="about" class="content-section">
             <div class="info-container">
-                <h2>🌟 Hakkımızda</h2>
+                <h2>Hakkımızda</h2>
                 <p>
                     <strong>Shaplat</strong>, internetin sınırsız dünyasında kaybolmuş hazineleri keşfetmeniz için tasarlanmış bir platformdur. 
                     Her gün milyonlarca içerik üretilirken, gerçekten değerli ve ilginç olanları bulmak giderek zorlaşıyor.
@@ -748,21 +1171,777 @@
                     <div class="feature-card">
                         <div class="feature-icon">🎲</div>
                         <h3>Rastgele Keşif</h3>
-                        <p>Algoritmaların dışına çık, şansına güven!</p>
+                        <p>Algoritmaların dışına çık, şansına güven ve yeni dünyalar keşfet!</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">🏷️</div>
                         <h3>Akıllı Etiketleme</h3>
-                        <p>Benzer içerikleri kolayca keşfet</p>
+                        <p>Benzer içerikleri kolayca bul, ilgi alanlarını genişlet!</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">📚</div>
                         <h3>Koleksiyonlar</h3>
-                        <p>Favorilerini düzenle ve organize et</p>
+                        <p>Favorilerini düzenle, organize et ve istediğin zaman eriş!</p>
                     </div>
                 </div>
 
-                <p style="margin-top: 40px;">
+                <p style="margin-top: 50px;">
                     <strong>Misyonumuz:</strong> İnternetin gizli kalmış incilerini gün yüzüne çıkarmak ve kullanıcılarımızın 
-                    dijital deneyimini zenginleştirmek.
-    
+                    dijital deneyimini zenginleştirmek. Her içerik, özenle seçilmiş ve kategorize edilmiş.
+                </p>
+            </div>
+        </div>
+
+        <!-- İletişim -->
+        <div id="contact" class="content-section">
+            <div class="info-container">
+                <h2>İletişim</h2>
+                <p>
+                    Sorularınız, önerileriniz veya iş birliği teklifleri için bizimle iletişime geçebilirsiniz. 
+                    Ayrıca keşfettiğiniz harika içerikleri de bizimle paylaşabilirsiniz!
+                </p>
+
+                <div class="contact-form">
+                    <div class="form-group">
+                        <label>Adınız</label>
+                        <input type="text" id="contact-name" placeholder="Adınızı girin">
+                    </div>
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="email" id="contact-email" placeholder="ornek@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Konu</label>
+                        <select id="contact-subject">
+                            <option>Genel Soru</option>
+                            <option>İçerik Önerisi</option>
+                            <option>İş Birliği</option>
+                            <option>Teknik Destek</option>
+                            <option>Diğer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mesajınız</label>
+                        <textarea id="contact-message" placeholder="Mesajınızı buraya yazın..."></textarea>
+                    </div>
+                    <button class="btn btn-visit" style="width: 100%; justify-content: center;" onclick="sendContact()">
+                        <span>📧</span>
+                        <span>Gönder</span>
+                    </button>
+                </div>
+
+                <div style="margin-top: 60px; padding-top: 40px; border-top: 2px solid var(--border-color);">
+                    <h3>Bize Ulaşın</h3>
+                    <p><strong>E-posta:</strong> info@shaplat.com</p>
+                    <p><strong>Sosyal Medya:</strong> @shaplat</p>
+                    <p><strong>Çalışma Saatleri:</strong> Pazartesi - Cuma, 09:00 - 18:00</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="admin" class="content-section" style="display: none;">
+            <div class="admin-panel">
+                <h2 style="color: var(--text-primary); margin-bottom: 40px; text-align: center; font-size: 2.5rem;">⚙️ Admin Paneli</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-total">0</div>
+                        <div class="stat-label">Toplam İçerik</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-categories">0</div>
+                        <div class="stat-label">Kategori</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-collections">0</div>
+                        <div class="stat-label">Koleksiyon</div>
+                    </div>
+                </div>
+
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="showAdminTab('content')">İçerik Yönetimi</button>
+                    <button class="admin-tab" onclick="showAdminTab('categories')">Kategori Yönetimi</button>
+                </div>
+
+                <div id="admin-content-tab" class="admin-tab-content">
+                    <h3 style="color: var(--text-primary); margin-bottom: 25px; font-size: 1.6rem;">Yeni İçerik Ekle / Düzenle</h3>
+                    <div class="form-group">
+                        <label>Başlık</label>
+                        <input type="text" id="content-title" placeholder="İçerik başlığı">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <textarea id="content-description" placeholder="İçerik açıklaması"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="text" id="content-url" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label>Görsel URL</label>
+                        <input type="text" id="content-image" placeholder="https://... (görsel linki)">
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="content-category"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Etiketler</label>
+                        <div class="tags-input-container" id="tags-container" onclick="document.getElementById('tag-input').focus()">
+                            <input type="text" id="tag-input" placeholder="Etiket yaz ve Enter'a bas" 
+                                   style="border: none; outline: none; flex: 1; min-width: 150px; background: transparent; color: var(--text-primary);"
+                                   onkeydown="handleTagInput(event)">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <button class="btn btn-visit" onclick="addContent()" id="submit-content-btn">
+                            <span>➕</span>
+                            <span>İçerik Ekle</span>
+                        </button>
+                        <button class="btn btn-back" style="display: none;" onclick="cancelEdit()" id="cancel-edit-btn">
+                            <span>✕</span>
+                            <span>İptal</span>
+                        </button>
+                    </div>
+
+                    <h3 style="color: var(--text-primary); margin: 50px 0 25px; font-size: 1.6rem;">Mevcut İçerikler</h3>
+                    <div id="content-list" class="item-list"></div>
+                </div>
+
+                <div id="admin-categories-tab" class="admin-tab-content" style="display: none;">
+                    <h3 style="color: var(--text-primary); margin-bottom: 25px; font-size: 1.6rem;">Yeni Kategori Ekle</h3>
+                    <div class="form-group">
+                        <label>Kategori Adı</label>
+                        <input type="text" id="category-name" placeholder="Kategori adı">
+                    </div>
+                    <button class="btn btn-visit" onclick="addCategory()">
+                        <span>➕</span>
+                        <span>Kategori Ekle</span>
+                    </button>
+
+                    <h3 style="color: var(--text-primary); margin: 50px 0 25px; font-size: 1.6rem;">Mevcut Kategoriler</h3>
+                    <div id="category-list" class="item-list"></div>
+                </div>
+
+                <button class="btn btn-delete" style="margin-top: 40px; width: 100%; justify-content: center; background: #ff6b6b;" onclick="adminLogout()">
+                    <span>🚪</span>
+                    <span>Çıkış Yap</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="add-to-collection-modal" class="modal">
+        <div class="modal-content">
+            <h3>Koleksiyona Ekle</h3>
+            <div id="collection-list-modal"></div>
+            <button class="btn btn-back" style="width: 100%; justify-content: center; margin-top: 25px;" onclick="closeModal()">
+                <span>✕</span>
+                <span>Kapat</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let categories = ['Web Siteleri', 'YouTube Kanalları', 'Uygulamalar', 'Oyunlar'];
+        let contents = [
+            {
+                id: 1,
+                title: 'Poolside FM',
+                description: 'Nostaljik yaz hissi veren chill müzik radyosu. 80s ve 90s atmosferinde çalışırken dinlemek için mükemmel.',
+                url: 'https://poolside.fm',
+                image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800',
+                category: 'Web Siteleri',
+                tags: ['müzik', 'rahatlatıcı', 'radyo', 'retro']
+            },
+            {
+                id: 2,
+                title: 'neal.fun',
+                description: 'İnteraktif ve eğlenceli web deneyleri. Uzay, zaman ve daha fazlası hakkında görsel deneyimler.',
+                url: 'https://neal.fun',
+                image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800',
+                category: 'Web Siteleri',
+                tags: ['interaktif', 'eğitim', 'bilim', 'eğlence']
+            },
+            {
+                id: 3,
+                title: 'Kurzgesagt',
+                description: 'Bilimi eğlenceli animasyonlarla anlatan harika bir YouTube kanalı. Evren, biyoloji, felsefe ve daha fazlası.',
+                url: 'https://youtube.com/@kurzgesagt',
+                image: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?w=800',
+                category: 'YouTube Kanalları',
+                tags: ['bilim', 'eğitim', 'animasyon', 'belgesel']
+            },
+            {
+                id: 4,
+                title: 'Forest',
+                description: 'Odaklanmanıza yardımcı olan productivity uygulaması. Telefonu kullanmadan ağaç yetiştirin!',
+                url: 'https://www.forestapp.cc',
+                image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800',
+                category: 'Uygulamalar',
+                tags: ['üretkenlik', 'odaklanma', 'motivasyon', 'çevre']
+            },
+            {
+                id: 5,
+                title: 'Hades',
+                description: 'Yunan mitolojisi temalı muhteşem rogue-like oyun. Harika hikaye ve oynanış mekaniği.',
+                url: 'https://www.supergiantgames.com/games/hades/',
+                image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800',
+                category: 'Oyunlar',
+                tags: ['aksiyon', 'macera', 'mitoloji', 'indie']
+            },
+            {
+                id: 6,
+                title: 'Radio Garden',
+                description: 'Dünyanın her yerinden canlı radyo dinle. Haritada dolaş, kültürleri keşfet.',
+                url: 'http://radio.garden',
+                image: 'https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?w=800',
+                category: 'Web Siteleri',
+                tags: ['müzik', 'radyo', 'dünya', 'kültür']
+            },
+            {
+                id: 7,
+                title: 'Notion',
+                description: 'Her şeyi organize edin. Notlar, projeler, veritabanları ve daha fazlası.',
+                url: 'https://notion.so',
+                image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800',
+                category: 'Uygulamalar',
+                tags: ['üretkenlik', 'not', 'organizasyon', 'iş']
+            },
+            {
+                id: 8,
+                title: 'Stardew Valley',
+                description: 'Rahatlatıcı çiftlik simülasyonu. Kendi çiftliğini kur, köylülerle tanış, mağaraları keşfet.',
+                url: 'https://www.stardewvalley.net',
+                image: 'https://images.unsplash.com/photo-1560493676-04071c5f467b?w=800',
+                category: 'Oyunlar',
+                tags: ['rahatlatıcı', 'simülasyon', 'indie', 'çiftlik']
+            },
+            {
+                id: 9,
+                title: 'Veritasium',
+                description: 'Bilim ve mühendislik üzerine düşündüren deneyler ve açıklamalar.',
+                url: 'https://youtube.com/@veritasium',
+                image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800',
+                category: 'YouTube Kanalları',
+                tags: ['bilim', 'fizik', 'deney', 'eğitim']
+            }
+        ];
+        let collections = [];
+        let currentTags = [];
+        let editingContentId = null;
+        let isAdmin = false;
+        let currentDetailId = null;
+
+        function checkAdmin() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('user');
+            const password = urlParams.get('pass');
+            
+            if (username === 'admin' && password === 'admin123') {
+                isAdmin = true;
+                document.getElementById('admin').style.display = 'block';
+                showSection('admin');
+                updateAdminPanel();
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.content-section').forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none';
+            });
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            const sectionEl = document.getElementById(section);
+            sectionEl.classList.add('active');
+            sectionEl.style.display = 'block';
+            
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                const text = btn.textContent.toLowerCase();
+                if ((section === 'home' && text.includes('anasayfa')) ||
+                    (section === 'collections' && text.includes('koleksiyon')) ||
+                    (section === 'about' && text.includes('hakkımızda')) ||
+                    (section === 'contact' && text.includes('iletişim'))) {
+                    btn.classList.add('active');
+                }
+            });
+
+            if (section === 'home') {
+                displayHome();
+            } else if (section === 'collections') {
+                displayCollections();
+            }
+        }
+
+        function displayHome() {
+            const container = document.getElementById('home-content');
+            const displayContents = contents.slice(0, 9);
+            
+            container.innerHTML = displayContents.map(item => `
+                <div class="content-card" onclick="showDetail(${item.id})">
+                    <img src="${item.image}" alt="${item.title}" class="card-image" onerror="this.src='https://via.placeholder.com/800x400?text=${encodeURIComponent(item.title)}'">
+                    <div class="card-body">
+                        <span class="card-category">${item.category}</span>
+                        <h3 class="card-title">${item.title}</h3>
+                        <p class="card-description">${item.description}</p>
+                        <div class="card-tags">
+                            ${item.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showDetail(id) {
+            currentDetailId = id;
+            const item = contents.find(c => c.id === id);
+            if (!item) return;
+
+            const isInAnyCollection = collections.some(col => col.items.includes(id));
+            const similarContents = contents.filter(c => {
+                if (c.id === id) return false;
+                const sameCategory = c.category === item.category;
+                const commonTags = c.tags.some(tag => item.tags.includes(tag));
+                return sameCategory || commonTags;
+            }).slice(0, 6);
+
+            document.getElementById('detail-content').innerHTML = `
+                <img src="${item.image}" alt="${item.title}" class="detail-image" onerror="this.src='https://via.placeholder.com/1200x600?text=${encodeURIComponent(item.title)}'">
+                <span class="card-category">${item.category}</span>
+                <h1 class="detail-title">${item.title}</h1>
+                <p class="detail-description">${item.description}</p>
+                <div class="card-tags">
+                    ${item.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                </div>
+                <div class="detail-url">🔗 ${item.url}</div>
+                <div class="action-buttons">
+                    <button class="btn btn-back" onclick="showSection('home')">
+                        <span>←</span>
+                        <span>Geri</span>
+                    </button>
+                    <button class="btn ${isInAnyCollection ? 'btn-back' : 'btn-like'}" onclick="openCollectionModal(${id})">
+                        <span>${isInAnyCollection ? '✓' : '❤️'}</span>
+                        <span>${isInAnyCollection ? 'Koleksiyonda' : 'Koleksiyona Ekle'}</span>
+                    </button>
+                    <button class="btn btn-visit" onclick="window.open('${item.url}', '_blank')">
+                        <span>🚀</span>
+                        <span>Ziyaret Et</span>
+                    </button>
+                </div>
+
+                ${similarContents.length > 0 ? `
+                    <div class="similar-section">
+                        <h3>🔍 Benzer İçerikler</h3>
+                        <div class="content-grid">
+                            ${similarContents.map(similar => `
+                                <div class="content-card" onclick="showDetail(${similar.id})">
+                                    <img src="${similar.image}" alt="${similar.title}" class="card-image" onerror="this.src='https://via.placeholder.com/800x400?text=${encodeURIComponent(similar.title)}'">
+                                    <div class="card-body">
+                                        <span class="card-category">${similar.category}</span>
+                                        <h3 class="card-title">${similar.title}</h3>
+                                        <p class="card-description">${similar.description}</p>
+                                        <div class="card-tags">
+                                            ${similar.tags.slice(0, 3).map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            showSection('detail');
+        }
+
+        function openCollectionModal(contentId) {
+            currentDetailId = contentId;
+            const modalList = document.getElementById('collection-list-modal');
+            
+            if (collections.length === 0) {
+                modalList.innerHTML = `
+                    <div class="empty-state">
+                        <p>Henüz koleksiyon yok. Koleksiyonlarım sayfasından koleksiyon oluşturun.</p>
+                    </div>
+                `;
+            } else {
+                modalList.innerHTML = collections.map(col => {
+                    const hasItem = col.items.includes(contentId);
+                    return `
+                        <div class="item-row">
+                            <div class="item-info">
+                                <strong>${col.name}</strong> (${col.items.length} içerik)
+                            </div>
+                            <button class="btn-small ${hasItem ? 'btn-delete' : 'btn-edit'}" 
+                                    onclick="${hasItem ? `removeFromCollection('${col.name}', ${contentId})` : `addToCollection('${col.name}', ${contentId})`}">
+                                ${hasItem ? 'Kaldır' : 'Ekle'}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            document.getElementById('add-to-collection-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('add-to-collection-modal').classList.remove('active');
+            if (currentDetailId) {
+                showDetail(currentDetailId);
+            }
+        }
+
+        function createCollection() {
+            const name = document.getElementById('new-collection-name').value.trim();
+            if (!name) {
+                showNotification('⚠️ Koleksiyon adı boş olamaz!');
+                return;
+            }
+
+            if (collections.some(c => c.name === name)) {
+                showNotification('⚠️ Bu isimde bir koleksiyon zaten var!');
+                return;
+            }
+
+            collections.push({ name, items: [] });
+            document.getElementById('new-collection-name').value = '';
+            displayCollections();
+            showNotification('✅ Koleksiyon oluşturuldu!');
+        }
+
+        function addToCollection(collectionName, contentId) {
+            const collection = collections.find(c => c.name === collectionName);
+            if (!collection) return;
+
+            if (!collection.items.includes(contentId)) {
+                collection.items.push(contentId);
+                showNotification(`✅ Koleksiyona eklendi!`);
+                closeModal();
+                if (currentDetailId) {
+                    showDetail(currentDetailId);
+                }
+            }
+        }
+
+        function removeFromCollection(collectionName, contentId) {
+            const collection = collections.find(c => c.name === collectionName);
+            if (!collection) return;
+
+            collection.items = collection.items.filter(id => id !== contentId);
+            displayCollections();
+            showNotification('🗑️ Koleksiyondan kaldırıldı');
+        }
+
+        function deleteCollection(name) {
+            if (confirm(`"${name}" koleksiyonunu silmek istediğinize emin misiniz?`)) {
+                collections = collections.filter(c => c.name !== name);
+                displayCollections();
+                showNotification('🗑️ Koleksiyon silindi');
+            }
+        }
+
+        function displayCollections() {
+            const container = document.getElementById('collections-list');
+            
+            if (collections.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Henüz koleksiyon yok</h3>
+                        <p>Yukarıdan yeni bir koleksiyon oluşturarak başlayın!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = collections.map(col => `
+                <div class="collection-item">
+                    <div class="collection-title">
+                        <span>📁 ${col.name} (${col.items.length})</span>
+                        <button class="btn-delete-collection" onclick="deleteCollection('${col.name}')">
+                            Sil
+                        </button>
+                    </div>
+                    <div class="collection-grid">
+                        ${col.items.length === 0 ? 
+                            '<div class="empty-state" style="grid-column: 1/-1;"><p>Bu koleksiyonda henüz içerik yok</p></div>' :
+                            col.items.map(id => {
+                                const item = contents.find(c => c.id === id);
+                                if (!item) return '';
+                                return `
+                                    <div class="collection-card">
+                                        <span class="card-category" style="font-size: 0.75rem; padding: 4px 10px;">${item.category}</span>
+                                        <h4>${item.title}</h4>
+                                        <p>${item.tags.slice(0, 3).map(t => `#${t}`).join(' ')}</p>
+                                        <button class="btn-small btn-visit" onclick="showDetail(${id})" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, var(--neon-green), var(--neon-blue)); color: var(--bg-dark);">
+                                            Görüntüle
+                                        </button>
+                                        <button class="btn-remove-small" onclick="removeFromCollection('${col.name}', ${id})">
+                                            Kaldır
+                                        </button>
+                                    </div>
+                                `;
+                            }).join('')
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function sendContact() {
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const subject = document.getElementById('contact-subject').value;
+            const message = document.getElementById('contact-message').value;
+
+            if (!name || !email || !message) {
+                showNotification('⚠️ Lütfen tüm zorunlu alanları doldurun!');
+                return;
+            }
+
+            showNotification('✅ Mesajınız gönderildi! En kısa sürede dönüş yapacağız.');
+            document.getElementById('contact-name').value = '';
+            document.getElementById('contact-email').value = '';
+            document.getElementById('contact-message').value = '';
+        }
+
+        function showAdminTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'content') {
+                document.getElementById('admin-content-tab').style.display = 'block';
+                document.getElementById('admin-categories-tab').style.display = 'none';
+            } else {
+                document.getElementById('admin-content-tab').style.display = 'none';
+                document.getElementById('admin-categories-tab').style.display = 'block';
+            }
+        }
+
+        function updateAdminPanel() {
+            document.getElementById('stat-total').textContent = contents.length;
+            document.getElementById('stat-categories').textContent = categories.length;
+            document.getElementById('stat-collections').textContent = collections.length;
+
+            const categorySelect = document.getElementById('content-category');
+            categorySelect.innerHTML = categories.map(cat => 
+                `<option value="${cat}">${cat}</option>`
+            ).join('');
+
+            displayContentList();
+            displayCategoryList();
+        }
+
+        function handleTagInput(e) {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                e.preventDefault();
+                const tag = e.target.value.trim().toLowerCase();
+                if (!currentTags.includes(tag)) {
+                    currentTags.push(tag);
+                    updateTagsDisplay();
+                }
+                e.target.value = '';
+            }
+        }
+
+        function updateTagsDisplay() {
+            const container = document.getElementById('tags-container');
+            const input = document.getElementById('tag-input');
+            
+            const tagsHTML = currentTags.map(tag => `
+                <span class="tag-item">
+                    ${tag}
+                    <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
+                </span>
+            `).join('');
+            
+            container.innerHTML = tagsHTML;
+            container.appendChild(input);
+        }
+
+        function removeTag(tag) {
+            currentTags = currentTags.filter(t => t !== tag);
+            updateTagsDisplay();
+        }
+
+        function addContent() {
+            const title = document.getElementById('content-title').value;
+            const description = document.getElementById('content-description').value;
+            const url = document.getElementById('content-url').value;
+            const image = document.getElementById('content-image').value;
+            const category = document.getElementById('content-category').value;
+
+            if (!title || !description || !url || !image || !category || currentTags.length === 0) {
+                showNotification('⚠️ Lütfen tüm alanları doldurun ve en az 1 etiket ekleyin!');
+                return;
+            }
+
+            if (editingContentId) {
+                const index = contents.findIndex(c => c.id === editingContentId);
+                contents[index] = { id: editingContentId, title, description, url, image, category, tags: [...currentTags] };
+                editingContentId = null;
+                showNotification('✅ İçerik güncellendi!');
+                document.getElementById('submit-content-btn').innerHTML = '<span>➕</span><span>İçerik Ekle</span>';
+                document.getElementById('cancel-edit-btn').style.display = 'none';
+            } else {
+                const newId = contents.length > 0 ? Math.max(...contents.map(c => c.id)) + 1 : 1;
+                contents.push({ id: newId, title, description, url, image, category, tags: [...currentTags] });
+                showNotification('✅ İçerik eklendi!');
+            }
+
+            document.getElementById('content-title').value = '';
+            document.getElementById('content-description').value = '';
+            document.getElementById('content-url').value = '';
+            document.getElementById('content-image').value = '';
+            currentTags = [];
+            updateTagsDisplay();
+            updateAdminPanel();
+            displayHome();
+        }
+
+        function editContent(id) {
+            const content = contents.find(c => c.id === id);
+            if (!content) return;
+
+            editingContentId = id;
+            document.getElementById('content-title').value = content.title;
+            document.getElementById('content-description').value = content.description;
+            document.getElementById('content-url').value = content.url;
+            document.getElementById('content-image').value = content.image;
+            document.getElementById('content-category').value = content.category;
+            currentTags = [...content.tags];
+            updateTagsDisplay();
+            
+            document.getElementById('submit-content-btn').innerHTML = '<span>💾</span><span>Güncelle</span>';
+            document.getElementById('cancel-edit-btn').style.display = 'inline-flex';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showNotification('✏️ Düzenleme modu');
+        }
+
+        function cancelEdit() {
+            editingContentId = null;
+            document.getElementById('content-title').value = '';
+            document.getElementById('content-description').value = '';
+            document.getElementById('content-url').value = '';
+            document.getElementById('content-image').value = '';
+            currentTags = [];
+            updateTagsDisplay();
+            document.getElementById('submit-content-btn').innerHTML = '<span>➕</span><span>İçerik Ekle</span>';
+            document.getElementById('cancel-edit-btn').style.display = 'none';
+        }
+
+        function deleteContent(id) {
+            if (confirm('Bu içeriği silmek istediğinize emin misiniz?')) {
+                contents = contents.filter(c => c.id !== id);
+                collections.forEach(col => {
+                    col.items = col.items.filter(itemId => itemId !== id);
+                });
+                updateAdminPanel();
+                displayHome();
+                showNotification('🗑️ İçerik silindi');
+            }
+        }
+
+        function displayContentList() {
+            const container = document.getElementById('content-list');
+            if (contents.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Henüz içerik eklenmemiş.</p></div>';
+                return;
+            }
+
+            container.innerHTML = contents.map(item => `
+                <div class="item-row">
+                    <div class="item-info">
+                        <strong>${item.title}</strong> - ${item.category}
+                        <div style="margin-top: 5px;">
+                            ${item.tags.slice(0, 4).map(tag => `<span class="tag" style="font-size: 0.75rem; padding: 3px 8px;">#${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-small btn-edit" onclick="editContent(${item.id})">Düzenle</button>
+                        <button class="btn-small btn-delete" onclick="deleteContent(${item.id})">Sil</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addCategory() {
+            const name = document.getElementById('category-name').value.trim();
+            if (!name) {
+                showNotification('⚠️ Kategori adı boş olamaz!');
+                return;
+            }
+
+            if (categories.includes(name)) {
+                showNotification('⚠️ Bu kategori zaten var!');
+                return;
+            }
+
+            categories.push(name);
+            document.getElementById('category-name').value = '';
+            updateAdminPanel();
+            showNotification('✅ Kategori eklendi!');
+        }
+
+        function deleteCategory(name) {
+            const hasContent = contents.some(c => c.category === name);
+            if (hasContent) {
+                showNotification('⚠️ Bu kategoride içerik var, önce içerikleri silin!');
+                return;
+            }
+
+            if (confirm(`"${name}" kategorisini silmek istediğinize emin misiniz?`)) {
+                categories = categories.filter(c => c !== name);
+                updateAdminPanel();
+                showNotification('🗑️ Kategori silindi');
+            }
+        }
+
+        function displayCategoryList() {
+            const container = document.getElementById('category-list');
+            container.innerHTML = categories.map(cat => `
+                <div class="item-row">
+                    <div class="item-info">
+                        <strong>${cat}</strong>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-small btn-delete" onclick="deleteCategory('${cat}')">Sil</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function adminLogout() {
+            if (confirm('Admin panelinden çıkmak istediğinize emin misiniz?')) {
+                isAdmin = false;
+                document.getElementById('admin').style.display = 'none';
+                showSection('home');
+                showNotification('👋 Çıkış yapıldı');
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) reverse';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        window.onload = function() {
+            checkAdmin();
+            displayHome();
+            updateTagsDisplay();
+        };
+    </script>
+</body>
+</html>
