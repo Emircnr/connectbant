@@ -1,770 +1,218 @@
-import React, { useState, useEffect } from 'react';
-import { Heart, Plus, List, Settings, LogOut, LogIn, Shuffle, Grid, Trash2, Edit2, X, Check, FolderPlus, Move } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaplat - Keşfet ve Sürprizlerle Dolu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen">
+    <div id="app"></div>
 
-const App = () => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [currentPage, setCurrentPage] = useState('discover');
-  const [currentContent, setCurrentContent] = useState(null);
-  const [favorites, setFavorites] = useState([]);
-  const [userLists, setUserLists] = useState([]);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showCreateListModal, setShowCreateListModal] = useState(false);
-  const [showMoveModal, setShowMoveModal] = useState(false);
-  const [selectedFavorite, setSelectedFavorite] = useState(null);
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [newListName, setNewListName] = useState('');
-  
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Web Siteleri', color: '#FF6B6B' },
-    { id: 2, name: 'YouTube Kanalları', color: '#4ECDC4' },
-    { id: 3, name: 'Mobil Uygulamalar', color: '#FFE66D' },
-    { id: 4, name: 'Oyunlar', color: '#95E1D3' },
-    { id: 5, name: 'Araçlar', color: '#F38181' },
-    { id: 6, name: 'Sanat & Tasarım', color: '#AA96DA' }
-  ]);
+    <script>
+        const state = {
+            currentUser: null,
+            currentPage: 'discover',
+            currentContent: null,
+            favorites: [],
+            userLists: [],
+            showLoginModal: false,
+            showCreateListModal: false,
+            showMoveModal: false,
+            selectedFavorite: null,
+            loginForm: { username: '', password: '' },
+            newListName: '',
+            adminForm: { title: '', description: '', image: '', link: '', category: 1, tags: [] },
+            newCategory: { name: '', color: '#FF6B6B' },
+            newTag: '',
+            categories: [
+                { id: 1, name: 'Web Siteleri', color: '#FF6B6B' },
+                { id: 2, name: 'YouTube Kanalları', color: '#4ECDC4' },
+                { id: 3, name: 'Mobil Uygulamalar', color: '#FFE66D' },
+                { id: 4, name: 'Oyunlar', color: '#95E1D3' },
+                { id: 5, name: 'Araçlar', color: '#F38181' },
+                { id: 6, name: 'Sanat & Tasarım', color: '#AA96DA' }
+            ],
+            tags: ['Üretkenlik', 'Eğlence', 'Öğrenme', 'Yaratıcılık', 'Müzik', 'Teknoloji', 'Sanat', 'Oyun', 'Video', 'Sosyal', 'Araç', 'İlham Verici'],
+            contents: [
+                { id: 1, title: 'Poolside.fm', description: 'Retro müzik istasyonu ile zamanın durduğu bir yaz havuzu başı deneyimi', image: 'https://images.unsplash.com/photo-1527199768775-8e6d5b92e536?w=600', link: 'https://poolside.fm', category: 1, tags: ['Müzik', 'Eğlence'] },
+                { id: 2, title: 'Fireship', description: 'Hızlı ve eğlenceli teknoloji tutorialları ile dolu YouTube kanalı', image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600', link: 'https://youtube.com/@fireship', category: 2, tags: ['Teknoloji', 'Öğrenme'] },
+                { id: 3, title: 'Notion', description: 'Her şey için kullanabileceğin all-in-one çalışma alanı', image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600', link: 'https://notion.so', category: 3, tags: ['Üretkenlik', 'Araç'] },
+                { id: 4, title: 'Stardew Valley', description: 'Huzur dolu bir çiftlik simülasyonu ve RPG karışımı', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600', link: 'https://www.stardewvalley.net', category: 4, tags: ['Oyun', 'Eğlence'] },
+                { id: 5, title: 'Coolors.co', description: 'Saniyeler içinde mükemmel renk paletleri oluştur', image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600', link: 'https://coolors.co', category: 5, tags: ['Tasarım', 'Araç', 'Yaratıcılık'] },
+                { id: 6, title: 'The Useless Web', description: 'Seni tamamen rastgele ve anlamsız web sitelerine götürür', image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600', link: 'https://theuselessweb.com', category: 1, tags: ['Eğlence'] },
+                { id: 7, title: 'Kurzgesagt', description: 'Bilim ve felsefe konularını harika animasyonlarla anlatan kanal', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600', link: 'https://youtube.com/@kurzgesagt', category: 2, tags: ['Öğrenme', 'Bilim'] },
+                { id: 8, title: 'Forest', description: 'Odaklanırken dijital ağaç yetiştir, gerçek ağaç dik', image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=600', link: 'https://www.forestapp.cc', category: 3, tags: ['Üretkenlik', 'Motivasyon'] },
+                { id: 9, title: 'Hades', description: 'Yunan mitolojisi temalı bağımlılık yaratan roguelike oyun', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600', link: 'https://www.supergiantgames.com/games/hades', category: 4, tags: ['Oyun', 'Aksiyon'] },
+                { id: 10, title: 'Remove.bg', description: 'Fotoğraflardan arka planı otomatik olarak kaldır', image: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=600', link: 'https://remove.bg', category: 5, tags: ['Araç', 'Tasarım'] },
+                { id: 11, title: 'Radio Garden', description: 'Dünyanın her yerinden canlı radyo istasyonlarını dinle', image: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=600', link: 'http://radio.garden', category: 1, tags: ['Müzik', 'Keşif'] },
+                { id: 12, title: 'Veritasium', description: 'Bilimi eğlenceli deneylere ve açıklamalara dönüştüren kanal', image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600', link: 'https://youtube.com/@veritasium', category: 2, tags: ['Bilim', 'Öğrenme'] },
+                { id: 13, title: 'Headspace', description: 'Meditasyon ve mindfulness için rehberli uygulamalar', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600', link: 'https://www.headspace.com', category: 3, tags: ['Sağlık', 'Motivasyon'] },
+                { id: 14, title: 'Monument Valley', description: 'Optik illüzyonlarla dolu sanatsal mobil puzzle oyunu', image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600', link: 'https://www.monumentvalleygame.com', category: 4, tags: ['Oyun', 'Sanat', 'Puzzle'] },
+                { id: 15, title: 'Figma', description: 'Gerçek zamanlı işbirlikli tasarım aracı', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600', link: 'https://figma.com', category: 5, tags: ['Tasarım', 'Araç', 'İşbirliği'] },
+                { id: 16, title: 'Little Alchemy', description: 'Elementleri birleştirerek yeni şeyler keşfet', image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600', link: 'https://littlealchemy.com', category: 1, tags: ['Oyun', 'Eğlence', 'Keşif'] },
+                { id: 17, title: 'Vsauce', description: 'Aklını uçuracak sorular ve cevaplar', image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600', link: 'https://youtube.com/@vsauce', category: 2, tags: ['Bilim', 'Felsefe', 'Öğrenme'] },
+                { id: 18, title: 'Duolingo', description: 'Oyun gibi dil öğrenme deneyimi', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600', link: 'https://duolingo.com', category: 3, tags: ['Öğrenme', 'Dil', 'Eğitim'] },
+                { id: 19, title: 'Celeste', description: 'Duygusal hikayesi olan zorlayıcı platform oyunu', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600', link: 'http://www.celestegame.com', category: 4, tags: ['Oyun', 'Platform', 'Hikaye'] },
+                { id: 20, title: 'Canva', description: 'Herkes için tasarım: kolayca profesyonel görseller oluştur', image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=600', link: 'https://canva.com', category: 5, tags: ['Tasarım', 'Araç', 'Yaratıcılık'] },
+                { id: 21, title: 'A Soft Murmur', description: 'Kendi ortam sesini oluştur: yağmur, gök gürültüsü, dalga...', image: 'https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=600', link: 'https://asoftmurmur.com', category: 1, tags: ['Müzik', 'Rahatlama'] },
+                { id: 22, title: 'Mark Rober', description: 'Eski NASA mühendisinin çılgın bilim deneyleri', image: 'https://images.unsplash.com/photo-1530811761207-8d9d22f0a141?w=600', link: 'https://youtube.com/@MarkRober', category: 2, tags: ['Bilim', 'Eğlence', 'Mühendislik'] },
+                { id: 23, title: 'Calm', description: 'Uyku, meditasyon ve rahatlama için sesler', image: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=600', link: 'https://www.calm.com', category: 3, tags: ['Sağlık', 'Rahatlama', 'Uyku'] },
+                { id: 24, title: 'Among Us', description: 'Arkadaşlarınla oynayabileceğin sosyal dedüksiyon oyunu', image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=600', link: 'https://www.innersloth.com/games/among-us', category: 4, tags: ['Oyun', 'Sosyal', 'Multiplayer'] },
+                { id: 25, title: 'Photopea', description: 'Tarayıcıda çalışan ücretsiz Photoshop alternatifi', image: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600', link: 'https://www.photopea.com', category: 5, tags: ['Tasarım', 'Araç', 'Ücretsiz'] },
+                { id: 26, title: 'Geoguessr', description: 'Dünya coğrafyasını keşfet ve konumları tahmin et', image: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600', link: 'https://www.geoguessr.com', category: 1, tags: ['Oyun', 'Öğrenme', 'Coğrafya'] },
+                { id: 27, title: 'Corridor Crew', description: 'Film efektlerinin arkasındaki sırları öğren', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600', link: 'https://youtube.com/@corridorcrew', category: 2, tags: ['Film', 'VFX', 'Öğrenme'] },
+                { id: 28, title: 'Habitica', description: 'Hayatını bir RPG oyununa dönüştür', image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600', link: 'https://habitica.com', category: 3, tags: ['Üretkenlik', 'Oyun', 'Motivasyon'] },
+                { id: 29, title: 'Hollow Knight', description: 'Derin ve atmosferik metroidvania başyapıtı', image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600', link: 'https://www.hollowknight.com', category: 4, tags: ['Oyun', 'Macera', 'Sanat'] },
+                { id: 30, title: 'Unsplash', description: 'İnternet\'in en cömert ücretsiz fotoğraf koleksiyonu', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600', link: 'https://unsplash.com', category: 5, tags: ['Fotoğraf', 'Ücretsiz', 'Tasarım'] },
+                { id: 31, title: 'Noclip', description: 'Video oyunlarının yapım süreçlerini belgeleyen kanal', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600', link: 'https://youtube.com/@noclip', category: 2, tags: ['Oyun', 'Belgesel', 'Öğrenme'] },
+                { id: 32, title: 'Brain.fm', description: 'Odaklanma, rahatlama ve uyku için bilimsel müzik', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600', link: 'https://www.brain.fm', category: 1, tags: ['Müzik', 'Üretkenlik', 'Bilim'] },
+                { id: 33, title: 'Incredibox', description: 'Beatbox ekibi yöneterek müzik yap', image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=600', link: 'https://www.incredibox.com', category: 1, tags: ['Müzik', 'Yaratıcılık', 'Eğlence'] },
+                { id: 34, title: 'Obsidian', description: 'İkinci beynin için güçlü not alma uygulaması', image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=600', link: 'https://obsidian.md', category: 3, tags: ['Üretkenlik', 'Araç', 'Öğrenme'] },
+                { id: 35, title: 'The Witness', description: 'Gizemli bir adada puzzle çözme macerası', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600', link: 'http://the-witness.net', category: 4, tags: ['Oyun', 'Puzzle', 'Sanat'] },
+                { id: 36, title: 'Witeboard', description: 'Anında işbirlikçi beyaz tahta, hesap gerektirmez', image: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=600', link: 'https://witeboard.com', category: 5, tags: ['Araç', 'İşbirliği', 'Basit'] },
+                { id: 37, title: 'Internet Archive', description: 'Dijital kütüphane: kitaplar, filmler, müzik, web arşivi', image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=600', link: 'https://archive.org', category: 1, tags: ['Öğrenme', 'Tarih', 'Keşif'] },
+                { id: 38, title: 'Primitive Technology', description: 'Doğada ilkel araçlarla yapı yapımı', image: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600', link: 'https://youtube.com/@primitivetechnology9550', category: 2, tags: ['Doğa', 'Öğrenme', 'Rahatlama'] },
+                { id: 39, title: 'Notion Calendar', description: 'Notion\'la entegre güçlü takvim uygulaması', image: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600', link: 'https://www.notion.so/product/calendar', category: 3, tags: ['Üretkenlik', 'Araç', 'Organizasyon'] },
+                { id: 40, title: 'Ori and the Blind Forest', description: 'Göz alıcı sanat ve müzikle dolu platform macerası', image: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=600', link: 'https://www.orithegame.com', category: 4, tags: ['Oyun', 'Sanat', 'Macera'] },
+                { id: 41, title: 'Excalidraw', description: 'El çizimi hissi veren dijital beyaz tahta', image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600', link: 'https://excalidraw.com', category: 5, tags: ['Araç', 'Tasarım', 'İşbirliği'] },
+                { id: 42, title: 'This Person Does Not Exist', description: 'AI tarafından oluşturulan gerçek olmayan yüzler', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600', link: 'https://thispersondoesnotexist.com', category: 1, tags: ['Teknoloji', 'AI', 'Eğlence'] },
+                { id: 43, title: 'Tom Scott', description: 'İlginç yerler ve harika bilgiler', image: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600', link: 'https://youtube.com/@TomScottGo', category: 2, tags: ['Eğitim', 'Seyahat', 'Öğrenme'] },
+                { id: 44, title: 'Todoist', description: 'Görev yönetimini basitleştiren güçlü uygulama', image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600', link: 'https://todoist.com', category: 3, tags: ['Üretkenlik', 'Araç', 'Organizasyon'] },
+                { id: 45, title: 'Return of the Obra Dinn', description: 'Benzersiz detektiflik deneyimi', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600', link: 'https://obradinn.com', category: 4, tags: ['Oyun', 'Gizem', 'Sanat'] },
+                { id: 46, title: 'Shots.so', description: 'Ekran görüntüleri için güzel mockup\'lar oluştur', image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600', link: 'https://shots.so', category: 5, tags: ['Tasarım', 'Araç', 'Mockup'] },
+                { id: 47, title: 'Neal.fun', description: 'Eğlenceli ve eğitici interaktif web deneyleri', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600', link: 'https://neal.fun', category: 1, tags: ['Eğlence', 'Öğrenme', 'İnteraktif'] },
+                { id: 48, title: 'Lessons from the Screenplay', description: 'Film senaryolarının derinlikli analizi', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600', link: 'https://youtube.com/@LessonsfromtheScreenplay', category: 2, tags: ['Film', 'Öğrenme', 'Senaryo'] },
+                { id: 49, title: 'TickTick', description: 'Yapılacaklar listesi ve pomodoro tekniği', image: 'https://images.unsplash.com/photo-1493612276216-ee3925520721?w=600', link: 'https://ticktick.com', category: 3, tags: ['Üretkenlik', 'Araç', 'Zaman Yönetimi'] },
+                { id: 50, title: 'Journey', description: 'Kelimesiz bir duygusal yolculuk deneyimi', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600', link: 'https://thatgamecompany.com/journey', category: 4, tags: ['Oyun', 'Sanat', 'Duygusal'] }
+            ]
+        };
 
-  const [tags, setTags] = useState([
-    'Üretkenlik', 'Eğlence', 'Öğrenme', 'Yaratıcılık', 'Müzik', 'Teknoloji',
-    'Sanat', 'Oyun', 'Video', 'Sosyal', 'Araç', 'İlham Verici'
-  ]);
+        function getCategoryById(id) {
+            return state.categories.find(c => c.id === id);
+        }
 
-  const [contents, setContents] = useState([
-    {
-      id: 1,
-      title: 'Poolside.fm',
-      description: 'Retro müzik istasyonu ile zamanın durduğu bir yaz havuzu başı deneyimi',
-      image: 'https://images.unsplash.com/photo-1527199768775-8e6d5b92e536?w=600',
-      link: 'https://poolside.fm',
-      category: 1,
-      tags: ['Müzik', 'Eğlence']
-    },
-    {
-      id: 2,
-      title: 'Fireship',
-      description: 'Hızlı ve eğlenceli teknoloji tutorialları ile dolu YouTube kanalı',
-      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600',
-      link: 'https://youtube.com/@fireship',
-      category: 2,
-      tags: ['Teknoloji', 'Öğrenme']
-    },
-    {
-      id: 3,
-      title: 'Notion',
-      description: 'Her şey için kullanabileceğin all-in-one çalışma alanı',
-      image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600',
-      link: 'https://notion.so',
-      category: 3,
-      tags: ['Üretkenlik', 'Araç']
-    },
-    {
-      id: 4,
-      title: 'Stardew Valley',
-      description: 'Huzur dolu bir çiftlik simülasyonu ve RPG karışımı',
-      image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600',
-      link: 'https://www.stardewvalley.net',
-      category: 4,
-      tags: ['Oyun', 'Eğlence']
-    },
-    {
-      id: 5,
-      title: 'Coolors.co',
-      description: 'Saniyeler içinde mükemmel renk paletleri oluştur',
-      image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600',
-      link: 'https://coolors.co',
-      category: 5,
-      tags: ['Tasarım', 'Araç', 'Yaratıcılık']
-    },
-    {
-      id: 6,
-      title: 'The Useless Web',
-      description: 'Seni tamamen rastgele ve anlamsız web sitelerine götürür',
-      image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600',
-      link: 'https://theuselessweb.com',
-      category: 1,
-      tags: ['Eğlence']
-    },
-    {
-      id: 7,
-      title: 'Kurzgesagt',
-      description: 'Bilim ve felsefe konularını harika animasyonlarla anlatan kanal',
-      image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600',
-      link: 'https://youtube.com/@kurzgesagt',
-      category: 2,
-      tags: ['Öğrenme', 'Bilim']
-    },
-    {
-      id: 8,
-      title: 'Forest',
-      description: 'Odaklanırken dijital ağaç yetiştir, gerçek ağaç dik',
-      image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=600',
-      link: 'https://www.forestapp.cc',
-      category: 3,
-      tags: ['Üretkenlik', 'Motivasyon']
-    },
-    {
-      id: 9,
-      title: 'Hades',
-      description: 'Yunan mitolojisi temalı bağımlılık yaratan roguelike oyun',
-      image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600',
-      link: 'https://www.supergiantgames.com/games/hades',
-      category: 4,
-      tags: ['Oyun', 'Aksiyon']
-    },
-    {
-      id: 10,
-      title: 'Remove.bg',
-      description: 'Fotoğraflardan arka planı otomatik olarak kaldır',
-      image: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=600',
-      link: 'https://remove.bg',
-      category: 5,
-      tags: ['Araç', 'Tasarım']
-    },
-    {
-      id: 11,
-      title: 'Radio Garden',
-      description: 'Dünyanın her yerinden canlı radyo istasyonlarını dinle',
-      image: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=600',
-      link: 'http://radio.garden',
-      category: 1,
-      tags: ['Müzik', 'Keşif']
-    },
-    {
-      id: 12,
-      title: 'Veritasium',
-      description: 'Bilimi eğlenceli deneylere ve açıklamalara dönüştüren kanal',
-      image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600',
-      link: 'https://youtube.com/@veritasium',
-      category: 2,
-      tags: ['Bilim', 'Öğrenme']
-    },
-    {
-      id: 13,
-      title: 'Headspace',
-      description: 'Meditasyon ve mindfulness için rehberli uygulamalar',
-      image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600',
-      link: 'https://www.headspace.com',
-      category: 3,
-      tags: ['Sağlık', 'Motivasyon']
-    },
-    {
-      id: 14,
-      title: 'Monument Valley',
-      description: 'Optik illüzyonlarla dolu sanatsal mobil puzzle oyunu',
-      image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600',
-      link: 'https://www.monumentvalleygame.com',
-      category: 4,
-      tags: ['Oyun', 'Sanat', 'Puzzle']
-    },
-    {
-      id: 15,
-      title: 'Figma',
-      description: 'Gerçek zamanlı işbirlikli tasarım aracı',
-      image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600',
-      link: 'https://figma.com',
-      category: 5,
-      tags: ['Tasarım', 'Araç', 'İşbirliği']
-    },
-    {
-      id: 16,
-      title: 'Little Alchemy',
-      description: 'Elementleri birleştirerek yeni şeyler keşfet',
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600',
-      link: 'https://littlealchemy.com',
-      category: 1,
-      tags: ['Oyun', 'Eğlence', 'Keşif']
-    },
-    {
-      id: 17,
-      title: 'Vsauce',
-      description: 'Aklını uçuracak sorular ve cevaplar',
-      image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600',
-      link: 'https://youtube.com/@vsauce',
-      category: 2,
-      tags: ['Bilim', 'Felsefe', 'Öğrenme']
-    },
-    {
-      id: 18,
-      title: 'Duolingo',
-      description: 'Oyun gibi dil öğrenme deneyimi',
-      image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600',
-      link: 'https://duolingo.com',
-      category: 3,
-      tags: ['Öğrenme', 'Dil', 'Eğitim']
-    },
-    {
-      id: 19,
-      title: 'Celeste',
-      description: 'Duygusal hikayesi olan zorlayıcı platform oyunu',
-      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600',
-      link: 'http://www.celestegame.com',
-      category: 4,
-      tags: ['Oyun', 'Platform', 'Hikaye']
-    },
-    {
-      id: 20,
-      title: 'Canva',
-      description: 'Herkes için tasarım: kolayca profesyonel görseller oluştur',
-      image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=600',
-      link: 'https://canva.com',
-      category: 5,
-      tags: ['Tasarım', 'Araç', 'Yaratıcılık']
-    },
-    {
-      id: 21,
-      title: 'A Soft Murmur',
-      description: 'Kendi ortam sesini oluştur: yağmur, gök gürültüsü, dalga...',
-      image: 'https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=600',
-      link: 'https://asoftmurmur.com',
-      category: 1,
-      tags: ['Müzik', 'Rahatlama']
-    },
-    {
-      id: 22,
-      title: 'Mark Rober',
-      description: 'Eski NASA mühendisinin çılgın bilim deneyleri',
-      image: 'https://images.unsplash.com/photo-1530811761207-8d9d22f0a141?w=600',
-      link: 'https://youtube.com/@MarkRober',
-      category: 2,
-      tags: ['Bilim', 'Eğlence', 'Mühendislik']
-    },
-    {
-      id: 23,
-      title: 'Calm',
-      description: 'Uyku, meditasyon ve rahatlama için sesler',
-      image: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=600',
-      link: 'https://www.calm.com',
-      category: 3,
-      tags: ['Sağlık', 'Rahatlama', 'Uyku']
-    },
-    {
-      id: 24,
-      title: 'Among Us',
-      description: 'Arkadaşlarınla oynayabileceğin sosyal dedüksiyon oyunu',
-      image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=600',
-      link: 'https://www.innersloth.com/games/among-us',
-      category: 4,
-      tags: ['Oyun', 'Sosyal', 'Multiplayer']
-    },
-    {
-      id: 25,
-      title: 'Photopea',
-      description: 'Tarayıcıda çalışan ücretsiz Photoshop alternatifi',
-      image: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600',
-      link: 'https://www.photopea.com',
-      category: 5,
-      tags: ['Tasarım', 'Araç', 'Ücretsiz']
-    },
-    {
-      id: 26,
-      title: 'Geoguessr',
-      description: 'Dünya coğrafyasını keşfet ve konumları tahmin et',
-      image: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600',
-      link: 'https://www.geoguessr.com',
-      category: 1,
-      tags: ['Oyun', 'Öğrenme', 'Coğrafya']
-    },
-    {
-      id: 27,
-      title: 'Corridor Crew',
-      description: 'Film efektlerinin arkasındaki sırları öğren',
-      image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600',
-      link: 'https://youtube.com/@corridorcrew',
-      category: 2,
-      tags: ['Film', 'VFX', 'Öğrenme']
-    },
-    {
-      id: 28,
-      title: 'Habitica',
-      description: 'Hayatını bir RPG oyununa dönüştür',
-      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600',
-      link: 'https://habitica.com',
-      category: 3,
-      tags: ['Üretkenlik', 'Oyun', 'Motivasyon']
-    },
-    {
-      id: 29,
-      title: 'Hollow Knight',
-      description: 'Derin ve atmosferik metroidvania başyapıtı',
-      image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600',
-      link: 'https://www.hollowknight.com',
-      category: 4,
-      tags: ['Oyun', 'Macera', 'Sanat']
-    },
-    {
-      id: 30,
-      title: 'Unsplash',
-      description: 'İnternet\'in en cömert ücretsiz fotoğraf koleksiyonu',
-      image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600',
-      link: 'https://unsplash.com',
-      category: 5,
-      tags: ['Fotoğraf', 'Ücretsiz', 'Tasarım']
-    }
-  ]);
+        function getRandomContent() {
+            const randomIndex = Math.floor(Math.random() * state.contents.length);
+            state.currentContent = state.contents[randomIndex];
+            render();
+        }
 
-  const [adminForm, setAdminForm] = useState({
-    title: '',
-    description: '',
-    image: '',
-    link: '',
-    category: 1,
-    tags: []
-  });
+        function handleLogin() {
+            if (state.loginForm.username === 'admin' && state.loginForm.password === '123') {
+                state.currentUser = { username: 'admin', isAdmin: true };
+                state.showLoginModal = false;
+                state.currentPage = 'admin';
+            } else {
+                alert('Hatalı kullanıcı adı veya şifre!');
+            }
+            state.loginForm = { username: '', password: '' };
+            render();
+        }
 
-  const [newCategory, setNewCategory] = useState({ name: '', color: '#FF6B6B' });
-  const [newTag, setNewTag] = useState('');
+        function addToFavorites(content) {
+            if (!state.favorites.find(f => f.id === content.id)) {
+                state.favorites.push(content);
+                render();
+            }
+        }
 
-  useEffect(() => {
-    getRandomContent();
-  }, []);
+        function removeFromFavorites(id) {
+            state.favorites = state.favorites.filter(f => f.id !== id);
+            render();
+        }
 
-  const getRandomContent = () => {
-    const randomIndex = Math.floor(Math.random() * contents.length);
-    setCurrentContent(contents[randomIndex]);
-  };
+        function createList() {
+            if (state.newListName.trim()) {
+                state.userLists.push({ id: Date.now(), name: state.newListName, items: [] });
+                state.newListName = '';
+                state.showCreateListModal = false;
+                render();
+            }
+        }
 
-  const handleLogin = () => {
-    if (loginForm.username === 'admin' && loginForm.password === '123') {
-      setCurrentUser({ username: 'admin', isAdmin: true });
-      setShowLoginModal(false);
-      setCurrentPage('admin');
-    } else {
-      alert('Hatalı kullanıcı adı veya şifre!');
-    }
-    setLoginForm({ username: '', password: '' });
-  };
+        function addToList(listId, contentId) {
+            state.userLists = state.userLists.map(list => {
+                if (list.id === listId && !list.items.includes(contentId)) {
+                    return { ...list, items: [...list.items, contentId] };
+                }
+                return list;
+            });
+            state.showMoveModal = false;
+            state.selectedFavorite = null;
+            render();
+        }
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setCurrentPage('discover');
-  };
+        function deleteList(listId) {
+            state.userLists = state.userLists.filter(list => list.id !== listId);
+            render();
+        }
 
-  const addToFavorites = (content) => {
-    if (!favorites.find(f => f.id === content.id)) {
-      setFavorites([...favorites, content]);
-    }
-  };
+        function addContent() {
+            if (!state.adminForm.title || !state.adminForm.description || !state.adminForm.image || !state.adminForm.link) {
+                alert('Lütfen tüm alanları doldurun!');
+                return;
+            }
+            const newContent = {
+                id: Date.now(),
+                ...state.adminForm
+            };
+            state.contents.push(newContent);
+            state.adminForm = { title: '', description: '', image: '', link: '', category: 1, tags: [] };
+            render();
+        }
 
-  const removeFromFavorites = (id) => {
-    setFavorites(favorites.filter(f => f.id !== id));
-  };
+        function addCategory() {
+            if (state.newCategory.name.trim()) {
+                state.categories.push({ id: Date.now(), ...state.newCategory });
+                state.newCategory = { name: '', color: '#FF6B6B' };
+                render();
+            }
+        }
 
-  const createList = () => {
-    if (newListName.trim()) {
-      setUserLists([...userLists, { id: Date.now(), name: newListName, items: [] }]);
-      setNewListName('');
-      setShowCreateListModal(false);
-    }
-  };
+        function addTag() {
+            if (state.newTag.trim() && !state.tags.includes(state.newTag.trim())) {
+                state.tags.push(state.newTag.trim());
+                state.newTag = '';
+                render();
+            }
+        }
 
-  const addToList = (listId, contentId) => {
-    setUserLists(userLists.map(list => {
-      if (list.id === listId && !list.items.includes(contentId)) {
-        return { ...list, items: [...list.items, contentId] };
-      }
-      return list;
-    }));
-    setShowMoveModal(false);
-    setSelectedFavorite(null);
-  };
+        function toggleTagInAdminForm(tag) {
+            if (state.adminForm.tags.includes(tag)) {
+                state.adminForm.tags = state.adminForm.tags.filter(t => t !== tag);
+            } else {
+                state.adminForm.tags = [...state.adminForm.tags, tag];
+            }
+            render();
+        }
 
-  const deleteList = (listId) => {
-    setUserLists(userLists.filter(list => list.id !== listId));
-  };
-
-  const addContent = () => {
-    if (!adminForm.title || !adminForm.description || !adminForm.image || !adminForm.link) {
-      alert('Lütfen tüm alanları doldurun!');
-      return;
-    }
-    const newContent = {
-      id: Date.now(),
-      ...adminForm
-    };
-    setContents([...contents, newContent]);
-    setAdminForm({
-      title: '',
-      description: '',
-      image: '',
-      link: '',
-      category: 1,
-      tags: []
-    });
-  };
-
-  const addCategory = () => {
-    if (newCategory.name.trim()) {
-      setCategories([...categories, { id: Date.now(), ...newCategory }]);
-      setNewCategory({ name: '', color: '#FF6B6B' });
-    }
-  };
-
-  const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
-      setNewTag('');
-    }
-  };
-
-  const getCategoryById = (id) => categories.find(c => c.id === id);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      {/* Navigation */}
-      <nav className="backdrop-blur-lg bg-white/10 border-b border-white/20 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-400 to-yellow-400 bg-clip-text text-transparent cursor-pointer"
-                  onClick={() => setCurrentPage('discover')}>
-                Shaplat
-              </h1>
-              <div className="hidden md:flex space-x-4">
-                <button onClick={() => setCurrentPage('discover')}
-                        className={`px-4 py-2 rounded-lg transition-all ${currentPage === 'discover' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white'}`}>
-                  <Shuffle className="inline mr-2 w-4 h-4" />
-                  Keşfet
-                </button>
-                <button onClick={() => setCurrentPage('favorites')}
-                        className={`px-4 py-2 rounded-lg transition-all ${currentPage === 'favorites' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white'}`}>
-                  <Heart className="inline mr-2 w-4 h-4" />
-                  Favoriler
-                </button>
-                <button onClick={() => setCurrentPage('lists')}
-                        className={`px-4 py-2 rounded-lg transition-all ${currentPage === 'lists' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white'}`}>
-                  <List className="inline mr-2 w-4 h-4" />
-                  Listeler
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              {currentUser ? (
-                <>
-                  {currentUser.isAdmin && (
-                    <button onClick={() => setCurrentPage('admin')}
-                            className="px-4 py-2 bg-yellow-500/20 text-yellow-300 rounded-lg hover:bg-yellow-500/30 transition-all">
-                      <Settings className="inline mr-2 w-4 h-4" />
-                      Admin
-                    </button>
-                  )}
-                  <button onClick={handleLogout}
-                          className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-all">
-                    <LogOut className="inline mr-2 w-4 h-4" />
-                    Çıkış
-                  </button>
-                </>
-              ) : (
-                <button onClick={() => setShowLoginModal(true)}
-                        className="px-4 py-2 bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition-all">
-                  <LogIn className="inline mr-2 w-4 h-4" />
-                  Giriş Yap
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {currentPage === 'discover' && currentContent && (
-          <div className="flex justify-center items-center min-h-[80vh]">
-            <div className="w-full max-w-2xl">
-              <div className="backdrop-blur-xl bg-white/10 rounded-3xl overflow-hidden shadow-2xl border border-white/20 transform hover:scale-[1.02] transition-all duration-300">
-                <div className="relative h-80 overflow-hidden">
-                  <img src={currentContent.image} alt={currentContent.title}
-                       className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    {currentContent.tags.map(tag => (
-                      <span key={tag} className="px-3 py-1 bg-white/20 backdrop-blur-lg rounded-full text-white text-sm">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-3xl font-bold text-white">{currentContent.title}</h2>
-                    <span className="px-4 py-2 rounded-full text-sm font-semibold"
-                          style={{ backgroundColor: getCategoryById(currentContent.category)?.color + '40', color: getCategoryById(currentContent.category)?.color }}>
-                      {getCategoryById(currentContent.category)?.name}
-                    </span>
-                  </div>
-                  <p className="text-white/80 text-lg mb-6">{currentContent.description}</p>
-                  <div className="flex gap-4">
-                    <button onClick={getRandomContent}
-                            className="flex-1 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all transform hover:scale-105 font-semibold shadow-lg">
-                      <Shuffle className="inline mr-2 w-5 h-5" />
-                      Yeni Keşif
-                    </button>
-                    <button onClick={() => addToFavorites(currentContent)}
-                            className="px-6 py-3 bg-white/20 backdrop-blur-lg text-white rounded-xl hover:bg-white/30 transition-all">
-                      <Heart className="w-5 h-5" />
-                    </button>
-                    <a href={currentContent.link} target="_blank" rel="noopener noreferrer"
-                       className="px-6 py-3 bg-blue-500/20 text-blue-300 rounded-xl hover:bg-blue-500/30 transition-all font-semibold">
-                      Ziyaret Et →
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {currentPage === 'favorites' && (
-          <div>
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-4xl font-bold text-white">Favorilerim</h2>
-              <button onClick={() => setShowCreateListModal(true)}
-                      className="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 transition-all font-semibold shadow-lg">
-                <FolderPlus className="inline mr-2 w-5 h-5" />
-                Yeni Liste
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {favorites.map(fav => (
-                <div key={fav.id} className="backdrop-blur-xl bg-white/10 rounded-2xl overflow-hidden shadow-xl border border-white/20 hover:shadow-2xl transition-all">
-                  <img src={fav.image} alt={fav.title} className="w-full h-48 object-cover" />
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-white mb-2">{fav.title}</h3>
-                    <p className="text-white/70 text-sm mb-4">{fav.description}</p>
-                    <div className="flex gap-2">
-                      <button onClick={() => { setSelectedFavorite(fav); setShowMoveModal(true); }}
-                              className="flex-1 px-4 py-2 bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition-all text-sm">
-                        <Move className="inline mr-1 w-4 h-4" />
-                        Taşı
-                      </button>
-                      <button onClick={() => removeFromFavorites(fav.id)}
-                              className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-all">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {favorites.length === 0 && (
-              <div className="text-center py-20">
-                <Heart className="w-20 h-20 mx-auto text-white/20 mb-4" />
-                <p className="text-white/50 text-xl">Henüz favori eklemedin</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {currentPage === 'lists' && (
-          <div>
-            <h2 className="text-4xl font-bold text-white mb-8">Listelerim</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userLists.map(list => (
-                <div key={list.id} className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 shadow-xl border border-white/20">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">{list.name}</h3>
-                      <p className="text-white/50 text-sm">{list.items.length} öğe</p>
-                    </div>
-                    <button onClick={() => deleteList(list.id)}
-                            className="p-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-all">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {list.items.map(itemId => {
-                      const content = contents.find(c => c.id === itemId);
-                      return content ? (
-                        <div key={itemId} className="flex items-center space-x-3 p-2 bg-white/5 rounded-lg">
-                          <img src={content.image} alt={content.title} className="w-12 h-12 object-cover rounded" />
-                          <div className="flex-1">
-                            <p className="text-white font-medium text-sm">{content.title}</p>
-                          </div>
-                        </div>
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-            {userLists.length === 0 && (
-              <div className="text-center py-20">
-                <List className="w-20 h-20 mx-auto text-white/20 mb-4" />
-                <p className="text-white/50 text-xl">Henüz liste oluşturmadın</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {currentPage === 'admin' && currentUser?.isAdmin && (
-          <div className="space-y-8">
-            <h2 className="text-4xl font-bold text-white">Admin Paneli</h2>
-            
-            {/* Add Content */}
-            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 shadow-xl border border-white/20">
-              <h3 className="text-2xl font-bold text-white mb-6">İçerik Ekle</h3>
-              <div className="space-y-4">
-                <input type="text" placeholder="Başlık" value={adminForm.title}
-                       onChange={(e) => setAdminForm({...adminForm, title: e.target.value})}
-                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                <textarea placeholder="Açıklama" value={adminForm.description}
-                          onChange={(e) => setAdminForm({...adminForm, description: e.target.value})}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 h-24" />
-                <input type="url" placeholder="Görsel URL" value={adminForm.image}
-                       onChange={(e) => setAdminForm({...adminForm, image: e.target.value})}
-                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                <input type="url" placeholder="Link" value={adminForm.link}
-                       onChange={(e) => setAdminForm({...adminForm, link: e.target.value})}
-                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                <select value={adminForm.category}
-                        onChange={(e) => setAdminForm({...adminForm, category: Number(e.target.value)})}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id} className="bg-gray-900">{cat.name}</option>
-                  ))}
-                </select>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map(tag => (
-                    <button key={tag} type="button"
-                            onClick={() => {
-                              if (adminForm.tags.includes(tag)) {
-                                setAdminForm({...adminForm, tags: adminForm.tags.filter(t => t !== tag)});
-                              } else {
-                                setAdminForm({...adminForm, tags: [...adminForm.tags, tag]});
-                              }
-                            }}
-                            className={`px-4 py-2 rounded-lg transition-all ${
-                              adminForm.tags.includes(tag) 
-                                ? 'bg-purple-500 text-white' 
-                                : 'bg-white/10 text-white/70 hover:bg-white/20'
-                            }`}>
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-                <button onClick={addContent}
-                        className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 transition-all font-semibold shadow-lg">
-                  <Plus className="inline mr-2 w-5 h-5" />
-                  İçerik Ekle
-                </button>
-              </div>
-            </div>
-
-            {/* Add Category */}
-            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 shadow-xl border border-white/20">
-              <h3 className="text-2xl font-bold text-white mb-6">Kategori Ekle</h3>
-              <div className="flex gap-4">
-                <input type="text" placeholder="Kategori Adı" value={newCategory.name}
-                       onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
-                       className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                <input type="color" value={newCategory.color}
-                       onChange={(e) => setNewCategory({...newCategory, color: e.target.value})}
-                       className="w-16 h-12 bg-white/10 border border-white/20 rounded-xl cursor-pointer" />
-                <button onClick={addCategory}
-                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all font-semibold">
-                  Ekle
-                </button>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {categories.map(cat => (
-                  <span key={cat.id} className="px-4 py-2 rounded-full text-white font-semibold"
-                        style={{ backgroundColor: cat.color }}>
-                    {cat.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Add Tag */}
-            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 shadow-xl border border-white/20">
-              <h3 className="text-2xl font-bold text-white mb-6">Etiket Ekle</h3>
-              <div className="flex gap-4">
-                <input type="text" placeholder="Etiket Adı" value={newTag}
-                       onChange={(e) => setNewTag(e.target.value)}
-                       className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                <button onClick={addTag}
-                        className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all font-semibold">
-                  Ekle
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Login Modal */}
-      {showLoginModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 w-full max-w-md border border-white/20 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">Giriş Yap</h3>
-              <button onClick={() => setShowLoginModal(false)} className="text-white/70 hover:text-white">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <input type="text" placeholder="Kullanıcı Adı" value={loginForm.username}
-                     onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
-                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
-              <input type="password" placeholder="Şifre" value={loginForm.password}
-                     onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
-              <button onClick={handleLogin}
-                      className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 transition-all font-semibold shadow-lg">
-                Giriş Yap
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create List Modal */}
-      {showCreateListModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 w-full max-w-md border border-white/20 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">Yeni Liste Oluştur</h3>
-              <button onClick={() => setShowCreateListModal(false)} className="text-white/70 hover:text-white">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <input type="text" placeholder="Liste Adı" value={newListName}
-                   onChange={(e) => setNewListName(e.target.value)}
-                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4" />
-            <button onClick={createList}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 transition-all font-semibold shadow-lg">
-              Oluştur
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Move to List Modal */}
-      {showMoveModal && selectedFavorite && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 w-full max-w-md border border-white/20 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">Listeye Taşı</h3>
-              <button onClick={() => { setShowMoveModal(false); setSelectedFavorite(null); }} 
-                      className="text-white/70 hover:text-white">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="space-y-2">
-              {userLists.map(list => (
-                <button key={list.id}
-                        onClick={() => addToList(list.id, selectedFavorite.id)}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 transition-all text-left">
-                  {list.name} ({list.items.length})
-                </button>
-              ))}
-            </div>
-            {userLists.length === 0 && (
-              <p className="text-white/50 text-center py-4">Henüz liste oluşturmadınız</p>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default App;
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <!-- Navigation -->
+                <nav class="glass sticky top-0 z-50">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between items-center h-16">
+                            <div class="flex items-center space-x-8">
+                                <h1 class="text-3
