@@ -1146,6 +1146,56 @@
             font-family: inherit;
         }
 
+        /* Bulk Import Styles */
+        .bulk-import-area {
+            margin-top: 20px;
+        }
+
+        .bulk-textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .bulk-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .format-info {
+            background: var(--darker);
+            border-left: 3px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+
+        .format-info strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .format-example {
+            background: var(--card);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            color: var(--text-muted);
+        }
+
         /* Notification */
         .notification {
             position: fixed;
@@ -1710,7 +1760,8 @@
                             </div>
                             <div class="admin-tabs">
                                 <button class="admin-tab active" onclick="showAdminTab('contents')">📋 İçerikler</button>
-                                <button class="admin-tab" onclick="showAdminTab('add')">➕ İçerik Ekle</button>
+                                <button class="admin-tab" onclick="showAdminTab('bulk')">⚡ Toplu Ekle</button>
+                                <button class="admin-tab" onclick="showAdminTab('add')">➕ Tek Ekle</button>
                                 <button class="admin-tab" onclick="showAdminTab('firebase')">🔥 Firebase</button>
                                 <button class="admin-tab" onclick="showAdminTab('categories')">📁 Kategoriler</button>
                             </div>
@@ -2186,6 +2237,7 @@
             event.target.classList.add('active');
 
             if (tab === 'contents') renderAdminContents();
+            else if (tab === 'bulk') renderBulkAdd();
             else if (tab === 'add') renderAddContent();
             else if (tab === 'firebase') renderFirebaseConfig();
             else if (tab === 'categories') renderAdminCategories();
@@ -2236,6 +2288,151 @@
                 </div>
             `;
         }
+
+        function renderBulkAdd() {
+            document.getElementById('admin-content').innerHTML = `
+                <div class="admin-section">
+                    <h3 style="margin-bottom: 18px; font-size: 1.4rem; font-weight: 800;">⚡ Toplu İçerik Ekleme</h3>
+                    
+                    <div class="format-info">
+                        <strong>📝 Format:</strong>
+                        Her satıra bir içerik yazın. Alanları | (pipe) işareti ile ayırın:
+                        <div class="format-example">
+Başlık|Açıklama|https://url.com|https://image-url.com|Kategori|etiket1,etiket2,etiket3</div>
+                        <div style="margin-top: 10px; color: var(--text-muted); font-size: 0.8rem;">
+                            💡 <strong>Önemli:</strong> Etiketleri virgül ile ayırın. Kategori var olan kategorilerden biri olmalı.
+                        </div>
+                    </div>
+
+                    <div class="bulk-import-area">
+                        <textarea id="bulk-input" class="bulk-textarea" placeholder="Poolside FM|Nostaljik yaz hissi veren chill müzik radyosu.|https://poolside.fm|https://example.com/image.jpg|Web Siteleri|müzik,rahatlatıcı,radyo
+Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://example.com/noisli.jpg|Web Siteleri|ses,odaklanma,rahatlatıcı
+..."></textarea>
+                    </div>
+
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="processBulkAdd()">
+                            ⚡ Toplu Ekle
+                        </button>
+                        <button class="btn btn-outline" onclick="document.getElementById('bulk-input').value = ''">
+                            🗑️ Temizle
+                        </button>
+                    </div>
+
+                    <div id="bulk-result" style="margin-top: 20px;"></div>
+                </div>
+            `;
+        }
+
+        window.processBulkAdd = async function() {
+            const bulkText = document.getElementById('bulk-input').value.trim();
+            
+            if (!bulkText) {
+                showNotification('⚠️ İçerik girişi boş!');
+                return;
+            }
+
+            const lines = bulkText.split('\n').filter(line => line.trim());
+            let successCount = 0;
+            let errorCount = 0;
+            const errors = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                const parts = line.split('|').map(p => p.trim());
+
+                if (parts.length !== 6) {
+                    errorCount++;
+                    errors.push(`Satır ${i + 1}: Yanlış format (6 alan olmalı)`);
+                    continue;
+                }
+
+                const [title, description, url, image, category, tagsStr] = parts;
+                
+                if (!title || !description || !url || !image || !category || !tagsStr) {
+                    errorCount++;
+                    errors.push(`Satır ${i + 1}: Boş alan var`);
+                    continue;
+                }
+
+                if (!window.shaplatState.categories.includes(category)) {
+                    errorCount++;
+                    errors.push(`Satır ${i + 1}: Geçersiz kategori "${category}"`);
+                    continue;
+                }
+
+                const tags = tagsStr.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
+
+                if (tags.length === 0) {
+                    errorCount++;
+                    errors.push(`Satır ${i + 1}: En az 1 etiket gerekli`);
+                    continue;
+                }
+
+                const contentData = {
+                    title,
+                    description,
+                    url,
+                    image,
+                    category,
+                    tags,
+                    rating: 0,
+                    ratingCount: 0,
+                    viewCount: 0,
+                    favoriteCount: 0
+                };
+
+                try {
+                    if (window.shaplatState.isFirebaseConfigured) {
+                        const docRef = await addDoc(collection(db, 'contents'), contentData);
+                        contentData.id = docRef.id;
+                    } else {
+                        contentData.id = Date.now().toString() + '_' + i;
+                    }
+                    
+                    window.shaplatState.contents.push(contentData);
+                    successCount++;
+                } catch (error) {
+                    errorCount++;
+                    errors.push(`Satır ${i + 1}: Veritabanı hatası`);
+                }
+            }
+
+            let resultHTML = `
+                <div class="admin-section">
+                    <h4 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 15px;">📊 Sonuç</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: var(--success);">${successCount}</div>
+                            <div class="stat-label">Başarılı</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: var(--danger);">${errorCount}</div>
+                            <div class="stat-label">Hatalı</div>
+                        </div>
+                    </div>
+            `;
+
+            if (errors.length > 0) {
+                resultHTML += `
+                    <div style="background: var(--darker); padding: 15px; border-radius: 10px; border-left: 3px solid var(--danger);">
+                        <strong style="color: var(--danger); display: block; margin-bottom: 10px;">❌ Hatalar:</strong>
+                        <ul style="color: var(--text-muted); font-size: 0.85rem; list-style-position: inside;">
+                            ${errors.map(err => `<li style="margin-bottom: 5px;">${err}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            resultHTML += '</div>';
+            document.getElementById('bulk-result').innerHTML = resultHTML;
+
+            updateAdminStats();
+            
+            if (successCount > 0) {
+                showNotification(`✅ ${successCount} içerik eklendi!`);
+            }
+        };
 
         function renderAddContent() {
             const content = window.shaplatState.editingContentId ? 
