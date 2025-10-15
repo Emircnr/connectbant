@@ -49,6 +49,31 @@
             transition: background 0.3s, color 0.3s;
         }
 
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
         .bg-gradient {
             position: fixed;
             width: 100%;
@@ -100,7 +125,7 @@
             padding: 20px 0;
             overflow-y: auto;
             z-index: 100;
-            transition: transform 0.3s, background 0.3s;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
         }
 
         .logo-container {
@@ -315,17 +340,35 @@
             border: 1px solid var(--border);
             border-radius: 18px;
             overflow: hidden;
-            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes slideUp {
+        .content-card.fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        .content-card.fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(40px);
+                transform: scale(0.95) translateY(20px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: scale(1) translateY(0);
             }
         }
 
@@ -1300,6 +1343,17 @@
                 justify-content: center;
             }
         }
+
+        .firebase-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -1318,14 +1372,14 @@
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, increment, query, where, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
-  apiKey: "AIzaSyA3RDxe5y6p26adzao5aY8Dw-S4mFz_2GQ",
-  authDomain: "shaplat-af37d.firebaseapp.com",
-  projectId: "shaplat-af37d",
-  storageBucket: "shaplat-af37d.firebasestorage.app",
-  messagingSenderId: "1032036004493",
-  appId: "1:1032036004493:web:1460aaed627384e88d28c4",
-  measurementId: "G-P3WYFFTGK4"
-};
+            apiKey: "AIzaSyA3RDxe5y6p26adzao5aY8Dw-S4mFz_2GQ",
+            authDomain: "shaplat-af37d.firebaseapp.com",
+            projectId: "shaplat-af37d",
+            storageBucket: "shaplat-af37d.firebasestorage.app",
+            messagingSenderId: "1032036004493",
+            appId: "1:1032036004493:web:1460aaed627384e88d28c4",
+            measurementId: "G-P3WYFFTGK4"
+        };
 
         let app, auth, db;
         let isFirebaseConfigured = false;
@@ -1373,6 +1427,10 @@
             isFirebaseConfigured
         };
 
+        // Mobile swipe için değişkenler
+        let touchStartX = 0;
+        let touchEndX = 0;
+
         init();
 
         async function init() {
@@ -1399,11 +1457,28 @@
                         }
                         await renderApp();
                     } else {
-                        showAuthModal('login');
+                        // Misafir olarak otomatik giriş
+                        await handleAnonymousAuth();
                     }
                 });
             } else {
-                checkAuth();
+                // Local mod - misafir olarak gir
+                const savedUser = sessionStorage.getItem('currentUser');
+                if (savedUser) {
+                    window.shaplatState.currentUser = JSON.parse(savedUser);
+                } else {
+                    window.shaplatState.currentUser = {
+                        id: 'guest_' + Date.now(),
+                        email: null,
+                        name: 'Misafir',
+                        role: 'user',
+                        anonymous: true,
+                        shaplatCount: 0,
+                        favoriteCount: 0
+                    };
+                    sessionStorage.setItem('currentUser', JSON.stringify(window.shaplatState.currentUser));
+                }
+                renderApp();
             }
         }
 
@@ -1414,24 +1489,16 @@
             localStorage.setItem('theme', newTheme);
         };
 
-        function checkAuth() {
-            const savedUser = sessionStorage.getItem('currentUser');
-            if (savedUser) {
-                window.shaplatState.currentUser = JSON.parse(savedUser);
-                renderApp();
-            } else {
-                showAuthModal('login');
-            }
-        }
-
         function showAuthModal(mode) {
-            document.getElementById('app').innerHTML = `
-                <div class="modal active">
+            const modalHTML = `
+                <div class="modal active" id="auth-modal">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2 class="modal-title">${mode === 'login' ? '🔐 Giriş Yap' : '📝 Kayıt Ol'}</h2>
                             <p style="color: var(--text-muted); font-weight: 600;">Shaplat'a hoş geldiniz!</p>
                         </div>
+
+                        ${isFirebaseConfigured ? '' : '<div class="firebase-warning">⚠️ Firebase yapılandırılmamış. Google girişi çalışmayabilir. Firebase Console\'da domain ekleyin: shaplat-af37d.firebaseapp.com</div>'}
 
                         <div>
                             <div class="form-group">
@@ -1459,9 +1526,6 @@
                             <button class="btn btn-google" onclick="handleGoogleAuth()">
                                 🔵 Google ile Devam Et
                             </button>
-                            <button class="btn btn-anonymous" onclick="handleAnonymousAuth()">
-                                👤 Misafir Olarak Gir
-                            </button>
                         </div>
 
                         <div class="auth-switch">
@@ -1470,10 +1534,28 @@
                                 'Zaten hesabınız var mı? <button class="auth-link" onclick="showAuthModal(\'login\')">Giriş Yap</button>'
                             }
                         </div>
+
+                        <div class="auth-switch" style="margin-top: 10px;">
+                            <button class="auth-link" onclick="closeAuthModal()">❌ Kapat</button>
+                        </div>
                     </div>
                 </div>
             `;
+            
+            const existingModal = document.getElementById('auth-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
+
+        window.closeAuthModal = function() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.remove();
+            }
+        };
 
         window.handleEmailAuth = async function(mode) {
             const email = document.getElementById('auth-email').value;
@@ -1502,6 +1584,7 @@
                         };
                         await setDoc(doc(db, 'users', userCredential.user.uid), userData);
                     }
+                    closeAuthModal();
                     showNotification('✅ Başarıyla giriş yapıldı!');
                 } catch (error) {
                     showNotification('❌ Hata: ' + error.message);
@@ -1517,6 +1600,7 @@
                     favoriteCount: 0
                 };
                 login(user);
+                closeAuthModal();
             }
         };
 
@@ -1525,9 +1609,14 @@
                 try {
                     const provider = new GoogleAuthProvider();
                     await signInWithPopup(auth, provider);
+                    closeAuthModal();
                     showNotification('✅ Google ile giriş yapıldı!');
                 } catch (error) {
-                    showNotification('❌ Hata: ' + error.message);
+                    if (error.code === 'auth/unauthorized-domain') {
+                        showNotification('❌ Firebase Console\'da bu domain\'i eklemeniz gerekiyor: ' + window.location.hostname);
+                    } else {
+                        showNotification('❌ Hata: ' + error.message);
+                    }
                 }
             } else {
                 const user = {
@@ -1540,6 +1629,7 @@
                     favoriteCount: 0
                 };
                 login(user);
+                closeAuthModal();
             }
         };
 
@@ -1547,9 +1637,8 @@
             if (isFirebaseConfigured) {
                 try {
                     await signInAnonymously(auth);
-                    showNotification('✅ Misafir olarak giriş yapıldı!');
                 } catch (error) {
-                    showNotification('❌ Hata: ' + error.message);
+                    console.error('Anonim giriş hatası:', error);
                 }
             } else {
                 const user = {
@@ -1569,17 +1658,25 @@
             window.shaplatState.currentUser = user;
             sessionStorage.setItem('currentUser', JSON.stringify(user));
             renderApp();
-            showNotification('✅ Hoş geldiniz, ' + user.name + '!');
         }
 
         window.logout = async function() {
             if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
                 if (isFirebaseConfigured) {
                     await auth.signOut();
+                    await handleAnonymousAuth();
                 } else {
-                    window.shaplatState.currentUser = null;
-                    sessionStorage.removeItem('currentUser');
-                    showAuthModal('login');
+                    window.shaplatState.currentUser = {
+                        id: 'guest_' + Date.now(),
+                        email: null,
+                        name: 'Misafir',
+                        role: 'user',
+                        anonymous: true,
+                        shaplatCount: 0,
+                        favoriteCount: 0
+                    };
+                    sessionStorage.setItem('currentUser', JSON.stringify(window.shaplatState.currentUser));
+                    renderApp();
                 }
             }
         };
@@ -1731,20 +1828,32 @@
 
                             <div class="profile-settings">
                                 <h3 style="margin-bottom: 20px; font-size: 1.3rem; font-weight: 800;">⚙️ Hesap Ayarları</h3>
-                                <div class="form-group">
-                                    <label class="form-label">İsim</label>
-                                    <input type="text" id="profile-name" class="form-input" value="${window.shaplatState.currentUser.name}">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">E-posta</label>
-                                    <input type="email" id="profile-email" class="form-input" value="${window.shaplatState.currentUser.email || ''}" ${window.shaplatState.currentUser.anonymous ? 'disabled' : ''}>
-                                </div>
-                                <button class="btn btn-primary" onclick="updateProfile()">
-                                    💾 Kaydet
-                                </button>
-                                <button class="btn btn-outline" onclick="logout()" style="margin-left: 10px;">
-                                    🚪 Çıkış Yap
-                                </button>
+                                ${window.shaplatState.currentUser.anonymous ? `
+                                    <div class="firebase-warning">
+                                        ⚠️ Misafir olarak giriş yaptınız. Favorilerinizi kaydetmek için giriş yapın veya kayıt olun.
+                                    </div>
+                                    <button class="btn btn-primary" onclick="showAuthModal('register')">
+                                        📝 Kayıt Ol
+                                    </button>
+                                    <button class="btn btn-outline" onclick="showAuthModal('login')" style="margin-left: 10px;">
+                                        🔐 Giriş Yap
+                                    </button>
+                                ` : `
+                                    <div class="form-group">
+                                        <label class="form-label">İsim</label>
+                                        <input type="text" id="profile-name" class="form-input" value="${window.shaplatState.currentUser.name}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">E-posta</label>
+                                        <input type="email" id="profile-email" class="form-input" value="${window.shaplatState.currentUser.email || ''}" disabled>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="updateProfile()">
+                                        💾 Kaydet
+                                    </button>
+                                    <button class="btn btn-outline" onclick="logout()" style="margin-left: 10px;">
+                                        🚪 Çıkış Yap
+                                    </button>
+                                `}
                             </div>
                         </div>
                     </div>
@@ -1832,7 +1941,18 @@
                 </div>
             `;
 
-            // İlk içeriği otomatik yükle
+            // Mobile swipe desteği ekle
+            const sidebar = document.getElementById('sidebar');
+            sidebar.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            sidebar.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: true});
+
+            // İlk içeriği yükle
             await shaplatRandom();
             
             renderTrends();
@@ -1842,6 +1962,16 @@
             
             if (window.shaplatState.currentUser.role === 'admin') {
                 showAdminTab('contents');
+            }
+        }
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                // Sola kaydırma - menüyü kapat
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar.classList.contains('mobile-active')) {
+                    sidebar.classList.remove('mobile-active');
+                }
             }
         }
 
@@ -1954,12 +2084,22 @@
 
         window.markAsRead = function(id) {
             const notif = window.shaplatState.notifications.find(n => n.id === id);
-            if (notif) {
+            if (notif && !notif.read) {
                 notif.read = true;
                 localStorage.setItem('notifications_' + window.shaplatState.currentUser.id, 
                     JSON.stringify(window.shaplatState.notifications));
                 renderNotifications();
-                renderApp();
+                
+                // Badge'i güncelle
+                const badge = document.querySelector('.notification-badge');
+                const unreadCount = window.shaplatState.notifications.filter(n => !n.read).length;
+                if (badge) {
+                    if (unreadCount > 0) {
+                        badge.textContent = unreadCount;
+                    } else {
+                        badge.remove();
+                    }
+                }
             }
         };
 
@@ -1970,6 +2110,12 @@
             document.getElementById(section).classList.add('active');
             event.target.classList.add('active');
 
+            // Mobilde menüyü kapat
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.remove('mobile-active');
+            }
+
             if (section === 'trends') renderTrends();
             else if (section === 'favorites') renderFavorites();
             else if (section === 'notifications') renderNotifications();
@@ -1977,7 +2123,12 @@
 
         window.selectCategory = function(category) {
             window.shaplatState.selectedCategory = category;
-            renderApp();
+            
+            // Kategorileri güncelle
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
         };
 
         window.toggleTagFilter = function(tag) {
@@ -1987,15 +2138,71 @@
             } else {
                 window.shaplatState.selectedTags.push(tag);
             }
-            renderApp();
+            
+            // Tag'ları görsel olarak güncelle
+            event.target.classList.toggle('selected');
+            
+            // Filtreleri güncelle
+            updateActiveFilters();
         };
 
         window.removeTagFilter = function(tag) {
             window.shaplatState.selectedTags = window.shaplatState.selectedTags.filter(t => t !== tag);
-            renderApp();
+            
+            // Tag'ları görsel olarak güncelle
+            const tags = document.querySelectorAll('.tag');
+            tags.forEach(t => {
+                if (t.textContent.includes(tag)) {
+                    t.classList.remove('selected');
+                }
+            });
+            
+            updateActiveFilters();
         };
 
+        function updateActiveFilters() {
+            const filtersContainer = document.querySelector('.active-filters');
+            if (window.shaplatState.selectedTags.length > 0) {
+                if (!filtersContainer) {
+                    const sidebarSections = document.querySelector('.sidebar-section:last-of-type');
+                    const filterHTML = `
+                        <div class="active-filters">
+                            <div style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted);">Aktif Etiketler</div>
+                            ${window.shaplatState.selectedTags.map(tag => `
+                                <span class="filter-tag">
+                                    #${tag}
+                                    <span class="filter-remove" onclick="removeTagFilter('${tag}')">×</span>
+                                </span>
+                            `).join('')}
+                        </div>
+                    `;
+                    sidebarSections.insertAdjacentHTML('afterend', filterHTML);
+                } else {
+                    const tagsHTML = window.shaplatState.selectedTags.map(tag => `
+                        <span class="filter-tag">
+                            #${tag}
+                            <span class="filter-remove" onclick="removeTagFilter('${tag}')">×</span>
+                        </span>
+                    `).join('');
+                    filtersContainer.innerHTML = `
+                        <div style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted);">Aktif Etiketler</div>
+                        ${tagsHTML}
+                    `;
+                }
+            } else if (filtersContainer) {
+                filtersContainer.remove();
+            }
+        }
+
         window.shaplatRandom = async function() {
+            const contentCard = document.querySelector('.content-card');
+            
+            // Fade out animasyonu
+            if (contentCard) {
+                contentCard.classList.add('fade-out');
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
             let filtered = [...window.shaplatState.contents];
 
             if (window.shaplatState.selectedTags.length > 0) {
@@ -2032,8 +2239,19 @@
                 localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
             }
             
+            // Yeni içeriği göster
             displayContent(randomContent);
+            
+            // Stats'ı güncelle
+            updateProfileStats();
         };
+
+        function updateProfileStats() {
+            const shaplatStat = document.querySelector('.profile-stat-value');
+            if (shaplatStat) {
+                shaplatStat.textContent = window.shaplatState.currentUser.shaplatCount || 0;
+            }
+        }
 
         function displayContent(content) {
             window.shaplatState.currentContent = content;
@@ -2042,8 +2260,8 @@
             const userFavorites = JSON.parse(localStorage.getItem('userFavorites') || '[]');
             const isFavorite = userFavorites.some(f => f.userId === window.shaplatState.currentUser.id && f.contentId === content.id);
 
-            document.getElementById('random-content').innerHTML = `
-                <div class="content-card">
+            const contentHTML = `
+                <div class="content-card fade-in">
                     <img src="${content.image}" alt="${content.title}" class="content-image"
                          onerror="this.src='https://via.placeholder.com/650x220?text=${encodeURIComponent(content.title)}'">
                     <div class="content-body">
@@ -2115,6 +2333,8 @@
                     </div>
                 </div>
             `;
+
+            document.getElementById('random-content').innerHTML = contentHTML;
         }
 
         window.rateContent = async function(contentId, rating) {
@@ -2146,10 +2366,30 @@
             }
 
             showNotification(`✅ ${rating} yıldız verdiniz!`);
-            displayContent(content);
+            
+            // Sadece yıldızları güncelle
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+
+            // Rating sayılarını güncelle
+            document.querySelector('.rating-number').textContent = content.rating.toFixed(1);
+            document.querySelector('.rating-count').textContent = `${content.ratingCount} değerlendirme`;
         };
 
         window.toggleFavorite = async function(contentId) {
+            // Misafir kontrolü
+            if (window.shaplatState.currentUser.anonymous) {
+                showNotification('⚠️ Favorilere eklemek için giriş yapın!');
+                showAuthModal('login');
+                return;
+            }
+
             const userFavorites = JSON.parse(localStorage.getItem('userFavorites') || '[]');
             const existingIndex = userFavorites.findIndex(f => f.userId === window.shaplatState.currentUser.id && f.contentId === contentId);
             const content = window.shaplatState.contents.find(c => c.id === contentId);
@@ -2185,7 +2425,20 @@
                 localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
             }
 
-            displayContent(content);
+            // Butonu güncelle
+            const favoriteBtn = event.target;
+            const isFavorite = userFavorites.some(f => f.userId === window.shaplatState.currentUser.id && f.contentId === contentId);
+            favoriteBtn.className = isFavorite ? 'btn btn-outline' : 'btn btn-success';
+            favoriteBtn.innerHTML = isFavorite ? '✓ Favorilerde' : '❤️ Favorilere Ekle';
+
+            // Stats'ı güncelle
+            const stats = document.querySelectorAll('.stat');
+            stats.forEach(stat => {
+                if (stat.textContent.includes('❤️')) {
+                    stat.querySelector('span:last-child').textContent = content.favoriteCount || 0;
+                }
+            });
+
             renderFavorites();
         };
 
@@ -2229,6 +2482,19 @@
         }
 
         window.renderFavorites = function() {
+            // Misafir kontrolü
+            if (window.shaplatState.currentUser.anonymous) {
+                document.getElementById('favorites-list').innerHTML = `
+                    <div class="empty-state">
+                        <h3>Favorileri görmek için giriş yapın</h3>
+                        <button class="btn btn-primary" onclick="showAuthModal('login')" style="margin-top: 20px;">
+                            🔐 Giriş Yap
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
             const userFavorites = JSON.parse(localStorage.getItem('userFavorites') || '[]');
             let favoriteContents = userFavorites
                 .filter(f => f.userId === window.shaplatState.currentUser.id)
@@ -2279,12 +2545,19 @@
             }
             
             showSection('random');
+            
+            // Fade animasyonu
+            const contentCard = document.querySelector('.content-card');
+            if (contentCard) {
+                contentCard.classList.add('fade-out');
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
             displayContent(content);
         };
 
         window.updateProfile = async function() {
             const name = document.getElementById('profile-name').value.trim();
-            const email = document.getElementById('profile-email').value.trim();
 
             if (!name) {
                 showNotification('⚠️ İsim boş olamaz!');
@@ -2292,15 +2565,11 @@
             }
 
             window.shaplatState.currentUser.name = name;
-            if (email && !window.shaplatState.currentUser.anonymous) {
-                window.shaplatState.currentUser.email = email;
-            }
 
             if (isFirebaseConfigured) {
                 try {
                     await updateDoc(doc(db, 'users', window.shaplatState.currentUser.id), {
-                        name: name,
-                        email: email
+                        name: name
                     });
                 } catch (error) {
                     console.error('Profil güncelleme hatası:', error);
@@ -2310,7 +2579,12 @@
             }
 
             showNotification('✅ Profil güncellendi!');
-            renderApp();
+            
+            // İsmi güncelle
+            document.querySelector('.profile-name').textContent = name;
+            document.querySelector('.user-card div div:first-child').textContent = name;
+            document.querySelector('.user-avatar').textContent = name[0].toUpperCase();
+            document.querySelector('.profile-avatar-large').textContent = name[0].toUpperCase();
         };
 
         window.sendContact = function() {
@@ -2435,7 +2709,7 @@
                         Her satıra bir içerik yazın. Alanları | (pipe) işareti ile ayırın:
                         <div class="format-example">Başlık|Açıklama|https://url.com|https://image-url.com|Kategori|etiket1,etiket2,etiket3</div>
                         <div style="margin-top: 10px; color: var(--text-muted); font-size: 0.8rem;">
-                            💡 <strong>Önemli:</strong> Etiketleri virgül ile ayırın. Kategori var olan kategorilerden biri olmalı.
+                            💡 <strong>Önemli:</strong> Etiketleri virgül ile ayırın. Kategori var olan kategorilerden biri olmalı. Aynı URL'den sadece bir içerik eklenebilir.
                         </div>
                     </div>
 
@@ -2472,6 +2746,9 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
             let errorCount = 0;
             const errors = [];
 
+            // Mevcut URL'leri kontrol et
+            const existingUrls = window.shaplatState.contents.map(c => c.url.toLowerCase());
+
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
                 const parts = line.split('|').map(p => p.trim());
@@ -2487,6 +2764,13 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
                 if (!title || !description || !url || !image || !category || !tagsStr) {
                     errorCount++;
                     errors.push(`Satır ${i + 1}: Boş alan var`);
+                    continue;
+                }
+
+                // URL kontrolü
+                if (existingUrls.includes(url.toLowerCase())) {
+                    errorCount++;
+                    errors.push(`Satır ${i + 1}: Bu URL zaten kayıtlı: ${url}`);
                     continue;
                 }
 
@@ -2526,6 +2810,7 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
                     }
                     
                     window.shaplatState.contents.push(contentData);
+                    existingUrls.push(url.toLowerCase());
                     successCount++;
                 } catch (error) {
                     errorCount++;
@@ -2648,6 +2933,14 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
                                 '❌ Firebase yapılandırılmamış. Local mod aktif.'}
                         </p>
                     </div>
+                    <div class="firebase-warning" style="margin-top: 15px;">
+                        <strong>⚠️ Google Giriş Hatası Çözümü:</strong><br>
+                        Eğer "auth/unauthorized-domain" hatası alıyorsanız:<br>
+                        1. Firebase Console'a gidin<br>
+                        2. Authentication > Settings > Authorized domains<br>
+                        3. Bu domain'i ekleyin: ${window.location.hostname}<br>
+                        4. Sayfayı yenileyin
+                    </div>
                 </div>
             `;
         }
@@ -2730,6 +3023,17 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
                 return;
             }
 
+            // URL kontrolü (düzenlemede mevcut içeriğin URL'si hariç)
+            const existingContent = window.shaplatState.contents.find(c => 
+                c.url.toLowerCase() === url.toLowerCase() && 
+                c.id !== window.shaplatState.editingContentId
+            );
+
+            if (existingContent) {
+                showNotification('⚠️ Bu URL zaten kayıtlı!');
+                return;
+            }
+
             const contentData = {
                 title,
                 description,
@@ -2745,6 +3049,13 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
 
             if (window.shaplatState.editingContentId) {
                 const content = window.shaplatState.contents.find(c => c.id === window.shaplatState.editingContentId);
+                
+                // Rating ve diğer istatistikleri koru
+                contentData.rating = content.rating;
+                contentData.ratingCount = content.ratingCount;
+                contentData.viewCount = content.viewCount;
+                contentData.favoriteCount = content.favoriteCount;
+                
                 Object.assign(content, contentData);
                 
                 if (isFirebaseConfigured) {
@@ -2859,6 +3170,3 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
     </script>
 </body>
 </html>
-
-
-
