@@ -49,7 +49,6 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        /* Background */
         .bg-gradient {
             position: fixed;
             width: 100%;
@@ -90,7 +89,6 @@
             66% { transform: translate(-80px, 80px) rotate(240deg); }
         }
 
-        /* Sidebar */
         .sidebar {
             position: fixed;
             left: 0;
@@ -299,7 +297,6 @@
             font-size: 1rem;
         }
 
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             padding: 25px;
@@ -308,7 +305,6 @@
             min-height: 100vh;
         }
 
-        /* Content Card - Daha küçük */
         .content-display {
             max-width: 650px;
             margin: 0 auto;
@@ -434,7 +430,6 @@
             color: white;
         }
 
-        /* Rating - Kompakt */
         .rating-box {
             background: var(--darker);
             padding: 12px;
@@ -490,7 +485,6 @@
             transform: scale(1.15);
         }
 
-        /* Actions */
         .content-actions {
             display: flex;
             gap: 8px;
@@ -531,7 +525,6 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
-        /* Shaplat Button - Kartın içinde */
         .shaplat-button-container {
             display: flex;
             justify-content: center;
@@ -563,7 +556,6 @@
             box-shadow: 0 15px 40px rgba(99, 102, 241, 0.6);
         }
 
-        /* Trends Grid */
         .trends-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -578,7 +570,6 @@
             gap: 12px;
         }
 
-        /* Filters for Favorites */
         .filters-bar {
             background: var(--card);
             border: 1px solid var(--border);
@@ -685,7 +676,6 @@
             font-weight: 600;
         }
 
-        /* Profile Page */
         .profile-container {
             max-width: 900px;
             margin: 0 auto;
@@ -755,7 +745,6 @@
             padding: 30px;
         }
 
-        /* Notifications */
         .notifications-panel {
             background: var(--card);
             border: 1px solid var(--border);
@@ -811,7 +800,6 @@
             color: var(--text-muted);
         }
 
-        /* Info Pages */
         .info-container {
             max-width: 800px;
             margin: 0 auto;
@@ -834,7 +822,6 @@
             margin-bottom: 20px;
         }
 
-        /* Form Elements */
         .form-group {
             margin-bottom: 16px;
         }
@@ -871,7 +858,6 @@
             resize: vertical;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -966,7 +952,6 @@
             text-decoration: underline;
         }
 
-        /* Admin Panel */
         .admin-container {
             max-width: 1600px;
             margin: 0 auto;
@@ -1146,7 +1131,6 @@
             font-family: inherit;
         }
 
-        /* Bulk Import Styles */
         .bulk-import-area {
             margin-top: 20px;
         }
@@ -1196,7 +1180,6 @@
             color: var(--text-muted);
         }
 
-        /* Notification */
         .notification {
             position: fixed;
             top: 22px;
@@ -1235,7 +1218,13 @@
             font-weight: 800;
         }
 
-        /* Responsive */
+        .loading-spinner {
+            text-align: center;
+            padding: 50px;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
         @media (max-width: 1200px) {
             .trends-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -1325,8 +1314,8 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, increment, query, where, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
@@ -1340,17 +1329,13 @@
         let app, auth, db;
         let isFirebaseConfigured = false;
 
-        function initFirebase(config) {
-            try {
-                app = initializeApp(config);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                isFirebaseConfigured = true;
-                return true;
-            } catch (error) {
-                console.error('Firebase error:', error);
-                return false;
-            }
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            isFirebaseConfigured = true;
+        } catch (error) {
+            console.log('Firebase yapılandırılmamış. Local mod aktif.');
         }
 
         window.shaplatState = {
@@ -1360,23 +1345,64 @@
             sortBy: 'rating',
             currentContent: null,
             contents: [],
-            categories: ['Web Siteleri', 'YouTube Kanalları', 'Uygulamalar', 'Oyunlar'],
+            categories: [
+                'Web Siteleri',
+                'Video İçerikler',
+                'Müzik',
+                'Oyunlar',
+                'Teknoloji',
+                'Eğitim',
+                'Sanat & Tasarım',
+                'Sosyal Medya',
+                'Araçlar & Uygulamalar',
+                'Eğlence',
+                'Bilim & Doğa',
+                'Spor',
+                'Yemek & Tarif',
+                'Seyahat',
+                'Haberler & Medya'
+            ],
             currentTags: [],
             editingContentId: null,
             notifications: [],
             searchQuery: '',
             auth,
             db,
-            initFirebase,
             isFirebaseConfigured
         };
 
         init();
 
-        function init() {
+        async function init() {
             const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
-            checkAuth();
+            
+            if (isFirebaseConfigured) {
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        const userDoc = await getDoc(doc(db, 'users', user.uid));
+                        if (userDoc.exists()) {
+                            window.shaplatState.currentUser = { id: user.uid, ...userDoc.data() };
+                        } else {
+                            window.shaplatState.currentUser = {
+                                id: user.uid,
+                                email: user.email,
+                                name: user.displayName || user.email?.split('@')[0] || 'Kullanıcı',
+                                role: user.email === 'admin@shaplat.com' ? 'admin' : 'user',
+                                anonymous: user.isAnonymous,
+                                shaplatCount: 0,
+                                favoriteCount: 0
+                            };
+                            await setDoc(doc(db, 'users', user.uid), window.shaplatState.currentUser);
+                        }
+                        await renderApp();
+                    } else {
+                        showAuthModal('login');
+                    }
+                });
+            } else {
+                checkAuth();
+            }
         }
 
         window.toggleTheme = function() {
@@ -1447,7 +1473,7 @@
             `;
         }
 
-        window.handleEmailAuth = function(mode) {
+        window.handleEmailAuth = async function(mode) {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const name = mode === 'register' ? document.getElementById('auth-name').value : '';
@@ -1457,45 +1483,84 @@
                 return;
             }
 
-            const user = {
-                id: 'user_' + Date.now(),
-                email,
-                name: name || email.split('@')[0],
-                role: email === 'admin@shaplat.com' ? 'admin' : 'user',
-                anonymous: false,
-                shaplatCount: 0,
-                favoriteCount: 0
-            };
-
-            login(user);
+            if (isFirebaseConfigured) {
+                try {
+                    let userCredential;
+                    if (mode === 'login') {
+                        userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    } else {
+                        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                        const userData = {
+                            email,
+                            name,
+                            role: email === 'admin@shaplat.com' ? 'admin' : 'user',
+                            anonymous: false,
+                            shaplatCount: 0,
+                            favoriteCount: 0
+                        };
+                        await setDoc(doc(db, 'users', userCredential.user.uid), userData);
+                    }
+                    showNotification('✅ Başarıyla giriş yapıldı!');
+                } catch (error) {
+                    showNotification('❌ Hata: ' + error.message);
+                }
+            } else {
+                const user = {
+                    id: 'user_' + Date.now(),
+                    email,
+                    name: name || email.split('@')[0],
+                    role: email === 'admin@shaplat.com' ? 'admin' : 'user',
+                    anonymous: false,
+                    shaplatCount: 0,
+                    favoriteCount: 0
+                };
+                login(user);
+            }
         };
 
-        window.handleGoogleAuth = function() {
-            const user = {
-                id: 'google_' + Date.now(),
-                email: 'user@gmail.com',
-                name: 'Google Kullanıcı',
-                role: 'user',
-                anonymous: false,
-                shaplatCount: 0,
-                favoriteCount: 0
-            };
-
-            login(user);
+        window.handleGoogleAuth = async function() {
+            if (isFirebaseConfigured) {
+                try {
+                    const provider = new GoogleAuthProvider();
+                    await signInWithPopup(auth, provider);
+                    showNotification('✅ Google ile giriş yapıldı!');
+                } catch (error) {
+                    showNotification('❌ Hata: ' + error.message);
+                }
+            } else {
+                const user = {
+                    id: 'google_' + Date.now(),
+                    email: 'user@gmail.com',
+                    name: 'Google Kullanıcı',
+                    role: 'user',
+                    anonymous: false,
+                    shaplatCount: 0,
+                    favoriteCount: 0
+                };
+                login(user);
+            }
         };
 
-        window.handleAnonymousAuth = function() {
-            const user = {
-                id: 'anon_' + Date.now(),
-                email: null,
-                name: 'Misafir',
-                role: 'user',
-                anonymous: true,
-                shaplatCount: 0,
-                favoriteCount: 0
-            };
-
-            login(user);
+        window.handleAnonymousAuth = async function() {
+            if (isFirebaseConfigured) {
+                try {
+                    await signInAnonymously(auth);
+                    showNotification('✅ Misafir olarak giriş yapıldı!');
+                } catch (error) {
+                    showNotification('❌ Hata: ' + error.message);
+                }
+            } else {
+                const user = {
+                    id: 'anon_' + Date.now(),
+                    email: null,
+                    name: 'Misafir',
+                    role: 'user',
+                    anonymous: true,
+                    shaplatCount: 0,
+                    favoriteCount: 0
+                };
+                login(user);
+            }
         };
 
         function login(user) {
@@ -1505,11 +1570,15 @@
             showNotification('✅ Hoş geldiniz, ' + user.name + '!');
         }
 
-        window.logout = function() {
+        window.logout = async function() {
             if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
-                window.shaplatState.currentUser = null;
-                sessionStorage.removeItem('currentUser');
-                showAuthModal('login');
+                if (isFirebaseConfigured) {
+                    await auth.signOut();
+                } else {
+                    window.shaplatState.currentUser = null;
+                    sessionStorage.removeItem('currentUser');
+                    showAuthModal('login');
+                }
             }
         };
 
@@ -1592,7 +1661,7 @@
 
                     <div class="user-section">
                         <div class="user-card" onclick="showSection('profile')">
-                            <div class="user-avatar">${window.shaplatState.currentUser.name[0]}</div>
+                            <div class="user-avatar">${window.shaplatState.currentUser.name[0].toUpperCase()}</div>
                             <div>
                                 <div style="font-weight: 700; margin-bottom: 2px; font-size: 0.85rem;">${window.shaplatState.currentUser.name}</div>
                                 <div style="font-size: 0.7rem; color: var(--text-muted);">
@@ -1606,10 +1675,7 @@
                 <div class="main-content">
                     <div id="random" class="section active">
                         <div class="content-display" id="random-content">
-                            <div class="empty-state">
-                                <h3>Keşfetmeye Hazır mısın?</h3>
-                                <p>Aşağıdaki SHAPLAT butonuna tıkla!</p>
-                            </div>
+                            <div class="loading-spinner">Yükleniyor...</div>
                         </div>
                     </div>
 
@@ -1642,7 +1708,7 @@
                     <div id="profile" class="section">
                         <div class="profile-container">
                             <div class="profile-header">
-                                <div class="profile-avatar-large">${window.shaplatState.currentUser.name[0]}</div>
+                                <div class="profile-avatar-large">${window.shaplatState.currentUser.name[0].toUpperCase()}</div>
                                 <div class="profile-info">
                                     <h1 class="profile-name">${window.shaplatState.currentUser.name}</h1>
                                     <p style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">
@@ -1671,14 +1737,6 @@
                                     <label class="form-label">E-posta</label>
                                     <input type="email" id="profile-email" class="form-input" value="${window.shaplatState.currentUser.email || ''}" ${window.shaplatState.currentUser.anonymous ? 'disabled' : ''}>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label">Yeni Şifre</label>
-                                    <input type="password" id="profile-new-password" class="form-input" placeholder="Yeni şifreniz (isteğe bağlı)">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Yeni Şifre Tekrar</label>
-                                    <input type="password" id="profile-confirm-password" class="form-input" placeholder="Yeni şifrenizi tekrar girin">
-                                </div>
                                 <button class="btn btn-primary" onclick="updateProfile()">
                                     💾 Kaydet
                                 </button>
@@ -1704,7 +1762,7 @@
                                 Her gün milyonlarca içerik üretilirken, gerçekten değerli ve ilginç olanları bulmak giderek zorlaşıyor.
                             </p>
                             <p class="info-text">
-                                Biz bu sorunu çözmek için yola çıktık. Web siteleri, YouTube kanalları, uygulamalar ve oyunlar arasından 
+                                Biz bu sorunu çözmek için yola çıktık. Web siteleri, video içerikler, müzik, oyunlar ve daha fazlası arasından 
                                 özenle seçilmiş içerikleri sizlerle buluşturuyoruz. Her tıklamada yeni bir keşif, her keşifte yeni bir ilham!
                             </p>
                             <p class="info-text">
@@ -1762,7 +1820,7 @@
                                 <button class="admin-tab active" onclick="showAdminTab('contents')">📋 İçerikler</button>
                                 <button class="admin-tab" onclick="showAdminTab('bulk')">⚡ Toplu Ekle</button>
                                 <button class="admin-tab" onclick="showAdminTab('add')">➕ Tek Ekle</button>
-                                <button class="admin-tab" onclick="showAdminTab('firebase')">🔥 Firebase</button>
+                                ${!isFirebaseConfigured ? '<button class="admin-tab" onclick="showAdminTab(\'firebase\')">🔥 Firebase</button>' : ''}
                                 <button class="admin-tab" onclick="showAdminTab('categories')">📁 Kategoriler</button>
                             </div>
                             <div id="admin-content"></div>
@@ -1772,6 +1830,9 @@
                 </div>
             `;
 
+            // İlk içeriği otomatik yükle
+            await shaplatRandom();
+            
             renderTrends();
             renderFavorites();
             renderNotifications();
@@ -1783,7 +1844,7 @@
         }
 
         async function loadContents() {
-            if (window.shaplatState.isFirebaseConfigured) {
+            if (isFirebaseConfigured) {
                 try {
                     const querySnapshot = await getDocs(collection(db, 'contents'));
                     window.shaplatState.contents = querySnapshot.docs.map(doc => ({
@@ -1791,27 +1852,62 @@
                         ...doc.data()
                     }));
                 } catch (error) {
-                    console.error('Error loading:', error);
+                    console.error('Firestore yükleme hatası:', error);
+                    window.shaplatState.contents = getDefaultContents();
+                }
+            } else {
+                const savedContents = localStorage.getItem('shaplatContents');
+                if (savedContents) {
+                    window.shaplatState.contents = JSON.parse(savedContents);
+                } else {
+                    window.shaplatState.contents = getDefaultContents();
+                    localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
                 }
             }
-            
-            if (window.shaplatState.contents.length === 0) {
-                window.shaplatState.contents = [
-                    {
-                        id: '1',
-                        title: 'Poolside FM',
-                        description: 'Nostaljik yaz hissi veren chill müzik radyosu.',
-                        url: 'https://poolside.fm',
-                        image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800',
-                        category: 'Web Siteleri',
-                        tags: ['müzik', 'rahatlatıcı', 'radyo'],
-                        rating: 0,
-                        ratingCount: 0,
-                        viewCount: 0,
-                        favoriteCount: 0
-                    }
-                ];
-            }
+        }
+
+        function getDefaultContents() {
+            return [
+                {
+                    id: '1',
+                    title: 'Poolside FM',
+                    description: 'Nostaljik yaz hissi veren chill müzik radyosu. Rahatlamak ve dinlenmek için mükemmel.',
+                    url: 'https://poolside.fm',
+                    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800',
+                    category: 'Müzik',
+                    tags: ['müzik', 'rahatlatıcı', 'radyo'],
+                    rating: 4.5,
+                    ratingCount: 10,
+                    viewCount: 50,
+                    favoriteCount: 15
+                },
+                {
+                    id: '2',
+                    title: 'Noisli',
+                    description: 'Ortam sesleri ile odaklanmanızı artırın. Çalışma ve odaklanma için ideal.',
+                    url: 'https://noisli.com',
+                    image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800',
+                    category: 'Araçlar & Uygulamalar',
+                    tags: ['ses', 'odaklanma', 'rahatlatıcı'],
+                    rating: 4.7,
+                    ratingCount: 8,
+                    viewCount: 35,
+                    favoriteCount: 12
+                },
+                {
+                    id: '3',
+                    title: 'The Useless Web',
+                    description: 'İnternetteki en anlamsız ama eğlenceli sitelere rastgele yönlendirir.',
+                    url: 'https://theuselessweb.com',
+                    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800',
+                    category: 'Eğlence',
+                    tags: ['eğlence', 'rastgele', 'web'],
+                    rating: 4.2,
+                    ratingCount: 15,
+                    viewCount: 80,
+                    favoriteCount: 20
+                }
+            ];
         }
 
         function loadNotifications() {
@@ -1917,12 +2013,21 @@
             
             randomContent.viewCount = (randomContent.viewCount || 0) + 1;
             window.shaplatState.currentUser.shaplatCount = (window.shaplatState.currentUser.shaplatCount || 0) + 1;
-            sessionStorage.setItem('currentUser', JSON.stringify(window.shaplatState.currentUser));
             
-            if (window.shaplatState.isFirebaseConfigured) {
-                await updateDoc(doc(db, 'contents', randomContent.id), {
-                    viewCount: increment(1)
-                });
+            if (isFirebaseConfigured) {
+                try {
+                    await updateDoc(doc(db, 'contents', randomContent.id), {
+                        viewCount: increment(1)
+                    });
+                    await updateDoc(doc(db, 'users', window.shaplatState.currentUser.id), {
+                        shaplatCount: increment(1)
+                    });
+                } catch (error) {
+                    console.error('Güncelleme hatası:', error);
+                }
+            } else {
+                sessionStorage.setItem('currentUser', JSON.stringify(window.shaplatState.currentUser));
+                localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
             }
             
             displayContent(randomContent);
@@ -2025,11 +2130,17 @@
                 content.rating = ((content.rating * content.ratingCount) - oldRating + rating) / content.ratingCount;
             }
 
-            if (window.shaplatState.isFirebaseConfigured) {
-                await updateDoc(doc(db, 'contents', contentId), {
-                    rating: content.rating,
-                    ratingCount: content.ratingCount
-                });
+            if (isFirebaseConfigured) {
+                try {
+                    await updateDoc(doc(db, 'contents', contentId), {
+                        rating: content.rating,
+                        ratingCount: content.ratingCount
+                    });
+                } catch (error) {
+                    console.error('Rating güncelleme hatası:', error);
+                }
+            } else {
+                localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
             }
 
             showNotification(`✅ ${rating} yıldız verdiniz!`);
@@ -2055,12 +2166,21 @@
             }
 
             localStorage.setItem('userFavorites', JSON.stringify(userFavorites));
-            sessionStorage.setItem('currentUser', JSON.stringify(window.shaplatState.currentUser));
-
-            if (window.shaplatState.isFirebaseConfigured) {
-                await updateDoc(doc(db, 'contents', contentId), {
-                    favoriteCount: content.favoriteCount
-                });
+            
+            if (isFirebaseConfigured) {
+                try {
+                    await updateDoc(doc(db, 'contents', contentId), {
+                        favoriteCount: content.favoriteCount
+                    });
+                    await updateDoc(doc(db, 'users', window.shaplatState.currentUser.id), {
+                        favoriteCount: window.shaplatState.currentUser.favoriteCount
+                    });
+                } catch (error) {
+                    console.error('Favori güncelleme hatası:', error);
+                }
+            } else {
+                sessionStorage.setItem('currentUser', JSON.stringify(window.shaplatState.currentUser));
+                localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
             }
 
             displayContent(content);
@@ -2144,29 +2264,28 @@
             const content = window.shaplatState.contents.find(c => c.id === contentId);
             content.viewCount = (content.viewCount || 0) + 1;
             
-            if (window.shaplatState.isFirebaseConfigured) {
-                await updateDoc(doc(db, 'contents', content.id), {
-                    viewCount: increment(1)
-                });
+            if (isFirebaseConfigured) {
+                try {
+                    await updateDoc(doc(db, 'contents', content.id), {
+                        viewCount: increment(1)
+                    });
+                } catch (error) {
+                    console.error('View count güncelleme hatası:', error);
+                }
+            } else {
+                localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
             }
             
             showSection('random');
             displayContent(content);
         };
 
-        window.updateProfile = function() {
+        window.updateProfile = async function() {
             const name = document.getElementById('profile-name').value.trim();
             const email = document.getElementById('profile-email').value.trim();
-            const newPassword = document.getElementById('profile-new-password').value;
-            const confirmPassword = document.getElementById('profile-confirm-password').value;
 
             if (!name) {
                 showNotification('⚠️ İsim boş olamaz!');
-                return;
-            }
-
-            if (newPassword && newPassword !== confirmPassword) {
-                showNotification('⚠️ Şifreler eşleşmiyor!');
                 return;
             }
 
@@ -2175,7 +2294,19 @@
                 window.shaplatState.currentUser.email = email;
             }
 
-            sessionStorage.setItem('currentUser', JSON.stringify(window.shaplatState.currentUser));
+            if (isFirebaseConfigured) {
+                try {
+                    await updateDoc(doc(db, 'users', window.shaplatState.currentUser.id), {
+                        name: name,
+                        email: email
+                    });
+                } catch (error) {
+                    console.error('Profil güncelleme hatası:', error);
+                }
+            } else {
+                sessionStorage.setItem('currentUser', JSON.stringify(window.shaplatState.currentUser));
+            }
+
             showNotification('✅ Profil güncellendi!');
             renderApp();
         };
@@ -2207,24 +2338,27 @@
             const totalViews = window.shaplatState.contents.reduce((sum, c) => sum + (c.viewCount || 0), 0);
             const totalFavorites = window.shaplatState.contents.reduce((sum, c) => sum + (c.favoriteCount || 0), 0);
             
-            document.getElementById('admin-stats').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-value">${window.shaplatState.contents.length}</div>
-                    <div class="stat-label">İçerik</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${totalViews}</div>
-                    <div class="stat-label">Görüntüleme</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${totalFavorites}</div>
-                    <div class="stat-label">Favori</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${window.shaplatState.categories.length}</div>
-                    <div class="stat-label">Kategori</div>
-                </div>
-            `;
+            const statsContainer = document.getElementById('admin-stats');
+            if (statsContainer) {
+                statsContainer.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${window.shaplatState.contents.length}</div>
+                        <div class="stat-label">İçerik</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalViews}</div>
+                        <div class="stat-label">Görüntüleme</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalFavorites}</div>
+                        <div class="stat-label">Favori</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${window.shaplatState.categories.length}</div>
+                        <div class="stat-label">Kategori</div>
+                    </div>
+                `;
+            }
         }
 
         window.filterAdminContents = function() {
@@ -2297,16 +2431,15 @@
                     <div class="format-info">
                         <strong>📝 Format:</strong>
                         Her satıra bir içerik yazın. Alanları | (pipe) işareti ile ayırın:
-                        <div class="format-example">
-Başlık|Açıklama|https://url.com|https://image-url.com|Kategori|etiket1,etiket2,etiket3</div>
+                        <div class="format-example">Başlık|Açıklama|https://url.com|https://image-url.com|Kategori|etiket1,etiket2,etiket3</div>
                         <div style="margin-top: 10px; color: var(--text-muted); font-size: 0.8rem;">
                             💡 <strong>Önemli:</strong> Etiketleri virgül ile ayırın. Kategori var olan kategorilerden biri olmalı.
                         </div>
                     </div>
 
                     <div class="bulk-import-area">
-                        <textarea id="bulk-input" class="bulk-textarea" placeholder="Poolside FM|Nostaljik yaz hissi veren chill müzik radyosu.|https://poolside.fm|https://example.com/image.jpg|Web Siteleri|müzik,rahatlatıcı,radyo
-Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://example.com/noisli.jpg|Web Siteleri|ses,odaklanma,rahatlatıcı
+                        <textarea id="bulk-input" class="bulk-textarea" placeholder="Poolside FM|Nostaljik yaz hissi veren chill müzik radyosu.|https://poolside.fm|https://example.com/image.jpg|Müzik|müzik,rahatlatıcı,radyo
+Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://example.com/noisli.jpg|Araçlar & Uygulamalar|ses,odaklanma,rahatlatıcı
 ..."></textarea>
                     </div>
 
@@ -2383,7 +2516,7 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
                 };
 
                 try {
-                    if (window.shaplatState.isFirebaseConfigured) {
+                    if (isFirebaseConfigured) {
                         const docRef = await addDoc(collection(db, 'contents'), contentData);
                         contentData.id = docRef.id;
                     } else {
@@ -2396,6 +2529,10 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
                     errorCount++;
                     errors.push(`Satır ${i + 1}: Veritabanı hatası`);
                 }
+            }
+
+            if (!isFirebaseConfigured) {
+                localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
             }
 
             let resultHTML = `
@@ -2489,6 +2626,8 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
             if (content) {
                 window.shaplatState.currentTags = [...content.tags];
                 updateTagsDisplay();
+            } else {
+                window.shaplatState.currentTags = [];
             }
         }
 
@@ -2497,60 +2636,19 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
                 <div class="admin-section">
                     <h3 style="margin-bottom: 18px; font-size: 1.4rem; font-weight: 800;">🔥 Firebase Yapılandırması</h3>
                     <p style="color: var(--text-muted); margin-bottom: 18px; font-weight: 600;">
-                        Firebase proje ayarlarınızı buraya girin.
+                        Firebase proje ayarlarınızı HTML dosyasındaki firebaseConfig nesnesine girin ve sayfayı yenileyin.
                     </p>
-                    <div class="form-group">
-                        <label class="form-label">API Key</label>
-                        <input type="text" id="firebase-api-key" class="form-input" placeholder="AIzaSy...">
+                    <div class="format-info">
+                        <strong>Yapılandırma Durumu:</strong>
+                        <p style="margin-top: 10px;">
+                            ${isFirebaseConfigured ? 
+                                '✅ Firebase etkinleştirilmiş ve çalışıyor!' : 
+                                '❌ Firebase yapılandırılmamış. Local mod aktif.'}
+                        </p>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Auth Domain</label>
-                        <input type="text" id="firebase-auth-domain" class="form-input" placeholder="your-app.firebaseapp.com">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Project ID</label>
-                        <input type="text" id="firebase-project-id" class="form-input" placeholder="your-project-id">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Storage Bucket</label>
-                        <input type="text" id="firebase-storage-bucket" class="form-input" placeholder="your-app.appspot.com">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Messaging Sender ID</label>
-                        <input type="text" id="firebase-sender-id" class="form-input" placeholder="123456789">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">App ID</label>
-                        <input type="text" id="firebase-app-id" class="form-input" placeholder="1:123:web:abc">
-                    </div>
-                    <button class="btn btn-primary" onclick="saveFirebaseConfig()">
-                        💾 Firebase'i Etkinleştir
-                    </button>
                 </div>
             `;
         }
-
-        window.saveFirebaseConfig = function() {
-            const config = {
-                apiKey: document.getElementById('firebase-api-key').value,
-                authDomain: document.getElementById('firebase-auth-domain').value,
-                projectId: document.getElementById('firebase-project-id').value,
-                storageBucket: document.getElementById('firebase-storage-bucket').value,
-                messagingSenderId: document.getElementById('firebase-sender-id').value,
-                appId: document.getElementById('firebase-app-id').value
-            };
-
-            if (Object.values(config).some(v => !v)) {
-                showNotification('⚠️ Tüm alanları doldurun!');
-                return;
-            }
-
-            if (window.shaplatState.initFirebase(config)) {
-                showNotification('✅ Firebase etkinleştirildi!');
-            } else {
-                showNotification('❌ Firebase yapılandırma hatası!');
-            }
-        };
 
         function renderAdminCategories() {
             document.getElementById('admin-content').innerHTML = `
@@ -2647,21 +2745,37 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
                 const content = window.shaplatState.contents.find(c => c.id === window.shaplatState.editingContentId);
                 Object.assign(content, contentData);
                 
-                if (window.shaplatState.isFirebaseConfigured) {
-                    await updateDoc(doc(db, 'contents', window.shaplatState.editingContentId), contentData);
+                if (isFirebaseConfigured) {
+                    try {
+                        await updateDoc(doc(db, 'contents', window.shaplatState.editingContentId), contentData);
+                    } catch (error) {
+                        console.error('Güncelleme hatası:', error);
+                    }
+                } else {
+                    localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
                 }
                 
                 showNotification('✅ İçerik güncellendi!');
                 window.shaplatState.editingContentId = null;
             } else {
-                if (window.shaplatState.isFirebaseConfigured) {
-                    const docRef = await addDoc(collection(db, 'contents'), contentData);
-                    contentData.id = docRef.id;
+                if (isFirebaseConfigured) {
+                    try {
+                        const docRef = await addDoc(collection(db, 'contents'), contentData);
+                        contentData.id = docRef.id;
+                    } catch (error) {
+                        console.error('Ekleme hatası:', error);
+                        contentData.id = Date.now().toString();
+                    }
                 } else {
                     contentData.id = Date.now().toString();
                 }
                 
                 window.shaplatState.contents.push(contentData);
+                
+                if (!isFirebaseConfigured) {
+                    localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
+                }
+                
                 showNotification('✅ İçerik eklendi!');
             }
 
@@ -2685,8 +2799,14 @@ Noisli|Ortam sesleri ile odaklanmanızı artırın.|https://noisli.com|https://e
             if (confirm('Bu içeriği silmek istediğinize emin misiniz?')) {
                 window.shaplatState.contents = window.shaplatState.contents.filter(c => c.id !== id);
                 
-                if (window.shaplatState.isFirebaseConfigured) {
-                    await deleteDoc(doc(db, 'contents', id));
+                if (isFirebaseConfigured) {
+                    try {
+                        await deleteDoc(doc(db, 'contents', id));
+                    } catch (error) {
+                        console.error('Silme hatası:', error);
+                    }
+                } else {
+                    localStorage.setItem('shaplatContents', JSON.stringify(window.shaplatState.contents));
                 }
                 
                 updateAdminStats();
