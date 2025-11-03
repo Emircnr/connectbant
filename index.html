@@ -344,10 +344,14 @@ const elUsd = $('#usdtry'), elUsdBox = $('#usdBox'), elLast = $('#last'), elCnt 
       elHiPrice = $('#hiPrice'), elHiPct = $('#hiPct'), elHiToggle = $('#toggleHi'),
       elCustomWrap = $('#customWrap'), elCustomToggle = $('#toggleCustom');
 
-/* ====== Ağ — PAİRBU API DİREKT KULLANIM ====== */
-// ✅ Paribu API endpoint'i (artık web.paribu.com değil, api.paribu.com)
+/* ====== Ağ — PAİRBU API CORS PROXY ile ====== */
+// CORS proxy - Paribu API'sine tarayıcıdan erişim için
+const CORS_PROXY = 'https://corsproxy.io/?';
+
+// ✅ Paribu API endpoint'i CORS proxy ile
 function paribuOrderbookUrl(sym){ 
-  return `https://api.paribu.com/orderbook?market=${sym.toLowerCase()}_tl`; 
+  const apiUrl = `https://api.paribu.com/orderbook?market=${sym.toLowerCase()}_tl`;
+  return CORS_PROXY + encodeURIComponent(apiUrl);
 }
 
 // Binance API'si aynı kalıyor
