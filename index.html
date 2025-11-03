@@ -146,7 +146,7 @@
       <input id="rng" type="range" min="100" max="4000" step="100">
       <div class="mono" id="rngLbl">—</div>
     </div>
-    <div class="muted" style="font-size:12px;margin-top:6px">API'den direkt veri çekiliyor, hızlı ve güvenilir.</div>
+    <div class="muted" style="font-size:12px;margin-top:6px">AllOrigins proxy ile API'den hızlı veri çekiliyor.</div>
   </div>
 
   <div class="ctrl">
@@ -344,14 +344,12 @@ const elUsd = $('#usdtry'), elUsdBox = $('#usdBox'), elLast = $('#last'), elCnt 
       elHiPrice = $('#hiPrice'), elHiPct = $('#hiPct'), elHiToggle = $('#toggleHi'),
       elCustomWrap = $('#customWrap'), elCustomToggle = $('#toggleCustom');
 
-/* ====== Ağ — PAİRBU API CORS PROXY ile ====== */
-// CORS proxy - Paribu API'sine tarayıcıdan erişim için
-const CORS_PROXY = 'https://corsproxy.io/?';
-
-// ✅ Paribu API endpoint'i CORS proxy ile
+/* ====== Ağ — PAİRBU API (AllOrigins CORS Proxy) ====== */
+// ✅ AllOrigins - güvenilir ücretsiz CORS proxy
 function paribuOrderbookUrl(sym){ 
   const apiUrl = `https://api.paribu.com/orderbook?market=${sym.toLowerCase()}_tl`;
-  return CORS_PROXY + encodeURIComponent(apiUrl);
+  // AllOrigins raw endpoint - direkt JSON döner
+  return `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
 }
 
 // Binance API'si aynı kalıyor
@@ -367,23 +365,24 @@ async function jget(url){
   return res.json();
 }
 
-// ✅ Paribu API formatına göre güncellendi
+// ✅ Paribu Orderbook API formatı
 // API response: { "timestamp": 123, "bids": [["18400.00", "4.53"]], "asks": [["99000.00", "0.01"]] }
 function parseParibu(data){
-  if(!data || !data.bids || !data.asks) return {bid:NaN, ask:NaN};
+  if(!data || !data.bids || !data.asks) {
+    console.warn('Geçersiz Paribu response:', data);
+    return {bid:NaN, ask:NaN};
+  }
   
-  // bids ve asks artık array of arrays: [["price", "amount"], ...]
-  const bids = data.bids.map(x => parseFloat(x[0])).filter(x=>!isFinite(x)===false);
-  const asks = data.asks.map(x => parseFloat(x[0])).filter(x=>!isFinite(x)===false);
+  // bids ve asks: [["price", "amount"], ...]
+  const bids = data.bids.map(x => parseFloat(x[0])).filter(x=>isFinite(x));
+  const asks = data.asks.map(x => parseFloat(x[0])).filter(x=>isFinite(x));
   
   if(!bids.length || !asks.length) return {bid:NaN, ask:NaN};
   
-  // En yüksek bid (alış fiyatı)
-  const bestBid = Math.max(...bids);
-  // En düşük ask (satış fiyatı)
-  const bestAsk = Math.min(...asks);
-  
-  return { bid: bestBid, ask: bestAsk };
+  return { 
+    bid: Math.max(...bids),  // En yüksek alış
+    ask: Math.min(...asks)   // En düşük satış
+  };
 }
 
 /* ====== Mantık (PyQt5 ile birebir) ====== */
